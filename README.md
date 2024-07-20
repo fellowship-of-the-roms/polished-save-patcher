@@ -20,7 +20,8 @@ This project is a WebAssembly-based tool that patches Polished Crystal save file
 
 ## Building from Source
 
-To build this project from source, you need to have [Emscripten](https://emscripten.org/) installed. Follow these steps:
+To build this project from source, you need to have [Emscripten](https://emscripten.org/) installed. 
+Then Follow these steps:
 
 1. **Clone the repository:**
    ```sh
@@ -29,7 +30,9 @@ To build this project from source, you need to have [Emscripten](https://emscrip
    ```
 
 2. **Build the project:**
-   `make`
+   ```sh
+   make
+   ```
 
 3. Run a local server to test:
    ```sh
