@@ -13,6 +13,7 @@ INCLUDE_DIR := include
 RESOURCES_DIR := resources
 VERSION7_DIR := $(RESOURCES_DIR)/version7
 VERSION8_DIR := $(RESOURCES_DIR)/version8
+BUILD_DIR := build
 
 # Source files
 SOURCES := $(SRC_DIR)/CommonPatchFunctions.cpp \
@@ -24,13 +25,14 @@ SOURCES := $(SRC_DIR)/CommonPatchFunctions.cpp \
            $(SRC_DIR)/main.cpp
 
 # Object files
-OBJECTS := $(SOURCES:.cpp=.o)
+OBJECTS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
 
 # Executable name
-TARGET := polished_save_patcher.html
+TARGET := $(BUILD_DIR)/polished_save_patcher.html
 
 # Additional output files
 ADDITIONAL_FILES := polished_save_patcher.data polished_save_patcher.js polished_save_patcher.wasm polished_save_patcher.mem polished_save_patcher.worker.js
+ADDITIONAL_BUILD_FILES := $(patsubst %, $(BUILD_DIR)/%, $(ADDITIONAL_FILES))
 
 # Windows-specific settings
 ifeq ($(OS), Windows_NT)
@@ -41,19 +43,27 @@ else
 endif
 
 # Build target
-all: $(TARGET)
+all: $(TARGET) $(BUILD_DIR)/index.html
 
 # Linking
 $(TARGET): $(OBJECTS)
 	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s FORCE_FILESYSTEM=1 --preload-file resources --bind
 
 # Compilation
-$(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Copy index.html to build directory
+$(BUILD_DIR)/index.html: index.html | $(BUILD_DIR)
+	cp $< $@
+
+# Create build directory
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 # Clean
 clean:
-	$(RM) $(OBJECTS) $(TARGET) $(ADDITIONAL_FILES)
+	$(RM) $(OBJECTS) $(TARGET) $(ADDITIONAL_BUILD_FILES) $(BUILD_DIR)/index.html
 
 # Phony targets
 .PHONY: all clean
