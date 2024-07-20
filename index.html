@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Polished Crystal Save Patcher</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+			background-color: #100612;
+			color: #e0e0e0;
+		}
+		h1 {
+			color: #b39ddb;
+		}
+		.container {
+			max-width: 800px;
+			margin: 0 auto;
+			padding: 20px;
+			background-color: #1e1e1e;
+			border: 1px solid #333;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+		}
+		.instructions {
+			margin-bottom: 20px;
+		}
+		input[type="file"] {
+			margin-bottom: 10px;
+			background-color: #2e2e2e;
+			color: #e0e0e0;
+			border: 1px solid #555;
+			padding: 5px;
+			width: 100%;
+			box-sizing: border-box;
+		}
+		button {
+			background-color: #b39ddb;
+			color: #121212;
+			border: none;
+			padding: 10px 20px;
+			font-size: 16px;
+			cursor: pointer;
+			margin-bottom: 20px;
+			width: 100%;
+			box-sizing: border-box;
+		}
+		button:hover {
+			background-color: #9575cd;
+		}
+		pre {
+			background-color: #1e1e1e;
+			border: 1px solid #333;
+			padding: 10px;
+			overflow: auto;
+			white-space: pre-wrap;
+			word-wrap: break-word;
+			max-height: 300px; /* Set fixed height */
+			line-height: 1; /* Reduce line height */
+			margin: 0; /* Remove default margin */
+			font-family: monospace; /* Ensure monospaced font */
+			font-size: 14px; /* Set font size */
+			padding-top: 0; /* Remove top padding */
+			padding-bottom: 0; /* Remove bottom padding */
+			color: #e0e0e0; /* Text color */
+		}
+		.warning {
+			color: #ffcc00;
+		}
+		.error {
+			color: #ff6e6e;
+		}
+		#indicator {
+			color: #b39ddb;
+			font-weight: bold;
+			margin-bottom: 20px;
+		}
+	</style>
+	<script src="polished_save_patcher.js"></script>
+</head>
+<body>
+	<div class="container">
+		<h1>Polished Crystal Save Patcher</h1>
+		<div class="instructions">
+			<p>
+				This tool allows you to patch your Polished Crystal save files from one version to another.
+				Follow the steps below to patch your save file:
+			</p>
+			<ol>
+				<li>Save your game inside a Pokemon Center.</li>
+				<li>Back up your original save file somewhere safe.</li>
+				<li>Click the "Choose File" button to select your old save file.</li>
+				<li>Click the "Patch Save" button to start the patching process.</li>
+				<li>Once the patching is complete, a new save file will be downloaded automatically.</li>
+				<li>After loading your patched save for the first time, promptly exit the Pokemon Center before interacting with anything.</li>
+			</ol>
+		</div>
+		<input type="file" id="oldSave" />
+		<button onclick="patchSave()">Patch Save</button>
+		<div id="indicator">Ready to patch.</div>
+		<pre id="output"></pre>
+		<button onclick="downloadLog()">Download Log</button>
+	</div>
+	<script>
+		function patchSave() {
+			var oldSaveFile = document.getElementById('oldSave').files[0];
+			if (!oldSaveFile) {
+				alert("Please select the save file you want to patch.");
+				return;
+			}
+
+			var indicatorElement = document.getElementById('indicator');
+			var outputElement = document.getElementById('output');
+
+			// Clear previous output and update indicator
+			outputElement.textContent = '';
+			indicatorElement.textContent = 'Patching in progress...';
+
+			var oldSavePath = '/old_save.sav';
+			var newSavePath = '/new_save.sav';
+
+			if (FS.analyzePath(newSavePath).exists) {
+				FS.unlink(newSavePath);
+			}
+
+			var reader = new FileReader();
+			reader.onload = function(event) {
+				var data = new Uint8Array(event.target.result);
+				FS.writeFile(oldSavePath, data);
+
+				// Call the C++ function and handle the result
+				var result = Module.patch_save(oldSavePath, newSavePath);
+				if (result.success) {
+					var patchedData = FS.readFile(newSavePath, { encoding: 'binary', flags: 'r' });
+					if (patchedData) {
+						var blob = new Blob([patchedData], { type: 'application/octet-stream' });
+						var url = URL.createObjectURL(blob);
+						var a = document.createElement('a');
+						a.href = url;
+						a.download = 'patched_save.sav';
+						a.click();
+						URL.revokeObjectURL(url);
+
+						indicatorElement.textContent = 'Patching complete. Save file downloaded successfully.';
+					} else {
+						indicatorElement.textContent = 'Patching complete with errors. Failed to read the patched save file.';
+					}
+				} else {
+					indicatorElement.textContent = 'Patching failed. See errors in the output.';
+				}
+			};
+			reader.readAsArrayBuffer(oldSaveFile);
+		}
+
+		function downloadLog() {
+			var outputElement = document.getElementById('output');
+			var logContent = outputElement.textContent;
+			var blob = new Blob([logContent], { type: 'text/plain' });
+			var url = URL.createObjectURL(blob);
+			var a = document.createElement('a');
+			a.href = url;
+			a.download = 'patch_log.txt';
+			a.click();
+			URL.revokeObjectURL(url);
+		}
+	</script>
+</body>
+</html>
