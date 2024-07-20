@@ -1,0 +1,45 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Cache emsdk
+        uses: actions/cache@v3
+        with:
+          path: emsdk
+          key: ${{ runner.os }}-emsdk-${{ hashFiles('emsdk/emsdk_manifest.json') }}
+          restore-keys: |
+            ${{ runner.os }}-emsdk-
+
+      - name: Setup Emscripten
+        run: |
+          if [ ! -d "emsdk" ]; then
+            git clone https://github.com/emscripten-core/emsdk.git
+          fi
+          cd emsdk
+          ./emsdk install latest
+          ./emsdk activate latest
+          source ./emsdk_env.sh
+        shell: bash
+
+      - name: Build the project
+        run: |
+          source ./emsdk/emsdk_env.sh
+          make
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+          publish_branch: gh-pages
