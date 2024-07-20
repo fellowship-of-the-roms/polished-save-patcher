@@ -69,6 +69,9 @@
 		.error {
 			color: #ff6e6e;
 		}
+		#indicator.error {
+			color: #ff6e6e;
+		}
 		#indicator {
 			color: #b39ddb;
 			font-weight: bold;
@@ -95,7 +98,7 @@
 			</ol>
 		</div>
 		<input type="file" id="oldSave" />
-		<button onclick="patchSave()">Patch Save</button>
+		<button onclick="patchSave()" id="patchButton">Patch Save</button>
 		<div id="indicator">Ready to patch.</div>
 		<pre id="output"></pre>
 		<button onclick="downloadLog()">Download Log</button>
@@ -110,10 +113,12 @@
 
 			var indicatorElement = document.getElementById('indicator');
 			var outputElement = document.getElementById('output');
+			var patchButton = document.getElementById('patchButton');
 
 			// Clear previous output and update indicator
 			outputElement.textContent = '';
 			indicatorElement.textContent = 'Patching in progress...';
+			patchButton.disabled = true;
 
 			var oldSavePath = '/old_save.sav';
 			var newSavePath = '/new_save.sav';
@@ -141,12 +146,16 @@
 						URL.revokeObjectURL(url);
 
 						indicatorElement.textContent = 'Patching complete. Save file downloaded successfully.';
+						indicatorElement.classList.remove('error');
 					} else {
 						indicatorElement.textContent = 'Patching complete with errors. Failed to read the patched save file.';
+						indicatorElement.classList.add('error');
 					}
 				} else {
 					indicatorElement.textContent = 'Patching failed. See errors in the output.';
+					indicatorElement.classList.add('error');
 				}
+				patchButton.disabled = false;
 			};
 			reader.readAsArrayBuffer(oldSaveFile);
 		}
