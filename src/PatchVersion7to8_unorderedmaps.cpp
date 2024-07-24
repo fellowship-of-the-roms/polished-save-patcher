@@ -1,7 +1,7 @@
 #include "PatchVersion7to8.h"
 
 // converts a version 7 key item to a version 8 key item
-uint8_t mapv7KeyItemtoV8(uint8_t v7) {
+uint8_t mapV7KeyItemToV8(uint8_t v7) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
 		{0x00, 0x01},  // BICYCLE
 		{0x01, 0x02},  // OLD_ROD
@@ -40,7 +40,7 @@ uint8_t mapv7KeyItemtoV8(uint8_t v7) {
 }
 
 // converts a version 7 key item to a version 8 key item
-uint8_t mapv7ItemtoV8(uint8_t v7) {
+uint8_t mapV7ItemToV8(uint8_t v7) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
 		{0x00, 0x00},  // NO_ITEM
 		{0x01, 0x01},  // POKE_BALL
@@ -305,7 +305,7 @@ uint8_t mapv7ItemtoV8(uint8_t v7) {
 }
 
 // Converts a version 7 event flag to a version 8 event flag
-uint16_t mapv7EventFlagtoV8(uint16_t v7) {
+uint16_t mapV7EventFlagToV8(uint16_t v7) {
 	std::unordered_map<uint16_t, uint16_t> indexMap = {
 		{0, 0},  // EVENT_TEMPORARY_UNTIL_MAP_RELOAD_1
 		{1, 1},  // EVENT_TEMPORARY_UNTIL_MAP_RELOAD_2
@@ -2463,7 +2463,7 @@ uint16_t mapv7EventFlagtoV8(uint16_t v7) {
 }
 
 // Converts a version 7 landmark to a version 8 landmark
-uint8_t mapv7LandmarktoV8(uint8_t v7) {
+uint8_t mapV7LandmarkToV8(uint8_t v7) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
 		{0x00, 0x00},  // SPECIAL_MAP
 		{0x01, 0x01},  // NEW_BARK_TOWN
@@ -2616,7 +2616,7 @@ uint8_t mapv7LandmarktoV8(uint8_t v7) {
 }
 
 // Converts a version 7 spawn to a version 8 spawn
-uint8_t mapv7SpawntoV8(uint8_t v7) {
+uint8_t mapV7SpawnToV8(uint8_t v7) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
 		{0x00, 0x00},  // SPAWN_HOME
 		{0x01, 0x01},  // SPAWN_PALLET
@@ -2656,7 +2656,7 @@ uint8_t mapv7SpawntoV8(uint8_t v7) {
 }
 
 // converts a version 7 Pokémon index to a version 8 Pokémon index
-uint16_t mapv7PkmntoV8(uint16_t v7) {
+uint16_t mapV7PkmnToV8(uint16_t v7) {
 	std::unordered_map<uint16_t, uint16_t> indexMap = {
 		{0x01, 0x01},  // BULBASAUR
 		{0x02, 0x02},  // IVYSAUR
@@ -3562,7 +3562,7 @@ bool inPokecenter(uint8_t v7_group, uint8_t v7_map) {
 }
 
 // converts a version 7 key item to a version 8 key item
-uint8_t mapv7MagikarpFormToV8(uint8_t v7) {
+uint8_t mapV7MagikarpFormToV8(uint8_t v7) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
 		{0x02, 0x02}, // MAGIKARP_SKELLY_FORM
 		{0x03, 0x03}, // MAGIKARP_CALICO1_FORM
@@ -3585,7 +3585,7 @@ uint8_t mapv7MagikarpFormToV8(uint8_t v7) {
 	return indexMap.find(v7) != indexMap.end() ? indexMap[v7] : 0xFF;
 }
 
-uint8_t mapv7ThemeToV8(uint8_t v7) {
+uint8_t mapV7ThemeToV8(uint8_t v7) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
 		{0x00, 0x00},  // THEME_STANDARD
 		{0x01, 0x01},  // THEME_PRO

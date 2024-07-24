@@ -17,6 +17,7 @@ polished_save_patcher.wasm
 polished_save_patcher.data
 polished_save_patcher.mem
 polished_save_patcher.worker.js
+build/
 
 # Emscripten cache directory
 emscripten_cache/

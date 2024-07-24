@@ -7,22 +7,22 @@
 #include <iostream>
 
 // converts a version 7 key item to a version 8 key item
-uint8_t mapv7KeyItemtoV8(uint8_t v7);
+uint8_t mapV7KeyItemToV8(uint8_t v7);
 
 // converts a version 7 item to a version 8 item
-uint8_t mapv7ItemtoV8(uint8_t v7);
+uint8_t mapV7ItemToV8(uint8_t v7);
 
 // converts a version 7 event flag to a version 8 event flag
-uint16_t mapv7EventFlagtoV8(uint16_t v7);
+uint16_t mapV7EventFlagToV8(uint16_t v7);
 
 // converts a version 7 landmark to a version 8 landmark
-uint8_t mapv7LandmarktoV8(uint8_t v7);
+uint8_t mapV7LandmarkToV8(uint8_t v7);
 
 // converts a version 7 spawn to a version 8 spawn
-uint8_t mapv7SpawntoV8(uint8_t v7);
+uint8_t mapV7SpawnToV8(uint8_t v7);
 
 // converts a version 7 pokemon to a version 8 pokemon
-uint16_t mapv7PkmntoV8(uint16_t v7);
+uint16_t mapV7PkmnToV8(uint16_t v7);
 
 struct TupleHash {
 	template <typename T>
@@ -35,10 +35,10 @@ struct TupleHash {
 std::tuple<uint8_t, uint8_t> mapv7toV8(uint8_t v7_group, uint8_t v7_map);
 
 // converts a version 7 magikarp form to a version 8 magikarp form
-uint8_t mapv7MagikarpFormToV8(uint8_t v7);
+uint8_t mapV7MagikarpFormToV8(uint8_t v7);
 
 // converts a version 7 theme to a version 8 theme
-uint8_t mapv7ThemeToV8(uint8_t v7);
+uint8_t mapV7ThemeToV8(uint8_t v7);
 
 uint16_t calculateNewboxChecksum(const SaveBinary& save, uint32_t startAddress);
 

@@ -4,7 +4,7 @@
 #include "SymbolDatabase.h"
 #include "PatcherConstants.h"
 
-// calculate_checksum function
-uint16_t calculate_checksum(SaveBinary save, uint32_t start, uint32_t end);
+// calculateChecksum function
+uint16_t calculateChecksum(SaveBinary save, uint32_t start, uint32_t end);
 
 #endif
