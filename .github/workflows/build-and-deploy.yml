@@ -35,7 +35,7 @@ jobs:
       - name: Build the project
         run: |
           source ./emsdk/emsdk_env.sh
-          make
+          make release
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

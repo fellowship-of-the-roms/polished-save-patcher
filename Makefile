@@ -48,6 +48,11 @@ endif
 # Build target
 all: $(BUILD_DIR) $(TARGET) copy-index
 
+# Release target with optimizations
+release: CXXFLAGS += -O3
+release: LDFLAGS += -O3
+release: all
+
 # Create build directory
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -69,4 +74,4 @@ clean:
 	$(RM) $(OBJECTS) $(TARGET) $(ADDITIONAL_FILES)
 
 # Phony targets
-.PHONY: all clean copy-index
+.PHONY: all clean copy-index release
