@@ -55,6 +55,8 @@ constexpr int BATTLETOWER_PARTYDATA_SIZE = 6;
 constexpr int NUM_HOF_TEAMS_V8 = 10;
 constexpr int HOF_MON_LENGTH = 1 + 2 + 2 + 1 + (MON_NAME_LENGTH - 1); // species, id, dvs, level, nick
 constexpr int HOF_LENGTH = 1 + HOF_MON_LENGTH * PARTY_LENGTH + 1; // win count, party, terminator
+constexpr int MON_CENTER_2F_GROUP = 20;
+constexpr int MON_CENTER_2F_MAP = 1;
 
 bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// copy the old save file to the new save file
@@ -94,8 +96,8 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	uint8_t map_group = it7.getByte();
 	it7.next();
 	uint8_t map_num = it7.getByte();
-	if (!inPokecenter(map_group, map_num)) {
-		js_error <<  "Player is not in a pokemon center. Please save in a pokemon center and try again." << std::endl;
+	if (map_group != MON_CENTER_2F_GROUP && map_num != MON_CENTER_2F_MAP) {
+		js_error <<  "Player is not in the Mon Healing Center P.C. 2nd Floor. Go to where you heal in game, and head upstairs. Then re-save your game and try again." << std::endl;
 		return false;
 	}
 

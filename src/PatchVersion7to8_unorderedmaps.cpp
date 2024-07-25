@@ -3619,45 +3619,6 @@ uint16_t mapV7SpeciesFormToV8Extspecies(uint16_t species, uint8_t form) {
 	}
 }
 
-
-bool inPokecenter(uint8_t v7_group, uint8_t v7_map) {
-	// Define the list of tuples
-	std::vector<std::pair<uint8_t, uint8_t>> tupleList = {
-		{1, 1},  // OLIVINE_POKECENTER_1F
-		{2, 3},  // MAHOGANY_POKECENTER_1F
-		{4, 3},  // ECRUTEAK_POKECENTER_1F
-		{5, 6},  // BLACKTHORN_POKECENTER_1F
-		{6, 1},  // CINNABAR_POKECENTER_1F
-		{7, 4},  // CERULEAN_POKECENTER_1F
-		{7, 7},  // ROUTE_10_POKECENTER_1F
-		{8, 1},  // AZALEA_POKECENTER_1F
-		{10, 8}, // VIOLET_POKECENTER_1F
-		{10, 11},// ROUTE_32_POKECENTER_1F
-		{12, 5}, // VERMILION_POKECENTER_1F
-		{14, 3}, // ROUTE_3_POKECENTER_1F
-		{14, 8}, // PEWTER_POKECENTER_1F
-		{16, 3}, // INDIGO_PLATEAU_POKECENTER_1F
-		{17, 12},// FUCHSIA_POKECENTER_1F
-		{18, 6}, // LAVENDER_POKECENTER_1F
-		{19, 3}, // SILVER_CAVE_POKECENTER_1F
-		{21, 20},// CELADON_POKECENTER_1F
-		{22, 6}, // CIANWOOD_POKECENTER_1F
-		{23, 10},// VIRIDIAN_POKECENTER_1F
-		{25, 4}, // SAFFRON_POKECENTER_1F
-		{26, 6}, // CHERRYGROVE_POKECENTER_1F
-		{31, 8}  // SHAMOUTI_POKECENTER_1F
-	};
-
-	// Check if the provided values are in the tuple list
-	for (const auto& tuple : tupleList) {
-		if (tuple.first == v7_group && tuple.second == v7_map) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
 // converts a version 7 key item to a version 8 key item
 uint8_t mapV7MagikarpFormToV8(uint8_t v7) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
