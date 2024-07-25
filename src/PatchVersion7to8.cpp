@@ -91,7 +91,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		return false;
 	}
 
-	// check if the player is inside a pokemon center
+	// check if the player in the Mon Healing Center P.C. 2nd Floor
 	it7.seek(sym7.getMapDataAddress("wMapGroup"));
 	uint8_t map_group = it7.getByte();
 	it7.next();
@@ -294,7 +294,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			// convert species
 			uint16_t species_v8 = mapV7PkmnToV8(species);
 			if (species_v8 == 0xFFFF) {
-				js_error <<  "Species " << std::hex << species << " not found in version 8 pokemon list." << std::endl;
+				js_error <<  "Species " << std::hex << species << " not found in version 8 mon list." << std::endl;
 				continue;
 			} else {
 				if (species != species_v8) {
@@ -385,7 +385,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			// convert species
 			uint16_t species_v8 = mapV7PkmnToV8(species);
 			if (species_v8 == 0xFFFF) {
-				js_error <<  "Species " << std::hex << species << " not found in version 8 pokemon list." << std::endl;
+				js_error <<  "Species " << std::hex << species << " not found in version 8 mon list." << std::endl;
 				continue;
 			} else {
 				if (species != species_v8) {
@@ -880,20 +880,20 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	it8.seek(sym8.getPlayerDataAddress("wApricorns"));
 	it8.copy(it7, NUM_APRICORNS);
 
-	js_info <<  "Copy from wPokegearFlags to wAlways0SceneID..." << std::endl;
+	js_info <<  "Copy from w****gearFlags to wAlways0SceneID..." << std::endl;
 	it8.copy(it7, sym7.getPlayerDataAddress("wAlways0SceneID") - sym7.getPlayerDataAddress("wPokegearFlags"));
 
-	js_info <<  "copy from wAlways0SceneID to wEcruteakHouseSceneID + 1..." << std::endl;
+	js_info <<  "copy from wAlways0SceneID to wEcru****HouseSceneID + 1..." << std::endl;
 	it8.copy(it7, sym7.getPlayerDataAddress("wEcruteakHouseSceneID") + 1 - sym7.getPlayerDataAddress("wAlways0SceneID"));
 
 	// clear wEcruteakPokecenter1FSceneID as it is no longer used
-	js_info <<  "Clear wEcruteakPokecenter1FSceneID..." << std::endl;
+	js_info <<  "Clear wEcru********center1FSceneID..." << std::endl;
 	it8.setByte(0x00);
 	it7.next();
 	it8.next();
 
 	// copy from wElmsLabSceneID to wEventFlags
-	js_info <<  "Copy from wElmsLabSceneID to wEventFlags..." << std::endl;
+	js_info <<  "Copy from wE***LabSceneID to wEventFlags..." << std::endl;
 	it8.copy(it7, sym7.getPlayerDataAddress("wEventFlags") - sym7.getPlayerDataAddress("wElmsLabSceneID"));
 
 	// clear it8 wEventFlags
@@ -956,7 +956,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	}
 
 	// copy from wCelebiEvent to wCurMapCallbacksPointer + 2
-	js_info <<  "Copy from wCelebiEvent to wCurMapCallbacksPointer + 2..." << std::endl;
+	js_info <<  "Copy from wCel***Event to wCurMapCallbacksPointer + 2..." << std::endl;
 	it7.seek(sym7.getPlayerDataAddress("wCelebiEvent"));
 	it8.seek(sym8.getPlayerDataAddress("wCelebiEvent"));
 	it8.copy(it7, sym7.getPlayerDataAddress("wCurMapCallbacksPointer") + 2 - sym7.getPlayerDataAddress("wCelebiEvent"));
@@ -1522,7 +1522,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	it8.setByte(it7.getByte());
 
 	// copy from wContestMon to wPokemonDataEnd
-	js_info <<  "Copy from wContestMon to wPokemonDataEnd..." << std::endl;
+	js_info <<  "Copy from wContestMon to w****monDataEnd..." << std::endl;
 	it7.seek(sym7.getPokemonDataAddress("wContestMon"));
 	it8.seek(sym8.getPokemonDataAddress("wContestMon"));
 	it8.copy(it7, sym7.getPokemonDataAddress("wPokemonDataEnd") - sym7.getPokemonDataAddress("wContestMon"));
@@ -1622,7 +1622,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	it8.setByte(caughtLocV8);
 
 	// map the version 7 wDunsparceMapGroup and wDunsparceMapNumber to the version 8 wDunsparceMapGroup and wDunsparceMapNumber
-	js_info <<  "Map wDunsparceMapGroup and wDunsparceMapNumber..." << std::endl;
+	js_info <<  "Map wDunsp****MapGroup and wDunsp****MapNumber..." << std::endl;
 	it7.seek(sym7.getPokemonDataAddress("wDunsparceMapGroup"));
 	it8.seek(sym8.getPokemonDataAddress("wDunsparceMapGroup"));
 	uint8_t dunsparceMapGroup = it7.getByte();
@@ -1632,7 +1632,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	std::tuple<uint8_t, uint8_t> dunsparceMap = mapv7toV8(dunsparceMapGroup, dunsparceMapNumber);
 	// print found dunsparce mapv7 and converted dunsparce mapv8
 	if (dunsparceMapGroup != std::get<0>(dunsparceMap) || dunsparceMapNumber != std::get<1>(dunsparceMap)){
-		js_info <<  "Dunsparce Map " << std::hex << static_cast<int>(dunsparceMapGroup) << " " << std::hex << static_cast<int>(dunsparceMapNumber) << " converted to " << std::hex << static_cast<int>(std::get<0>(dunsparceMap)) << " " << std::hex << static_cast<int>(std::get<1>(dunsparceMap)) << std::endl;
+		js_info <<  "Dunsp**** Map " << std::hex << static_cast<int>(dunsparceMapGroup) << " " << std::hex << static_cast<int>(dunsparceMapNumber) << " converted to " << std::hex << static_cast<int>(std::get<0>(dunsparceMap)) << " " << std::hex << static_cast<int>(std::get<1>(dunsparceMap)) << std::endl;
 	}
 	// write the map group and map number
 	it8.setByte(std::get<0>(dunsparceMap));
@@ -1746,7 +1746,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	}
 
 	// wPokedexCaught is a flag_array of NUM_POKEMON_V7 bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
-	js_info <<  "Patching wPokedexCaught..." << std::endl;
+	js_info <<  "Patching w****dexCaught..." << std::endl;
 	it7.seek(sym7.getPokemonDataAddress("wPokedexCaught"));
 	it8.seek(sym8.getPokemonDataAddress("wPokedexCaught"));
 	for (int i = 0; i < NUM_POKEMON_V7; i++) {
@@ -1760,7 +1760,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			if (pokemonIndexV8 != 0xFFFF) {
 				// print found pokemonv7 and converted pokemonv8
 				if (pokemonIndex != pokemonIndexV8 + 1){
-					js_info <<  "Pokemon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
+					js_info <<  "Mon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
 				}
 				// seek to the byte containing the bit
 				it8.seek(sym8.getPokemonDataAddress("wPokedexCaught") + pokemonIndexV8 / 8);
@@ -1781,7 +1781,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	}
 
 	// wPokedexSeen is a flag_array of NUM_POKEMON_V7 bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
-	js_info <<  "Patching wPokedexSeen..." << std::endl;
+	js_info <<  "Patching w****dexSeen..." << std::endl;
 	it7.seek(sym7.getPokemonDataAddress("wPokedexSeen"));
 	it8.seek(sym8.getPokemonDataAddress("wPokedexSeen"));
 	for (int i = 0; i < NUM_POKEMON_V7; i++) {
@@ -1795,7 +1795,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			if (pokemonIndexV8 != 0xFFFF) {
 				// print found pokemonv7 and converted pokemonv8
 				if (pokemonIndex != pokemonIndexV8 + 1){
-					js_info <<  "Pokemon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
+					js_info <<  "Mon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
 				}
 				// seek to the byte containing the bit
 				it8.seek(sym8.getPokemonDataAddress("wPokedexSeen") + pokemonIndexV8 / 8);
