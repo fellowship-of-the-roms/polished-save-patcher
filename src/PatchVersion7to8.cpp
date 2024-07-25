@@ -99,6 +99,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		return false;
 	}
 
+	// Create vector to store seen mons
+	std::vector<uint16_t> seen_mons;
+	// Create vector to store caught mons
+	std::vector<uint16_t> caught_mons;
+
 	// for n, 1, NUM_BOXES_V8 + 1
 	js_info <<  "Clearing v8 sNewBox#..." << std::endl;
 	for (int n = 1; n < NUM_BOXES_V8 + 1; n++) {
@@ -300,6 +305,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				personality &= ~EXTSPECIES_MASK;
 				personality |= (species_v8 >> 8) << MON_EXTSPECIES_F;
 				uint8_t form = personality & FORM_MASK;
+				uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
+				if (extspecies_v8 != 0xFFFF) {
+					seen_mons.push_back(extspecies_v8);
+					caught_mons.push_back(extspecies_v8);
+				}
 				if (species_v8 == 0x81) { // if species is Magikarp
 					form = mapV7MagikarpFormToV8(form);
 					personality &= ~FORM_MASK;
@@ -386,6 +396,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				personality &= ~EXTSPECIES_MASK;
 				personality |= (species_v8 >> 8) << MON_EXTSPECIES_F;
 				uint8_t form = personality & FORM_MASK;
+				uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
+				if (extspecies_v8 != 0xFFFF) {
+					seen_mons.push_back(extspecies_v8);
+					caught_mons.push_back(extspecies_v8);
+				}
 				if (species_v8 == 0x81) { // if species is Magikarp
 					form = mapV7MagikarpFormToV8(form);
 					personality &= ~FORM_MASK;
@@ -1189,6 +1204,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		currentExtSpecies &= ~EXTSPECIES_MASK;
 		currentExtSpecies |= extSpecies;
 		uint8_t form = currentExtSpecies & FORM_MASK;
+		uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
+		if (extspecies_v8 != 0xFFFF){
+			seen_mons.push_back(extspecies_v8);
+			caught_mons.push_back(extspecies_v8);
+		}
 		if (speciesV8 == 0x81){
 			form = mapV7MagikarpFormToV8(form);
 			currentExtSpecies &= ~FORM_MASK;
@@ -1281,63 +1301,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	it8.seek(sym8.getPokemonDataAddress("wPartyMonNicknames"));
 	it8.copy(it7, MON_NAME_LENGTH * PARTY_LENGTH);
 
-	// TODO: convert forms
-
-	// wPokedexCaught is a flag_array of NUM_POKEMON_V7 bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
-	js_info <<  "Patching wPokedexCaught..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wPokedexCaught"));
-	it8.seek(sym8.getPokemonDataAddress("wPokedexCaught"));
-	for (int i = 0; i < NUM_POKEMON_V7; i++) {
-		// check if the bit is set
-		if (it7.getByte() & (1 << (i % 8))) {
-			// get the pokemon index is equal to the bit index
-			uint16_t pokemonIndex = i + 1;
-			// map the version 7 pokemon to the version 8 pokemon
-			uint16_t pokemonIndexV8 = mapV7PkmnToV8(pokemonIndex) - 1;
-			// if the pokemon is found set the corresponding bit in it8
-			if (pokemonIndexV8 != 0xFFFF) {
-				// print found pokemonv7 and converted pokemonv8
-				if (pokemonIndex != pokemonIndexV8 + 1){
-					js_info <<  "Pokemon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
-				}
-				// seek to the byte containing the bit
-				it8.seek(sym8.getPokemonDataAddress("wPokedexCaught") + pokemonIndexV8 / 8);
-				// set the bit
-				it8.setByte(it8.getByte() | (1 << (pokemonIndexV8 % 8)));
-			}
-		}
-		if (i % 8 == 7) {
-			it7.next();
-		}
-	}
-
-	// wPokedexSeen is a flag_array of NUM_POKEMON_V7 bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
-	js_info <<  "Patching wPokedexSeen..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wPokedexSeen"));
-	it8.seek(sym8.getPokemonDataAddress("wPokedexSeen"));
-	for (int i = 0; i < NUM_POKEMON_V7; i++) {
-		// check if the bit is set
-		if (it7.getByte() & (1 << (i % 8))) {
-			// get the pokemon index is equal to the bit index
-			uint16_t pokemonIndex = i + 1;
-			// map the version 7 pokemon to the version 8 pokemon
-			uint16_t pokemonIndexV8 = mapV7PkmnToV8(pokemonIndex) - 1;
-			// if the pokemon is found set the corresponding bit in it8
-			if (pokemonIndexV8 != 0xFFFF) {
-				// print found pokemonv7 and converted pokemonv8
-				if (pokemonIndex != pokemonIndexV8 + 1){
-					js_info <<  "Pokemon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
-				}
-				// seek to the byte containing the bit
-				it8.seek(sym8.getPokemonDataAddress("wPokedexSeen") + pokemonIndexV8 / 8);
-				// set the bit
-				it8.setByte(it8.getByte() | (1 << (pokemonIndexV8 % 8)));
-			}
-		}
-		if (i % 8 == 7) {
-			it7.next();
-		}
-	}
+	// We will convert the pokedex caught/seen flags last as we need the full list of seen/caught mons
 
 	// copy wUnlockedUnowns
 	js_info <<  "Copy wUnlockedUnowns..." << std::endl;
@@ -1375,6 +1339,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		currentExtSpecies &= ~EXTSPECIES_MASK;
 		currentExtSpecies |= extSpecies;
 		uint8_t form = currentExtSpecies & FORM_MASK;
+		uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
+		if (extspecies_v8 != 0xFFFF){
+			seen_mons.push_back(extspecies_v8);
+			caught_mons.push_back(extspecies_v8);
+		}
 		if (speciesV8 == 0x81){
 			form = mapV7MagikarpFormToV8(form);
 			currentExtSpecies &= ~FORM_MASK;
@@ -1464,6 +1433,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		currentExtSpecies &= ~EXTSPECIES_MASK;
 		currentExtSpecies |= extSpecies;
 		uint8_t form = currentExtSpecies & FORM_MASK;
+		uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
+		if (extspecies_v8 != 0xFFFF){
+			seen_mons.push_back(extspecies_v8);
+			caught_mons.push_back(extspecies_v8);
+		}
 		if (speciesV8 == 0x81){
 			form = mapV7MagikarpFormToV8(form);
 			currentExtSpecies &= ~FORM_MASK;
@@ -1575,6 +1549,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		currentExtSpecies &= ~EXTSPECIES_MASK;
 		currentExtSpecies |= extSpecies;
 		uint8_t form = currentExtSpecies & FORM_MASK;
+		uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
+		if (extspecies_v8 != 0xFFFF){
+			seen_mons.push_back(extspecies_v8);
+			caught_mons.push_back(extspecies_v8);
+		}
 		if (speciesV8 == 0x81){
 			form = mapV7MagikarpFormToV8(form);
 			currentExtSpecies &= ~FORM_MASK;
@@ -1743,6 +1722,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			currentExtSpecies &= ~EXTSPECIES_MASK;
 			currentExtSpecies |= extSpecies;
 			uint8_t form = currentExtSpecies & FORM_MASK;
+			uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
+			if (extspecies_v8 != 0xFFFF){
+				seen_mons.push_back(extspecies_v8);
+				caught_mons.push_back(extspecies_v8);
+			}
 			if (speciesV8 == 0x81){
 				form = mapV7MagikarpFormToV8(form);
 				currentExtSpecies &= ~FORM_MASK;
@@ -1757,6 +1741,76 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			}
 			it8.setByte(currentExtSpecies);
 		}
+	}
+
+	// wPokedexCaught is a flag_array of NUM_POKEMON_V7 bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
+	js_info <<  "Patching wPokedexCaught..." << std::endl;
+	it7.seek(sym7.getPokemonDataAddress("wPokedexCaught"));
+	it8.seek(sym8.getPokemonDataAddress("wPokedexCaught"));
+	for (int i = 0; i < NUM_POKEMON_V7; i++) {
+		// check if the bit is set
+		if (it7.getByte() & (1 << (i % 8))) {
+			// get the pokemon index is equal to the bit index
+			uint16_t pokemonIndex = i + 1;
+			// map the version 7 pokemon to the version 8 pokemon
+			uint16_t pokemonIndexV8 = mapV7PkmnToV8(pokemonIndex) - 1;
+			// if the pokemon is found set the corresponding bit in it8
+			if (pokemonIndexV8 != 0xFFFF) {
+				// print found pokemonv7 and converted pokemonv8
+				if (pokemonIndex != pokemonIndexV8 + 1){
+					js_info <<  "Pokemon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
+				}
+				// seek to the byte containing the bit
+				it8.seek(sym8.getPokemonDataAddress("wPokedexCaught") + pokemonIndexV8 / 8);
+				// set the bit
+				it8.setByte(it8.getByte() | (1 << (pokemonIndexV8 % 8)));
+			}
+		}
+		if (i % 8 == 7) {
+			it7.next();
+		}
+	}
+	// for each caught mon in vector caught_mons, set the corresponding bit in it8
+	for (uint16_t mon : caught_mons){
+		uint16_t monIndexV8 = mon - 1;
+		it8.seek(sym8.getPokemonDataAddress("wPokedexCaught") + monIndexV8 / 8);
+		it8.setByte(it8.getByte() | (1 << (monIndexV8 % 8)));
+		js_info <<  "Found caught mon " << std::hex << static_cast<int>(mon) << std::endl;
+	}
+
+	// wPokedexSeen is a flag_array of NUM_POKEMON_V7 bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
+	js_info <<  "Patching wPokedexSeen..." << std::endl;
+	it7.seek(sym7.getPokemonDataAddress("wPokedexSeen"));
+	it8.seek(sym8.getPokemonDataAddress("wPokedexSeen"));
+	for (int i = 0; i < NUM_POKEMON_V7; i++) {
+		// check if the bit is set
+		if (it7.getByte() & (1 << (i % 8))) {
+			// get the pokemon index is equal to the bit index
+			uint16_t pokemonIndex = i + 1;
+			// map the version 7 pokemon to the version 8 pokemon
+			uint16_t pokemonIndexV8 = mapV7PkmnToV8(pokemonIndex) - 1;
+			// if the pokemon is found set the corresponding bit in it8
+			if (pokemonIndexV8 != 0xFFFF) {
+				// print found pokemonv7 and converted pokemonv8
+				if (pokemonIndex != pokemonIndexV8 + 1){
+					js_info <<  "Pokemon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
+				}
+				// seek to the byte containing the bit
+				it8.seek(sym8.getPokemonDataAddress("wPokedexSeen") + pokemonIndexV8 / 8);
+				// set the bit
+				it8.setByte(it8.getByte() | (1 << (pokemonIndexV8 % 8)));
+			}
+		}
+		if (i % 8 == 7) {
+			it7.next();
+		}
+	}
+	// for each seen mon in vector seen_mons, set the corresponding bit in it8
+	for (uint16_t mon : seen_mons){
+		uint16_t monIndexV8 = mon - 1;
+		it8.seek(sym8.getPokemonDataAddress("wPokedexSeen") + monIndexV8 / 8);
+		it8.setByte(it8.getByte() | (1 << (monIndexV8 % 8)));
+		js_info <<  "Found seen mon " << std::hex << static_cast<int>(mon) << std::endl;
 	}
 
 	// write the new save version number big endian

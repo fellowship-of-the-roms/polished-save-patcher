@@ -34,6 +34,10 @@ struct TupleHash {
 
 std::tuple<uint8_t, uint8_t> mapv7toV8(uint8_t v7_group, uint8_t v7_map);
 
+// Converts a version 7 (uint16_t species, uint8_t form) tuple to a version 8 unint16_t extspecies
+// If the species is not in the map, it returns 0xFFFF; We only care about species that have a form
+uint16_t mapV7SpeciesFormToV8Extspecies(uint16_t species, uint8_t form);
+
 // converts a version 7 magikarp form to a version 8 magikarp form
 uint8_t mapV7MagikarpFormToV8(uint8_t v7);
 
