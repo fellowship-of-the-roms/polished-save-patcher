@@ -54,14 +54,14 @@
 			overflow: auto;
 			white-space: pre-wrap;
 			word-wrap: break-word;
-			max-height: 300px; /* Set fixed height */
-			line-height: 1; /* Reduce line height */
-			margin: 0; /* Remove default margin */
-			font-family: monospace; /* Ensure monospaced font */
-			font-size: 14px; /* Set font size */
-			padding-top: 0; /* Remove top padding */
-			padding-bottom: 0; /* Remove bottom padding */
-			color: #e0e0e0; /* Text color */
+			max-height: 300px;
+			line-height: 1;
+			margin: 0;
+			font-family: monospace;
+			font-size: 14px;
+			padding-top: 0;
+			padding-bottom: 0;
+			color: #e0e0e0;
 		}
 		.warning {
 			color: #ffcc00;
@@ -77,6 +77,43 @@
 			font-weight: bold;
 			margin-bottom: 20px;
 		}
+		.tooltip {
+			position: relative;
+			display: inline-block;
+			background-color: #333;
+			padding: 2px 4px;
+			border-radius: 3px;
+		}
+		.tooltip .tooltiptext {
+			visibility: hidden;
+			width: 200px;
+			background-color: #555;
+			color: #fff;
+			text-align: center;
+			border-radius: 6px;
+			padding: 5px;
+			position: absolute;
+			z-index: 1;
+			bottom: 125%;
+			left: 50%;
+			margin-left: -100px;
+			opacity: 0;
+			transition: opacity 0.3s;
+		}
+		.tooltip .tooltiptext::after {
+			content: "";
+			position: absolute;
+			top: 100%;
+			left: 50%;
+			margin-left: -5px;
+			border-width: 5px;
+			border-style: solid;
+			border-color: #555 transparent transparent transparent;
+		}
+		.tooltip:hover .tooltiptext {
+			visibility: visible;
+			opacity: 1;
+		}
 	</style>
 	<script src="polished_save_patcher.js"></script>
 </head>
@@ -89,12 +126,14 @@
 				Follow the steps below to patch your save file:
 			</p>
 			<ol>
-				<li>Save your game inside a Pokemon Center.</li>
+				<li>Save your game on the second floor of the <span class="tooltip">Mon Healing Center P.C.
+					<span class="tooltiptext"><img src="https://tcrf.net/images/7/76/PokemonCrystal_PokeCenter_2F_International.png" alt="Mon Healing Center P.C." width="200"></span>
+				</span> (Where you normally do link battles/trades)</li>
 				<li>Back up your original save file somewhere safe.</li>
 				<li>Click the "Choose File" button to select your old save file.</li>
 				<li>Click the "Patch Save" button to start the patching process.</li>
 				<li>Once the patching is complete, a new save file will be downloaded automatically.</li>
-				<li>After loading your patched save for the first time, promptly exit the Pokemon Center before interacting with anything.</li>
+				<li>After loading your patched save for the first time, promptly exit the Mon Healing Center P.C. before interacting with anything.</li>
 			</ol>
 		</div>
 		<input type="file" id="oldSave" />
