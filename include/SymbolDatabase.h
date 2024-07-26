@@ -41,6 +41,7 @@ public:
 
 private:
 	std::unordered_map<std::string, Symbol> m_symbols;
+	std::string decompressGzip(const std::string& compressedData);
 };
 
 #endif // SYMBOLDATABASE_H

@@ -18,6 +18,7 @@ polished_save_patcher.data
 polished_save_patcher.mem
 polished_save_patcher.worker.js
 build/
+*.sym.gz
 
 # Emscripten cache directory
 emscripten_cache/

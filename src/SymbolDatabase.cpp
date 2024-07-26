@@ -5,6 +5,31 @@
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <sstream>
+#include <zlib.h>
+
+std::string SymbolDatabase::decompressGzip(const std::string& compressedData) {
+	std::stringstream decompressed;
+	z_stream strm = {};
+	strm.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(compressedData.data()));
+	strm.avail_in = compressedData.size();
+
+	inflateInit2(&strm, 16 + MAX_WBITS);
+	char buffer[4096];
+	do {
+		strm.next_out = reinterpret_cast<Bytef*>(buffer);
+		strm.avail_out = sizeof(buffer);
+		int ret = inflate(&strm, Z_NO_FLUSH);
+		if (ret == Z_STREAM_ERROR || ret == Z_MEM_ERROR) {
+			inflateEnd(&strm);
+			js_error <<  "Decompression failed: " << strm.msg << std::endl;
+			throw std::runtime_error("Decompression failed");
+		}
+		decompressed.write(buffer, sizeof(buffer) - strm.avail_out);
+	} while (strm.avail_out == 0);
+	inflateEnd(&strm);
+	return decompressed.str();
+}
 
 // Constructor
 SymbolDatabase::SymbolDatabase(const std::string& symbolFilePath) {
@@ -12,17 +37,41 @@ SymbolDatabase::SymbolDatabase(const std::string& symbolFilePath) {
 	// two_digit_hex_bank:four_digit_hex_address symbol_name
 	// lines that do not match the above format should be ignored.
 
-	std::ifstream file(symbolFilePath);
+	std::string compressedFilePath = symbolFilePath + ".gz";
+
+	// check if the compressed symbol file exists
+	std::ifstream compressedFile(compressedFilePath);
+	if (!compressedFile.is_open()) {
+		js_error <<  "Compressed symbol file not found: " << compressedFilePath << std::endl;
+		return;
+	}
+	compressedFile.close();
+
+	// Load compressed symbol file
+	std::ifstream file(compressedFilePath, std::ios::binary);
 	if (!file.is_open()) {
-		js_error <<  "Failed to open symbol file: " << symbolFilePath << std::endl;
+		js_error <<  "Failed to open compressed symbol file: " << compressedFilePath << std::endl;
 		return;
 	}
 
+	// Read compressed data
+	std::string compressedData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+	// Decompress data
+	std::string decompressedData;
+	try {
+		decompressedData = decompressGzip(compressedData);
+	} catch (const std::exception& e) {
+		js_error <<  "Failed to decompress symbol file: " << e.what() << std::endl;
+		return;
+	}
+
+	std::istringstream decompressedStream(decompressedData);
+	std::string line;
 	std::regex symbolRegex(R"((\w{2}):(\w{4})\s([A-Za-z0-9_.]+))");
 	std::smatch match;
 
-	std::string line;
-	while (std::getline(file, line)) {
+	while (std::getline(decompressedStream, line)) {
 		if (!std::regex_match(line, match, symbolRegex)) {
 			continue;
 		}

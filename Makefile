@@ -11,8 +11,7 @@ CXXFLAGS := -Iinclude -std=c++17
 SRC_DIR := src
 INCLUDE_DIR := include
 RESOURCES_DIR := resources
-VERSION7_DIR := $(RESOURCES_DIR)/version7
-VERSION8_DIR := $(RESOURCES_DIR)/version8
+VERSION_DIRS := $(wildcard $(RESOURCES_DIR)/version*)
 BUILD_DIR := build
 
 # Source files
@@ -35,18 +34,29 @@ ADDITIONAL_FILES := $(BUILD_DIR)/polished_save_patcher.data \
                     $(BUILD_DIR)/polished_save_patcher.js \
                     $(BUILD_DIR)/polished_save_patcher.wasm \
                     $(BUILD_DIR)/polished_save_patcher.mem \
-                    $(BUILD_DIR)/polished_save_patcher.worker.js
+                    $(BUILD_DIR)/polished_save_patcher.worker.js \
+                    $(BUILD_DIR)/index.html
+
+LDFLAGS := -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=33554432 # 32MB initial memory
 
 # Windows-specific settings
 ifeq ($(OS), Windows_NT)
 	CXX := emcc
 	RM := del
+	GZIP := gzip.exe
 else
 	RM := rm -f
+	GZIP := gzip
 endif
 
+# Find all .sym files in version* directories
+SYM_FILES := $(shell find $(VERSION_DIRS) -name '*.sym')
+
+# Compressed symbol files
+COMPRESSED_SYM_FILES := $(SYM_FILES:.sym=.sym.gz)
+
 # Build target
-all: $(BUILD_DIR) $(TARGET) copy-index
+all: $(BUILD_DIR) compress-symbols $(TARGET) copy-index
 
 # Release target with optimizations
 release: CXXFLAGS += -O3
@@ -57,13 +67,20 @@ release: all
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
+# Compress .sym files
+compress-symbols: $(COMPRESSED_SYM_FILES)
+
+# Rule to compress .sym files
+%.sym.gz: %.sym
+	$(GZIP) -kf $<
+
 # Linking
 $(TARGET): $(OBJECTS)
-	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s FORCE_FILESYSTEM=1 --preload-file resources --bind
+	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s FORCE_FILESYSTEM=1 --preload-file resources --bind -sUSE_ZLIB=1
 
 # Compilation
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -sUSE_ZLIB=1
 
 # Copy index.html to build directory
 copy-index:
@@ -71,7 +88,7 @@ copy-index:
 
 # Clean
 clean:
-	$(RM) $(OBJECTS) $(TARGET) $(ADDITIONAL_FILES)
+	$(RM) $(OBJECTS) $(TARGET) $(ADDITIONAL_FILES) $(COMPRESSED_SYM_FILES)
 
 # Phony targets
-.PHONY: all clean copy-index release
+.PHONY: all clean copy-index release compress-symbols
