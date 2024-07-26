@@ -76,7 +76,7 @@ compress-symbols: $(COMPRESSED_SYM_FILES)
 
 # Linking
 $(TARGET): $(OBJECTS)
-	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s FORCE_FILESYSTEM=1 --preload-file resources --bind -sUSE_ZLIB=1
+	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s FORCE_FILESYSTEM=1 --preload-file resources --exclude-file *.sym --bind -sUSE_ZLIB=1
 
 # Compilation
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
