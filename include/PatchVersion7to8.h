@@ -6,6 +6,67 @@
 #include "PatcherConstants.h"
 #include <iostream>
 
+constexpr int NUM_OBJECT_STRUCTS = 13;
+constexpr int OBJECT_PALETTE_V7 = 0x06;
+constexpr int OBJECT_PALETTE_V8 = 0x06;
+constexpr int OBJECT_PAL_INDEX_V8 = 0x21;
+constexpr int OBJECT_LENGTH_V7 = 0x21;
+constexpr int OBJECT_LENGTH_V8 = 0x22;
+constexpr int NUM_KEY_ITEMS_V7 = 0x1D;
+constexpr int NUM_KEY_ITEMS_V8 = 0x24;
+constexpr int NUM_APRICORNS = 0x07;
+constexpr int NUM_EVENTS = 0x8ff;
+constexpr int NUM_FRUIT_TREES_V7 = 0x23;
+constexpr int NUM_LANDMARKS_V7 = 0x90;
+constexpr int NUM_LANDMARKS_V8 = 0x91;
+constexpr int CONTACT_LIST_SIZE_V7 = 30;
+constexpr int NUM_PHONE_CONTACTS_V8 = 0x25;
+constexpr int NUM_SPAWNS_V7 = 30;
+constexpr int NUM_SPAWNS_V8 = 34;
+constexpr int PARTYMON_STRUCT_LENGTH = 0x30;
+constexpr int PARTY_LENGTH = 6;
+constexpr int PLAYER_NAME_LENGTH = 8;
+constexpr int MON_NAME_LENGTH = 11;
+constexpr uint8_t EXTSPECIES_MASK = 0b00100000;
+constexpr uint8_t FORM_MASK = 0b00011111;
+constexpr int MON_EXTSPECIES = 0x15;
+constexpr int MON_EXTSPECIES_F = 5;
+constexpr uint8_t CAUGHT_BALL_MASK = 0b00011111;
+constexpr int MON_ITEM = 0x01;
+constexpr int MON_FORM = 0x15;
+constexpr int MON_CAUGHTBALL = 0x1c;
+constexpr int MON_CAUGHTLOCATION = 0x1e;
+constexpr int NUM_POKEMON_V7 = 0xfe;
+constexpr int MONDB_ENTRIES_V7 = 167;
+constexpr int MONDB_ENTRIES_A_V8 = 167;
+constexpr int MONDB_ENTRIES_B_V8 = 28;
+constexpr int MONDB_ENTRIES_C_V8 = 12;
+constexpr int MONDB_ENTRIES_V8 = MONDB_ENTRIES_A_V8 + MONDB_ENTRIES_B_V8 + MONDB_ENTRIES_C_V8;
+constexpr int SAVEMON_STRUCT_LENGTH = 0x31;
+constexpr int MONS_PER_BOX = 20;
+constexpr int MIN_MONDB_SLACK = 10;
+constexpr int NUM_BOXES_V7 = (MONDB_ENTRIES_V7 * 2 - MIN_MONDB_SLACK) / MONS_PER_BOX;
+constexpr int NUM_BOXES_V8 = (MONDB_ENTRIES_V8 * 2 - MIN_MONDB_SLACK) / MONS_PER_BOX;
+constexpr int BOX_NAME_LENGTH = 9;
+constexpr int NEWBOX_SIZE = MONS_PER_BOX + ((MONS_PER_BOX + 7) / 8) + BOX_NAME_LENGTH + 1;
+constexpr int SAVEMON_EXTSPECIES = 0x15;
+constexpr int SAVEMON_ITEM = 0x01;
+constexpr int SAVEMON_FORM = 0x15;
+constexpr int SAVEMON_CAUGHTBALL = 0x19;
+constexpr int SAVEMON_CAUGHTLOCATION = 0x1b;
+constexpr int BATTLETOWER_PARTYDATA_SIZE = 6;
+constexpr int NUM_HOF_TEAMS_V8 = 10;
+constexpr int HOF_MON_LENGTH = 1 + 2 + 2 + 1 + (MON_NAME_LENGTH - 1); // species, id, dvs, level, nick
+constexpr int HOF_LENGTH = 1 + HOF_MON_LENGTH * PARTY_LENGTH + 1; // win count, party, terminator
+constexpr int MON_CENTER_2F_GROUP = 20;
+constexpr int MON_CENTER_2F_MAP = 1;
+const uint16_t INVALID_SPECIES = -1;
+const uint16_t INVALID_EVENT_FLAG = -1;
+const uint8_t MAGIKARP_V8 = 0x81;
+const uint8_t GYARADOS_V8 = 0x82;
+const uint8_t GYARADOS_RED_FORM_V7 = 0x11;
+const uint8_t GYARADOS_RED_FORM_V8 = 0x15;
+
 // converts a version 7 key item to a version 8 key item
 uint8_t mapV7KeyItemToV8(uint8_t v7);
 

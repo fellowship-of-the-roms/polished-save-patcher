@@ -2458,8 +2458,8 @@ uint16_t mapV7EventFlagToV8(uint16_t v7) {
 
 	};
 
-	// Return the corresponding version 8 event flag or 0xFFFF if not found
-	return indexMap.find(v7) != indexMap.end() ? indexMap[v7] : 0xFFFF;
+	// Return the corresponding version 8 event flag or INVALID_EVENT_FLAG if not found
+	return indexMap.find(v7) != indexMap.end() ? indexMap[v7] : INVALID_EVENT_FLAG;
 }
 
 // Converts a version 7 landmark to a version 8 landmark
@@ -2916,8 +2916,8 @@ uint16_t mapV7PkmnToV8(uint16_t v7) {
 
 	};
 
-	// return the corresponding version 8 Pokémon index or 0xFFFF if not found
-	return indexMap.find(v7) != indexMap.end() ? indexMap[v7] : 0xFFFF;
+	// return the corresponding version 8 Pokémon index or INVALID_SPECIES if not found
+	return indexMap.find(v7) != indexMap.end() ? indexMap[v7] : INVALID_SPECIES;
 }
 
 // Converts a version 7 (group_id, map_id) tuple to a version 8 (group_id, map_id) tuple

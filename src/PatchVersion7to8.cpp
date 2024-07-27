@@ -3,61 +3,6 @@
 #include "SymbolDatabase.h"
 #include "Logging.h"
 
-constexpr int NUM_OBJECT_STRUCTS = 13;
-constexpr int OBJECT_PALETTE_V7 = 0x06;
-constexpr int OBJECT_PALETTE_V8 = 0x06;
-constexpr int OBJECT_PAL_INDEX_V8 = 0x21;
-constexpr int OBJECT_LENGTH_V7 = 0x21;
-constexpr int OBJECT_LENGTH_V8 = 0x22;
-constexpr int NUM_KEY_ITEMS_V7 = 0x1D;
-constexpr int NUM_KEY_ITEMS_V8 = 0x24;
-constexpr int NUM_APRICORNS = 0x07;
-constexpr int NUM_EVENTS = 0x8ff;
-constexpr int NUM_FRUIT_TREES_V7 = 0x23;
-constexpr int NUM_LANDMARKS_V7 = 0x90;
-constexpr int NUM_LANDMARKS_V8 = 0x91;
-constexpr int CONTACT_LIST_SIZE_V7 = 30;
-constexpr int NUM_PHONE_CONTACTS_V8 = 0x25;
-constexpr int NUM_SPAWNS_V7 = 30;
-constexpr int NUM_SPAWNS_V8 = 34;
-constexpr int PARTYMON_STRUCT_LENGTH = 0x30;
-constexpr int PARTY_LENGTH = 6;
-constexpr int PLAYER_NAME_LENGTH = 8;
-constexpr int MON_NAME_LENGTH = 11;
-constexpr uint8_t EXTSPECIES_MASK = 0b00100000;
-constexpr uint8_t FORM_MASK = 0b00011111;
-constexpr int MON_EXTSPECIES = 0x15;
-constexpr int MON_EXTSPECIES_F = 5;
-constexpr uint8_t CAUGHT_BALL_MASK = 0b00011111;
-constexpr int MON_ITEM = 0x01;
-constexpr int MON_FORM = 0x15;
-constexpr int MON_CAUGHTBALL = 0x1c;
-constexpr int MON_CAUGHTLOCATION = 0x1e;
-constexpr int NUM_POKEMON_V7 = 0xfe;
-constexpr int MONDB_ENTRIES_V7 = 167;
-constexpr int MONDB_ENTRIES_A_V8 = 167;
-constexpr int MONDB_ENTRIES_B_V8 = 28;
-constexpr int MONDB_ENTRIES_C_V8 = 12;
-constexpr int MONDB_ENTRIES_V8 = MONDB_ENTRIES_A_V8 + MONDB_ENTRIES_B_V8 + MONDB_ENTRIES_C_V8;
-constexpr int SAVEMON_STRUCT_LENGTH = 0x31;
-constexpr int MONS_PER_BOX = 20;
-constexpr int MIN_MONDB_SLACK = 10;
-constexpr int NUM_BOXES_V7 = (MONDB_ENTRIES_V7 * 2 - MIN_MONDB_SLACK) / MONS_PER_BOX;
-constexpr int NUM_BOXES_V8 = (MONDB_ENTRIES_V8 * 2 - MIN_MONDB_SLACK) / MONS_PER_BOX;
-constexpr int BOX_NAME_LENGTH = 9;
-constexpr int NEWBOX_SIZE = MONS_PER_BOX + ((MONS_PER_BOX + 7) / 8) + BOX_NAME_LENGTH + 1;
-constexpr int SAVEMON_EXTSPECIES = 0x15;
-constexpr int SAVEMON_ITEM = 0x01;
-constexpr int SAVEMON_FORM = 0x15;
-constexpr int SAVEMON_CAUGHTBALL = 0x19;
-constexpr int SAVEMON_CAUGHTLOCATION = 0x1b;
-constexpr int BATTLETOWER_PARTYDATA_SIZE = 6;
-constexpr int NUM_HOF_TEAMS_V8 = 10;
-constexpr int HOF_MON_LENGTH = 1 + 2 + 2 + 1 + (MON_NAME_LENGTH - 1); // species, id, dvs, level, nick
-constexpr int HOF_LENGTH = 1 + HOF_MON_LENGTH * PARTY_LENGTH + 1; // win count, party, terminator
-constexpr int MON_CENTER_2F_GROUP = 20;
-constexpr int MON_CENTER_2F_MAP = 1;
-
 bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// copy the old save file to the new save file
 	save8 = save7;
@@ -143,7 +88,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			uint8_t caught_ball = it8.getByte() & CAUGHT_BALL_MASK;
 			// convert species
 			uint16_t species_v8 = mapV7PkmnToV8(species);
-			if (species_v8 == 0xFFFF) {
+			if (species_v8 == INVALID_SPECIES) {
 				js_error <<  "Species " << std::hex << species << " not found in version 8 mon list." << std::endl;
 				continue;
 			} else {
@@ -158,18 +103,18 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				personality |= (species_v8 >> 8) << MON_EXTSPECIES_F;
 				uint8_t form = personality & FORM_MASK;
 				uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
-				if (extspecies_v8 != 0xFFFF) {
+				if (extspecies_v8 != INVALID_SPECIES) {
 					seen_mons.push_back(extspecies_v8);
 					caught_mons.push_back(extspecies_v8);
 				}
-				if (species_v8 == 0x81) { // if species is Magikarp
+				if (species_v8 == MAGIKARP_V8) {
 					form = mapV7MagikarpFormToV8(form);
 					personality &= ~FORM_MASK;
 					personality |= form;
 				}
-				if (species_v8 == 0x82) { // if species is Gyarados
-					if (form == 0x11){
-						form = 0x15;
+				if (species_v8 == GYARADOS_V8) {
+					if (form == GYARADOS_RED_FORM_V7){
+						form = GYARADOS_RED_FORM_V8;
 						personality &= ~FORM_MASK;
 						personality |= form;
 					}
@@ -234,7 +179,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			uint8_t caught_ball = it8.getByte() & CAUGHT_BALL_MASK;
 			// convert species
 			uint16_t species_v8 = mapV7PkmnToV8(species);
-			if (species_v8 == 0xFFFF) {
+			if (species_v8 == INVALID_SPECIES) {
 				js_error <<  "Species " << std::hex << species << " not found in version 8 mon list." << std::endl;
 				continue;
 			} else {
@@ -249,18 +194,18 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				personality |= (species_v8 >> 8) << MON_EXTSPECIES_F;
 				uint8_t form = personality & FORM_MASK;
 				uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
-				if (extspecies_v8 != 0xFFFF) {
+				if (extspecies_v8 != INVALID_SPECIES) {
 					seen_mons.push_back(extspecies_v8);
 					caught_mons.push_back(extspecies_v8);
 				}
-				if (species_v8 == 0x81) { // if species is Magikarp
+				if (species_v8 == MAGIKARP_V8) {
 					form = mapV7MagikarpFormToV8(form);
 					personality &= ~FORM_MASK;
 					personality |= form;
 				}
-				if (species_v8 == 0x82) { // if species is Gyarados
-					if (form == 0x11){
-						form = 0x15;
+				if (species_v8 == GYARADOS_V8) {
+					if (form == GYARADOS_RED_FORM_V7){
+						form = GYARADOS_RED_FORM_V8;
 						personality &= ~FORM_MASK;
 						personality |= form;
 					}
@@ -740,7 +685,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			// map the version 7 event flag to the version 8 event flag
 			uint16_t eventFlagIndexV8 = mapV7EventFlagToV8(eventFlagIndex);
 			// if the event flag is found set the corresponding bit in it8
-			if (eventFlagIndexV8 != 0xFFFF) {
+			if (eventFlagIndexV8 != INVALID_EVENT_FLAG) {
 				// print found event flagv7 and converted event flagv8
 				if (eventFlagIndex != eventFlagIndexV8){
 					js_info <<  "Event Flag " << std::dec << eventFlagIndex << " converted to " << eventFlagIndexV8 << std::endl;
@@ -995,7 +940,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		}
 		uint16_t speciesV8 = mapV7PkmnToV8(species);
 		// warn if the species was not found
-		if (speciesV8 == 0xFFFF) {
+		if (speciesV8 == INVALID_SPECIES) {
 			js_error <<  "Species " << std::hex << species << " not found in version 8 species list." << std::endl;
 			continue;
 		}
@@ -1014,18 +959,18 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		currentExtSpecies |= extSpecies;
 		uint8_t form = currentExtSpecies & FORM_MASK;
 		uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
-		if (extspecies_v8 != 0xFFFF){
+		if (extspecies_v8 != INVALID_SPECIES){
 			seen_mons.push_back(extspecies_v8);
 			caught_mons.push_back(extspecies_v8);
 		}
-		if (speciesV8 == 0x81){
+		if (speciesV8 == MAGIKARP_V8){
 			form = mapV7MagikarpFormToV8(form);
 			currentExtSpecies &= ~FORM_MASK;
 			currentExtSpecies |= form;
 		}
-		if (speciesV8 == 0x82){
-			if (form == 0x11){
-				form = 0x15;
+		if (speciesV8 == GYARADOS_V8){
+			if (form == GYARADOS_RED_FORM_V7){
+				form = GYARADOS_RED_FORM_V8;
 				currentExtSpecies &= ~FORM_MASK;
 				currentExtSpecies |= form;
 			}
@@ -1121,7 +1066,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	if (species != 0x00) {
 		uint16_t speciesV8 = mapV7PkmnToV8(species);
 		// warn if the species was not found
-		if (speciesV8 == 0xFFFF) {
+		if (speciesV8 == INVALID_SPECIES) {
 			js_error <<  "Species " << std::hex << species << " not found in version 8 species list." << std::endl;
 		}
 		// print found speciesv7 and converted speciesv8
@@ -1139,18 +1084,18 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		currentExtSpecies |= extSpecies;
 		uint8_t form = currentExtSpecies & FORM_MASK;
 		uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
-		if (extspecies_v8 != 0xFFFF){
+		if (extspecies_v8 != INVALID_SPECIES){
 			seen_mons.push_back(extspecies_v8);
 			caught_mons.push_back(extspecies_v8);
 		}
-		if (speciesV8 == 0x81){
+		if (speciesV8 == MAGIKARP_V8){
 			form = mapV7MagikarpFormToV8(form);
 			currentExtSpecies &= ~FORM_MASK;
 			currentExtSpecies |= form;
 		}
-		if (speciesV8 == 0x82){
-			if (form == 0x11){
-				form = 0x15;
+		if (speciesV8 == GYARADOS_V8){
+			if (form == GYARADOS_RED_FORM_V7){
+				form = GYARADOS_RED_FORM_V8;
 				currentExtSpecies &= ~FORM_MASK;
 				currentExtSpecies |= form;
 			}
@@ -1215,7 +1160,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	if (species != 0x00) {
 		uint16_t speciesV8 = mapV7PkmnToV8(species);
 		// warn if the species was not found
-		if (speciesV8 == 0xFFFF) {
+		if (speciesV8 == INVALID_SPECIES) {
 			js_error <<  "Species " << std::hex << species << " not found in version 8 species list." << std::endl;
 		}
 		// print found speciesv7 and converted speciesv8
@@ -1233,18 +1178,18 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		currentExtSpecies |= extSpecies;
 		uint8_t form = currentExtSpecies & FORM_MASK;
 		uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
-		if (extspecies_v8 != 0xFFFF){
+		if (extspecies_v8 != INVALID_SPECIES){
 			seen_mons.push_back(extspecies_v8);
 			caught_mons.push_back(extspecies_v8);
 		}
-		if (speciesV8 == 0x81){
+		if (speciesV8 == MAGIKARP_V8){
 			form = mapV7MagikarpFormToV8(form);
 			currentExtSpecies &= ~FORM_MASK;
 			currentExtSpecies |= form;
 		}
-		if (speciesV8 == 0x82){
-			if (form == 0x11){
-				form = 0x15;
+		if (speciesV8 == GYARADOS_V8){
+			if (form == GYARADOS_RED_FORM_V7){
+				form = GYARADOS_RED_FORM_V8;
 				currentExtSpecies &= ~FORM_MASK;
 				currentExtSpecies |= form;
 			}
@@ -1327,7 +1272,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	if (species != 0x00) {
 		uint16_t speciesV8 = mapV7PkmnToV8(species);
 		// warn if the species was not found
-		if (speciesV8 == 0xFFFF) {
+		if (speciesV8 == INVALID_SPECIES) {
 			js_error <<  "Species " << std::hex << species << " not found in version 8 species list." << std::endl;
 		}
 		// print found speciesv7 and converted speciesv8
@@ -1345,18 +1290,18 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		currentExtSpecies |= extSpecies;
 		uint8_t form = currentExtSpecies & FORM_MASK;
 		uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
-		if (extspecies_v8 != 0xFFFF){
+		if (extspecies_v8 != INVALID_SPECIES){
 			seen_mons.push_back(extspecies_v8);
 			caught_mons.push_back(extspecies_v8);
 		}
-		if (speciesV8 == 0x81){
+		if (speciesV8 == MAGIKARP_V8){
 			form = mapV7MagikarpFormToV8(form);
 			currentExtSpecies &= ~FORM_MASK;
 			currentExtSpecies |= form;
 		}
-		if (speciesV8 == 0x82){
-			if (form == 0x11){
-				form = 0x15;
+		if (speciesV8 == GYARADOS_V8){
+			if (form == GYARADOS_RED_FORM_V7){
+				form = GYARADOS_RED_FORM_V8;
 				currentExtSpecies &= ~FORM_MASK;
 				currentExtSpecies |= form;
 			}
@@ -1495,7 +1440,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			}
 			uint16_t speciesV8 = mapV7PkmnToV8(species);
 			// warn if the species was not found
-			if (speciesV8 == 0xFFFF) {
+			if (speciesV8 == INVALID_SPECIES) {
 				js_error <<  "Species " << std::hex << species << " not found in version 8 species list." << std::endl;
 				continue;
 			}
@@ -1514,18 +1459,18 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			currentExtSpecies |= extSpecies;
 			uint8_t form = currentExtSpecies & FORM_MASK;
 			uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
-			if (extspecies_v8 != 0xFFFF){
+			if (extspecies_v8 != INVALID_SPECIES){
 				seen_mons.push_back(extspecies_v8);
 				caught_mons.push_back(extspecies_v8);
 			}
-			if (speciesV8 == 0x81){
+			if (speciesV8 == MAGIKARP_V8){
 				form = mapV7MagikarpFormToV8(form);
 				currentExtSpecies &= ~FORM_MASK;
 				currentExtSpecies |= form;
 			}
-			if (speciesV8 == 0x82){
-				if (form == 0x11){
-					form = 0x15;
+			if (speciesV8 == GYARADOS_V8){
+				if (form == GYARADOS_RED_FORM_V7){
+					form = GYARADOS_RED_FORM_V8;
 					currentExtSpecies &= ~FORM_MASK;
 					currentExtSpecies |= form;
 				}
@@ -1546,7 +1491,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			// map the version 7 pokemon to the version 8 pokemon
 			uint16_t pokemonIndexV8 = mapV7PkmnToV8(pokemonIndex) - 1;
 			// if the pokemon is found set the corresponding bit in it8
-			if (pokemonIndexV8 != 0xFFFF) {
+			if (pokemonIndexV8 != INVALID_SPECIES) {
 				// print found pokemonv7 and converted pokemonv8
 				if (pokemonIndex != pokemonIndexV8 + 1){
 					js_info <<  "Mon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
@@ -1581,7 +1526,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			// map the version 7 pokemon to the version 8 pokemon
 			uint16_t pokemonIndexV8 = mapV7PkmnToV8(pokemonIndex) - 1;
 			// if the pokemon is found set the corresponding bit in it8
-			if (pokemonIndexV8 != 0xFFFF) {
+			if (pokemonIndexV8 != INVALID_SPECIES) {
 				// print found pokemonv7 and converted pokemonv8
 				if (pokemonIndex != pokemonIndexV8 + 1){
 					js_info <<  "Mon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
