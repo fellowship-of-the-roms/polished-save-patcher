@@ -70,6 +70,8 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	SymbolDatabase sym7(VERSION_7_SYMBOL_FILE);
 	SymbolDatabase sym8(VERSION_8_SYMBOL_FILE);
 
+	SourceDest sd = {it7, it8, sym7, sym8};
+
 	// get the checksum word from the version 7 save file
 	uint16_t save_checksum = save7.getWord(SAVE_CHECKSUM_ABS_ADDRESS);
 
@@ -106,175 +108,23 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// Create vector to store caught mons
 	std::vector<uint16_t> caught_mons;
 
-	// for n, 1, NUM_BOXES_V8 + 1
-	js_info <<  "Clearing v8 sNewBox#..." << std::endl;
-	for (int n = 1; n < NUM_BOXES_V8 + 1; n++) {
-		// clear the newbox
-		it8.seek(sym8.getSRAMAddress("sNewBox" + std::to_string(n)));
-		for (int i = 0; i < NEWBOX_SIZE; i++) {
-			it8.setByte(0x00);
-			it8.next();
-		}
-	}
+	migrateBoxData(it7, it8, sym7, sym8, "sNewBox");
 
-	// copy the version 7 boxes to the version 8 boxes
-	for (int n = 1; n < NUM_BOXES_V7 + 1; n++) {
-		// copy the newbox
-		it7.seek(sym7.getSRAMAddress("sNewBox" + std::to_string(n)));
-		it8.seek(sym8.getSRAMAddress("sNewBox" + std::to_string(n)));
-		for (int i = 0; i < NEWBOX_SIZE; i++) {
-			it8.setByte(it7.getByte());
-			it7.next();
-			it8.next();
-		}
-	}
-
-	// Write default box names from NUM_BOXES_V7 + 1 to NUM_BOXES_V8
-	js_info <<  "Writing default box names..." << std::endl;
-	for (int n = NUM_BOXES_V7 + 1; n < NUM_BOXES_V8 + 1; n++) {
-		it8.seek(sym8.getSRAMAddress("sNewBox" + std::to_string(n) + "Name"));
-		js_info <<  "Writing default box name for sNewBox" << n << "..." << std::endl;
-		it8.setByte(0x7f); // ' '
-		it8.next();
-		it8.setByte(0x7f); // ' '
-		it8.next();
-		it8.setByte(0x81); // B
-		it8.next();
-		it8.setByte(0xae); // o
-		it8.next();
-		it8.setByte(0xb7); // x
-		it8.next();
-		it8.setByte(0x7f); // ' '
-		it8.next();
-		// write 10s place
-		it8.setByte(0xe0 + (n / 10));
-		it8.next();
-		// write 1s place
-		it8.setByte(0xe0 + (n % 10));
-	}
-
-	// convert pc box themes
-	js_info <<  "Converting PC box themes..." << std::endl;
-	for (int n = 1; n < NUM_BOXES_V8 + 1; n++) {
-		it8.seek(sym8.getSRAMAddress("sNewBox" + std::to_string(n) + "Theme"));
-		uint8_t theme = it8.getByte();
-		uint8_t theme_v8 = mapV7ThemeToV8(theme);
-		if (theme != theme_v8) {
-			js_info <<  "Theme " << std::hex << static_cast<int>(theme) << " converted to " << std::hex << static_cast<int>(theme_v8) << std::endl;
-			it8.setByte(theme_v8);
-		}
-	}
-
-	// clear the v8 sBackupNewBox space
-	js_info <<  "Clearing v8 sBackupNewBox#..." << std::endl;
-	for (int n = 1; n < NUM_BOXES_V8 + 1; n++) {
-		// clear the backup newbox
-		it8.seek(sym8.getSRAMAddress("sBackupNewBox" + std::to_string(n)));
-		for (int i = 0; i < NEWBOX_SIZE; i++) {
-			it8.setByte(0x00);
-			it8.next();
-		}
-	}
-
-	// copy the version 7 backup boxes to the version 8 backup boxes
-	for (int n = 1; n < NUM_BOXES_V7 + 1; n++) {
-		// copy the backup newbox
-		it7.seek(sym7.getSRAMAddress("sBackupNewBox" + std::to_string(n)));
-		it8.seek(sym8.getSRAMAddress("sBackupNewBox" + std::to_string(n)));
-		for (int i = 0; i < NEWBOX_SIZE; i++) {
-			it8.setByte(it7.getByte());
-			it7.next();
-			it8.next();
-		}
-	}
-
-	// Write default backup box names from NUM_BOXES_V7 + 1 to NUM_BOXES_V8
-	js_info <<  "Writing default backup box names..." << std::endl;
-	for (int n = NUM_BOXES_V7 + 1; n < NUM_BOXES_V8 + 1; n++) {
-		it8.seek(sym8.getSRAMAddress("sBackupNewBox" + std::to_string(n) + "Name"));
-		js_info <<  "Writing default backup box name for sBackupNewBox" << n << "..." << std::endl;
-		it8.setByte(0x7f); // ' '
-		it8.next();
-		it8.setByte(0x7f); // ' '
-		it8.next();
-		it8.setByte(0x81); // B
-		it8.next();
-		it8.setByte(0xae); // o
-		it8.next();
-		it8.setByte(0xb7); // x
-		it8.next();
-		it8.setByte(0x7f); // ' '
-		it8.next();
-		// write 10s place
-		it8.setByte(0xe0 + (n / 10));
-		it8.next();
-		// write 1s place
-		it8.setByte(0xe0 + (n % 10));
-	}
-
-	// convert backup pc box themes
-	js_info <<  "Converting backup PC box themes..." << std::endl;
-	for (int n = 1; n < NUM_BOXES_V8 + 1; n++) {
-		it8.seek(sym8.getSRAMAddress("sBackupNewBox" + std::to_string(n) + "Theme"));
-		uint8_t theme = it8.getByte();
-		uint8_t theme_v8 = mapV7ThemeToV8(theme);
-		if (theme != theme_v8) {
-			js_info <<  "Theme " << std::hex << static_cast<int>(theme) << " converted to " << std::hex << static_cast<int>(theme_v8) << std::endl;
-			it8.setByte(theme_v8);
-		}
-	}
+	migrateBoxData(it7, it8, sym7, sym8, "sBackupNewBox");
 
 	// copy sBoxMons1 to sBoxMons1A
 	js_info <<  "Copying from sBoxMons1 to sBoxMons1A..." << std::endl;
-	it7.seek(sym7.getSRAMAddress("sBoxMons1"));
-	it8.seek(sym8.getSRAMAddress("sBoxMons1A"));
-	it8.copy(it7, MONDB_ENTRIES_A_V8 * SAVEMON_STRUCT_LENGTH);
+	copyDataBlock(sd, sym7.getSRAMAddress("sBoxMons1"), sym8.getSRAMAddress("sBoxMons1A"), MONDB_ENTRIES_A_V8 * SAVEMON_STRUCT_LENGTH);
 
-	// clear it8 sBoxMons1B
-	js_info <<  "Clearing sBoxMons1B..." << std::endl;
-	it8.seek(sym8.getSRAMAddress("sBoxMons1B"));
-	for (int i = 0; i < MONDB_ENTRIES_B_V8; i++) {
-		for (int j = 0; j < SAVEMON_STRUCT_LENGTH; j++) {
-			it8.setByte(0x00);
-			it8.next();
-		}
-	}
-
-	// clear it8 sBoxMons1C
-	js_info <<  "Clearing sBoxMons1C..." << std::endl;
-	it8.seek(sym8.getSRAMAddress("sBoxMons1C"));
-	for (int i = 0; i < MONDB_ENTRIES_C_V8; i++) {
-		for (int j = 0; j < SAVEMON_STRUCT_LENGTH; j++) {
-			it8.setByte(0x00);
-			it8.next();
-		}
-	}
+	clearBox(it8, sym8, "sBoxMons1B", MONDB_ENTRIES_B_V8);
+	clearBox(it8, sym8, "sBoxMons1C", MONDB_ENTRIES_C_V8);
 
 	// copy sBoxMons2 to SBoxMons2A
 	js_info <<  "Copying from sBoxMons2 to sBoxMons2A..." << std::endl;
-	it7.seek(sym7.getSRAMAddress("sBoxMons2"));
-	it8.seek(sym8.getSRAMAddress("sBoxMons2A"));
-	it8.copy(it7, MONDB_ENTRIES_A_V8 * SAVEMON_STRUCT_LENGTH);
+	copyDataBlock(sd, sym7.getSRAMAddress("sBoxMons2"), sym8.getSRAMAddress("sBoxMons2A"), MONDB_ENTRIES_A_V8 * SAVEMON_STRUCT_LENGTH);
 
-	// clear it8 sBoxMons2B
-	js_info <<  "Clearing sBoxMons2B..." << std::endl;
-	it8.seek(sym8.getSRAMAddress("sBoxMons2B"));
-	for (int i = 0; i < MONDB_ENTRIES_B_V8; i++) {
-		for (int j = 0; j < SAVEMON_STRUCT_LENGTH; j++) {
-			it8.setByte(0x00);
-			it8.next();
-		}
-	}
-
-	// clear it8 sBoxMons2C
-	js_info <<  "Clearing sBoxMons2C..." << std::endl;
-	it8.seek(sym8.getSRAMAddress("sBoxMons2C"));
-	for (int i = 0; i < MONDB_ENTRIES_C_V8; i++) {
-		for (int j = 0; j < SAVEMON_STRUCT_LENGTH; j++) {
-			it8.setByte(0x00);
-			it8.next();
-		}
-	}
+	clearBox(it8, sym8, "sBoxMons2B", MONDB_ENTRIES_B_V8);
+	clearBox(it8, sym8, "sBoxMons2C", MONDB_ENTRIES_C_V8);
 
 	// Patching sBoxMons1A if checksums match
 	js_info <<  "Checking sBoxMons1A checksums..." << std::endl;
@@ -460,45 +310,31 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// copy from sLinkBattleResults to sLinkBattleStatsEnd
 	js_info <<  "Copying from sLinkBattleResults to sLinkBattleStatsEnd..." << std::endl;
-	it7.seek(sym7.getSRAMAddress("sLinkBattleResults"));
-	it8.seek(sym8.getSRAMAddress("sLinkBattleResults"));
-	it8.copy(it7, sym7.getSRAMAddress("sLinkBattleStatsEnd") - sym7.getSRAMAddress("sLinkBattleResults"));
+	copyDataBlock(sd, sym7.getSRAMAddress("sLinkBattleResults"), sym8.getSRAMAddress("sLinkBattleResults"), sym7.getSRAMAddress("sLinkBattleStatsEnd") - sym7.getSRAMAddress("sLinkBattleResults"));
 
 	// copy from sBattleTowerChallengeState to (sBT_OTMonParty3 + BATTLETOWER_PARTYDATA_SIZE + 1)
 	js_info <<  "Copying from sBattleTowerChallengeState to sBT_OTMonParty3..." << std::endl;
-	it7.seek(sym7.getSRAMAddress("sBattleTowerChallengeState"));
-	it8.seek(sym8.getSRAMAddress("sBattleTowerChallengeState"));
-	it8.copy(it7, sym7.getSRAMAddress("sBT_OTMonParty3") + BATTLETOWER_PARTYDATA_SIZE + 1 - sym7.getSRAMAddress("sBattleTowerChallengeState"));
+	copyDataBlock(sd, sym7.getSRAMAddress("sBattleTowerChallengeState"), sym8.getSRAMAddress("sBattleTowerChallengeState"), sym7.getSRAMAddress("sBT_OTMonParty3") + BATTLETOWER_PARTYDATA_SIZE + 1 - sym7.getSRAMAddress("sBattleTowerChallengeState"));
 
 	// copy from sPartyMail to sSaveVersion
 	js_info <<  "Copying from sPartyMail to sSaveVersion..." << std::endl;
-	it7.seek(sym7.getSRAMAddress("sPartyMail"));
-	it8.seek(sym8.getSRAMAddress("sPartyMail"));
-	it8.copy(it7, sym7.getSRAMAddress("sSaveVersion") - sym7.getSRAMAddress("sPartyMail"));
+	copyDataBlock(sd, sym7.getSRAMAddress("sPartyMail"), sym8.getSRAMAddress("sPartyMail"), sym7.getSRAMAddress("sSaveVersion") - sym7.getSRAMAddress("sPartyMail"));
 
 	// copy sUpgradeStep to sWritingBackup
 	js_info <<  "Copying from sUpgradeStep to sWritingBackup..." << std::endl;
-	it7.seek(sym7.getSRAMAddress("sUpgradeStep"));
-	it8.seek(sym8.getSRAMAddress("sUpgradeStep"));
-	it8.copy(it7, sym7.getSRAMAddress("sWritingBackup") + 1 - sym7.getSRAMAddress("sUpgradeStep"));
+	copyDataBlock(sd, sym7.getSRAMAddress("sUpgradeStep"), sym8.getSRAMAddress("sUpgradeStep"), sym7.getSRAMAddress("sWritingBackup") + 1 - sym7.getSRAMAddress("sUpgradeStep"));
 
 	// copy sRTCStatusFlags to sLuckyIDNumber
 	js_info <<  "Copying from sRTCStatusFlags to sLuckyIDNumber..." << std::endl;
-	it7.seek(sym7.getSRAMAddress("sRTCStatusFlags"));
-	it8.seek(sym8.getSRAMAddress("sRTCStatusFlags"));
-	it8.copy(it7, sym7.getSRAMAddress("sLuckyIDNumber") + 2 - sym7.getSRAMAddress("sRTCStatusFlags"));
+	copyDataBlock(sd, sym7.getSRAMAddress("sRTCStatusFlags"), sym8.getSRAMAddress("sRTCStatusFlags"), sym7.getSRAMAddress("sLuckyIDNumber") + 2 - sym7.getSRAMAddress("sRTCStatusFlags"));
 
 	// copy sOptions to sGameData
 	js_info <<  "Copying from sOptions to sGameData..." << std::endl;
-	it7.seek(sym7.getSRAMAddress("sOptions"));
-	it8.seek(sym8.getSRAMAddress("sOptions"));
-	it8.copy(it7, sym7.getSRAMAddress("sGameData") - sym7.getSRAMAddress("sOptions"));
+	copyDataBlock(sd, sym7.getSRAMAddress("sOptions"), sym8.getSRAMAddress("sOptions"), sym7.getSRAMAddress("sGameData") - sym7.getSRAMAddress("sOptions"));
 
-	js_info <<  "Copying from wPlayerData to wObjectStructs..." << std::endl;
 	// copy bytes from wPlayerData to wObjectStructs - 1 from version 7 to version 8
-	it7.seek(sym7.getPlayerDataAddress("wPlayerData"));
-	it8.seek(sym8.getPlayerDataAddress("wPlayerData"));
-	it8.copy(it7, sym7.getPlayerDataAddress("wObjectStructs") - sym7.getPlayerDataAddress("wPlayerData"));
+	js_info <<  "Copying from wPlayerData to wObjectStructs..." << std::endl;
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wPlayerData"), sym8.getPlayerDataAddress("wPlayerData"), sym7.getPlayerDataAddress("wObjectStructs") - sym7.getPlayerDataAddress("wPlayerData"));
 	
 	js_info <<  "Patching Object Structs..." << std::endl;
 
@@ -530,20 +366,13 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		it8.setByte(palette);
 	}
 
-	js_info <<  "Copying from wObjectStructsEnd to wBattleFactorySwapCount..." << std::endl;
-
 	// copy bytes from wObjectStructsEnd to wBattleFactorySwapCount
-	it7.seek(sym7.getPlayerDataAddress("wObjectStructsEnd"));
-	it8.seek(sym8.getPlayerDataAddress("wObjectStructsEnd"));
-	it8.copy(it7, sym7.getPlayerDataAddress("wBattleFactorySwapCount") + 1 - sym7.getPlayerDataAddress("wObjectStructsEnd"));
+	js_info <<  "Copying from wObjectStructsEnd to wBattleFactorySwapCount..." << std::endl;
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wObjectStructsEnd"), sym8.getPlayerDataAddress("wObjectStructsEnd"), sym7.getPlayerDataAddress("wBattleFactorySwapCount") + 1 - sym7.getPlayerDataAddress("wObjectStructsEnd"));
 
+	// copy bytes from wMapObjects to wEnteredMapFromContinue
 	js_info <<  "Copying from wMapObjects to wEnteredMapFromContinue..." << std::endl;
-
-	// seek to wMapObjects
-	it7.seek(sym7.getPlayerDataAddress("wMapObjects"));
-	it8.seek(sym8.getPlayerDataAddress("wMapObjects"));
-	// copy bytes to wEnteredMapFromContinue
-	it8.copy(it7, sym7.getPlayerDataAddress("wEnteredMapFromContinue") - sym7.getPlayerDataAddress("wMapObjects"));
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wMapObjects"), sym8.getPlayerDataAddress("wMapObjects"), sym7.getPlayerDataAddress("wEnteredMapFromContinue") - sym7.getPlayerDataAddress("wMapObjects"));
 	
 	js_info <<  "Copy wEnteredMapFromContinue" << std::endl;
 	// copy it7 wEnteredMapFromContinue to it8 wEnteredMapFromContinue
@@ -555,15 +384,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	it8.setByte(it7.getByte());
 	js_info <<  "Copy wStatusFlags3" << std::endl;
 	// copy it7 wStatusFlags3 to it8 wStatusFlags3
-	it7.seek(sym7.getPlayerDataAddress("wStatusFlags3"));
-	it8.seek(sym8.getPlayerDataAddress("wStatusFlags3"));
-	it8.setByte(it7.getByte());
+	copyDataByte(sd, sym7.getPlayerDataAddress("wStatusFlags3"), sym8.getPlayerDataAddress("wStatusFlags3"));
 
 	js_info <<  "Copying from wTimeOfDayPal to wTMsHMsEnd..." << std::endl;
 	// copy from it7 wTimeOfDayPal to it7 wTMsHMsEnd
-	it7.seek(sym7.getPlayerDataAddress("wTimeOfDayPal"));
-	it8.seek(sym8.getPlayerDataAddress("wTimeOfDayPal"));
-	it8.copy(it7, sym7.getPlayerDataAddress("wTMsHMsEnd") - sym7.getPlayerDataAddress("wTimeOfDayPal"));
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wTimeOfDayPal"), sym8.getPlayerDataAddress("wTimeOfDayPal"), sym7.getPlayerDataAddress("wTMsHMsEnd") - sym7.getPlayerDataAddress("wTimeOfDayPal"));
 
 	js_info <<  "Patching wTMsHMs..." << std::endl;
 	// set it8 wKeyItems -> wKeyItemsEnd to 0x00
@@ -876,9 +701,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	it8.setByte(numPCItemsV8);
 
 	js_info <<  "Copy wApricorns..." << std::endl;
-	it7.seek(sym7.getPlayerDataAddress("wApricorns"));
-	it8.seek(sym8.getPlayerDataAddress("wApricorns"));
-	it8.copy(it7, NUM_APRICORNS);
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wApricorns"), sym8.getPlayerDataAddress("wApricorns"), NUM_APRICORNS);
 
 	js_info <<  "Copy from w****gearFlags to wAlways0SceneID..." << std::endl;
 	it8.copy(it7, sym7.getPlayerDataAddress("wAlways0SceneID") - sym7.getPlayerDataAddress("wPokegearFlags"));
@@ -935,9 +758,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// copy v7 wCurBox to v8 wCurBox
 	js_info <<  "Copy wCurBox..." << std::endl;
-	it7.seek(sym7.getPlayerDataAddress("wCurBox"));
-	it8.seek(sym8.getPlayerDataAddress("wCurBox"));
-	it8.setByte(it7.getByte());
+	copyDataByte(sd, sym7.getPlayerDataAddress("wCurBox"), sym8.getPlayerDataAddress("wCurBox"));
 
 	// set it8 wUsedObjectPals to 0x00
 	js_info <<  "Clear wUsedObjectPals..." << std::endl;
@@ -957,15 +778,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// copy from wCelebiEvent to wCurMapCallbacksPointer + 2
 	js_info <<  "Copy from wCel***Event to wCurMapCallbacksPointer + 2..." << std::endl;
-	it7.seek(sym7.getPlayerDataAddress("wCelebiEvent"));
-	it8.seek(sym8.getPlayerDataAddress("wCelebiEvent"));
-	it8.copy(it7, sym7.getPlayerDataAddress("wCurMapCallbacksPointer") + 2 - sym7.getPlayerDataAddress("wCelebiEvent"));
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wCelebiEvent"), sym8.getPlayerDataAddress("wCelebiEvent"), sym7.getPlayerDataAddress("wCurMapCallbacksPointer") + 2 - sym7.getPlayerDataAddress("wCelebiEvent"));
 
 	// copy from wDecoBed to wFruitTreeFlags
 	js_info <<  "Copy from wDecoBed to wFruitTreeFlags..." << std::endl;
-	it7.seek(sym7.getPlayerDataAddress("wDecoBed"));
-	it8.seek(sym8.getPlayerDataAddress("wDecoBed"));
-	it8.copy(it7, sym7.getPlayerDataAddress("wFruitTreeFlags") - sym7.getPlayerDataAddress("wDecoBed"));
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wDecoBed"), sym8.getPlayerDataAddress("wDecoBed"), sym7.getPlayerDataAddress("wFruitTreeFlags") - sym7.getPlayerDataAddress("wDecoBed"));
 
 	// Copy wFruitTreeFlags
 	js_info <<  "Copy wFruitTreeFlags..." << std::endl;
@@ -1018,9 +835,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// copy from wLuckyNumberDayBuffer to wPhoneList
 	js_info <<  "Copy from wLuckyNumberDayBuffer to wPhoneList..." << std::endl;
-	it7.seek(sym7.getPlayerDataAddress("wLuckyNumberDayBuffer"));
-	it8.seek(sym8.getPlayerDataAddress("wLuckyNumberDayBuffer"));
-	it8.copy(it7, sym7.getPlayerDataAddress("wPhoneList") - sym7.getPlayerDataAddress("wLuckyNumberDayBuffer"));
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wLuckyNumberDayBuffer"), sym8.getPlayerDataAddress("wLuckyNumberDayBuffer"), sym7.getPlayerDataAddress("wPhoneList") - sym7.getPlayerDataAddress("wLuckyNumberDayBuffer"));
 
 	// Clear v8 wPhoneList
 	js_info <<  "Clear wPhoneList..." << std::endl;
@@ -1053,9 +868,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// copy from wParkBallsRemaining to wPlayerDataEnd
 	js_info <<  "Copy from wParkBallsRemaining to wPlayerDataEnd..." << std::endl;
-	it7.seek(sym7.getPlayerDataAddress("wParkBallsRemaining"));
-	it8.seek(sym8.getPlayerDataAddress("wParkBallsRemaining"));
-	it8.copy(it7, sym7.getPlayerDataAddress("wPlayerDataEnd") - sym7.getPlayerDataAddress("wParkBallsRemaining"));
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wParkBallsRemaining"), sym8.getPlayerDataAddress("wParkBallsRemaining"), sym7.getPlayerDataAddress("wPlayerDataEnd") - sym7.getPlayerDataAddress("wParkBallsRemaining"));
 
 	// wVisitedSpawns is a flag_array of NUM_SPAWNS bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
 	js_info <<  "Patching wVisitedSpawns..." << std::endl;
@@ -1089,9 +902,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// Copy from wDigWarpNumber to wCurMapDataEnd
 	js_info <<  "Copy from wDigWarpNumber to wCurMapDataEnd..." << std::endl;
-	it7.seek(sym7.getMapDataAddress("wDigWarpNumber"));
-	it8.seek(sym8.getMapDataAddress("wDigWarpNumber"));
-	it8.copy(it7, sym7.getMapDataAddress("wCurMapDataEnd") - sym7.getMapDataAddress("wDigWarpNumber"));
+	copyDataBlock(sd, sym7.getMapDataAddress("wDigWarpNumber"), sym8.getMapDataAddress("wDigWarpNumber"), sym7.getMapDataAddress("wCurMapDataEnd") - sym7.getMapDataAddress("wDigWarpNumber"));
 
 	// map the v7 wDigMapGroup and wDigMapNumber to v8 wDigMapGroup and wDigMapNumber
 	js_info <<  "Map wDigMapGroup and wDigMapNumber..." << std::endl;
@@ -1167,15 +978,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// Copy wPartyCount
 	js_info <<  "Copy wPartyCount..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wPartyCount"));
-	it8.seek(sym8.getPokemonDataAddress("wPartyCount"));
-	it8.setByte(it7.getByte());
+	copyDataByte(sd, sym7.getPokemonDataAddress("wPartyCount"), sym8.getPokemonDataAddress("wPartyCount"));
 
 	// copy wPartyMons PARTYMON_STRUCT_LENGTH * PARTY_LENGTH
 	js_info <<  "Copy wPartyMons..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wPartyMons"));
-	it8.seek(sym8.getPokemonDataAddress("wPartyMons"));
-	it8.copy(it7, PARTYMON_STRUCT_LENGTH * PARTY_LENGTH);
+	copyDataBlock(sd, sym7.getPokemonDataAddress("wPartyMons"), sym8.getPokemonDataAddress("wPartyMons"), PARTYMON_STRUCT_LENGTH * PARTY_LENGTH);
 
 	// fix the party mon species
 	js_info <<  "Fix party mon species..." << std::endl;
@@ -1291,31 +1098,21 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// copy wPartyMonOTs
 	js_info <<  "Copy wPartyMonOTs..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wPartyMonOTs"));
-	it8.seek(sym8.getPokemonDataAddress("wPartyMonOTs"));
-	for (int i = 0; i < PARTY_LENGTH; i++) {
-		it8.copy(it7, PLAYER_NAME_LENGTH + 3);
-	}
+	copyDataBlock(sd, sym7.getPokemonDataAddress("wPartyMonOTs"), sym8.getPokemonDataAddress("wPartyMonOTs"), PARTY_LENGTH * (PLAYER_NAME_LENGTH + 3));
 
 	// copy wPartyMonNicknames PARTY_LENGTH * MON_NAME_LENGTH
 	js_info <<  "Copy wPartyMonNicknames..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wPartyMonNicknames"));
-	it8.seek(sym8.getPokemonDataAddress("wPartyMonNicknames"));
-	it8.copy(it7, MON_NAME_LENGTH * PARTY_LENGTH);
+	copyDataBlock(sd, sym7.getPokemonDataAddress("wPartyMonNicknames"), sym8.getPokemonDataAddress("wPartyMonNicknames"), MON_NAME_LENGTH * PARTY_LENGTH);
 
 	// We will convert the pokedex caught/seen flags last as we need the full list of seen/caught mons
 
 	// copy wUnlockedUnowns
 	js_info <<  "Copy wUnlockedUnowns..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wUnlockedUnowns"));
-	it8.seek(sym8.getPokemonDataAddress("wUnlockedUnowns"));
-	it8.setByte(it7.getByte());
+	copyDataByte(sd, sym7.getPokemonDataAddress("wUnlockedUnowns"), sym8.getPokemonDataAddress("wUnlockedUnowns"));
 
 	// copy wDayCareMan to wBugContestSecondPartySpecies - 54
 	js_info <<  "Copy wDayCareMan to wBugContestSecondPartySpecies - 54..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wDayCareMan"));
-	it8.seek(sym8.getPokemonDataAddress("wDayCareMan"));
-	it8.copy(it7, sym7.getPokemonDataAddress("wBugContestSecondPartySpecies") - 54 - sym7.getPokemonDataAddress("wDayCareMan"));
+	copyDataBlock(sd, sym7.getPokemonDataAddress("wDayCareMan"), sym8.getPokemonDataAddress("wDayCareMan"), sym7.getPokemonDataAddress("wBugContestSecondPartySpecies") - 54 - sym7.getPokemonDataAddress("wDayCareMan"));
 
 	// fix wBreedMon1Species and wBreedMon1ExtSpecies
 	js_info <<  "Fix wBreedMon1Species..." << std::endl;
@@ -1517,15 +1314,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// copy wBugContestBackupPartyCount
 	js_info <<  "Copy wBugContestBackupPartyCount..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wBugContestSecondPartySpecies"));
-	it8.seek(sym8.getPokemonDataAddress("wBugContestBackupPartyCount"));
-	it8.setByte(it7.getByte());
+	copyDataByte(sd, sym7.getPokemonDataAddress("wBugContestSecondPartySpecies"), sym8.getPokemonDataAddress("wBugContestBackupPartyCount"));
 
 	// copy from wContestMon to wPokemonDataEnd
 	js_info <<  "Copy from wContestMon to w****monDataEnd..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wContestMon"));
-	it8.seek(sym8.getPokemonDataAddress("wContestMon"));
-	it8.copy(it7, sym7.getPokemonDataAddress("wPokemonDataEnd") - sym7.getPokemonDataAddress("wContestMon"));
+	copyDataBlock(sd, sym7.getPokemonDataAddress("wContestMon"), sym8.getPokemonDataAddress("wContestMon"), sym7.getPokemonDataAddress("wPokemonDataEnd") - sym7.getPokemonDataAddress("wContestMon"));
 
 	// fix wContestMonSpecies and wContestMonExtSpecies
 	js_info <<  "Fix wContestMonSpecies..." << std::endl;
@@ -1677,9 +1470,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// copy sCheckValue2
 	js_info <<  "Copy sCheckValue2..." << std::endl;
-	it7.seek(sym7.getSRAMAddress("sCheckValue2"));
-	it8.seek(sym8.getSRAMAddress("sCheckValue2"));
-	it8.setByte(it7.getByte());
+	copyDataByte(sd, sym7.getSRAMAddress("sCheckValue2"), sym8.getSRAMAddress("sCheckValue2"));
 
 	// copy it8 Save to it8 Backup Save
 	js_info <<  "Copy Save to Backup Save..." << std::endl;
@@ -1690,9 +1481,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// TODO: determine how we want to truncate NUM_HOF_TEAMS from 30 to 10.
 	// copy from sHallOfFame to sHallOfFameEnd
 	js_info <<  "Copy from sHallOfFame to sHallOfFameEnd..." << std::endl;
-	it7.seek(sym7.getSRAMAddress("sHallOfFame"));
-	it8.seek(sym8.getSRAMAddress("sHallOfFame"));
-	it8.copy(it7, sym8.getSRAMAddress("sHallOfFameEnd") - sym8.getSRAMAddress("sHallOfFame")); // only copy as many as v8 can hold.
+	copyDataBlock(sd, sym7.getSRAMAddress("sHallOfFame"), sym8.getSRAMAddress("sHallOfFame"), sym7.getSRAMAddress("sHallOfFameEnd") - sym7.getSRAMAddress("sHallOfFame"));
 
 	// fix the hall of fame mon species
 	js_info <<  "Fix hall of fame mon species..." << std::endl;
@@ -1874,5 +1663,70 @@ void writeNewboxChecksum(SaveBinary& save, uint32_t startAddress) {
 		byte &= 0x7F; // clear the most significant bit
 		byte |= ((checksum >> (0xF - i)) & 0x1) << 7; // set the most significant bit
 		save.setByte(startAddress + 0x20 + i, byte);
+	}
+}
+
+void writeDefaultBoxName(SaveBinary::Iterator& it, int boxNum) {
+	// Writes the default box name for the given box number
+	// '  BOX XX' where XX is the box number
+	uint8_t box_name_char[] = {0x7f, 0x7f, 0x81, 0xae, 0xb7, 0x7f, static_cast<uint8_t>(0xe0 + (boxNum / 10)), static_cast<uint8_t>(0xe0 + (boxNum % 10))};
+	for (uint8_t box_char : box_name_char) {
+		it.setByte(box_char);
+		it.next();
+	}
+}
+
+void migrateBoxData(SaveBinary::Iterator &it7, SaveBinary::Iterator &it8, const SymbolDatabase &sym7, const SymbolDatabase &sym8, const std::string &prefix) {
+	// Clear the boxes
+	js_info << "Clearing v8 " << prefix << " boxes..." << std::endl;
+	for (int n = 1; n < NUM_BOXES_V8 + 1; n++) {
+		it8.seek(sym8.getSRAMAddress(prefix + std::to_string(n)));
+		for (int i = 0; i < NEWBOX_SIZE; i++) {
+			it8.setByte(0x00);
+			it8.next();
+		}
+	}
+
+	// Copy the boxes
+	for (int n = 1; n < NUM_BOXES_V7 + 1; n++) {
+		js_info << "Copying v7 " << prefix << n << " to v8..." << std::endl;
+		it7.seek(sym7.getSRAMAddress(prefix + std::to_string(n)));
+		it8.seek(sym8.getSRAMAddress(prefix + std::to_string(n)));
+		for (int i = 0; i < NEWBOX_SIZE; i++) {
+			it8.setByte(it7.getByte());
+			it7.next();
+			it8.next();
+		}
+	}
+
+	// Write default box names from NUM_BOXES_V7 + 1 to NUM_BOXES_V8
+	js_info <<  "Writing " << prefix << " default box names..." << std::endl;
+	for (int n = NUM_BOXES_V7 + 1; n < NUM_BOXES_V8 + 1; n++) {
+		it8.seek(sym8.getSRAMAddress(prefix + std::to_string(n) + "Name"));
+		js_info <<  "Writing default box name for " << prefix << n << "..." << std::endl;
+		writeDefaultBoxName(it8, n);
+	}
+
+	// convert pc box themes
+	js_info <<  "Converting " << prefix << " box themes..." << std::endl;
+	for (int n = 1; n < NUM_BOXES_V8 + 1; n++) {
+		it8.seek(sym8.getSRAMAddress(prefix + std::to_string(n) + "Theme"));
+		uint8_t theme = it8.getByte();
+		uint8_t theme_v8 = mapV7ThemeToV8(theme);
+		if (theme != theme_v8) {
+			js_info <<  "Theme " << std::hex << static_cast<int>(theme) << " converted to " << std::hex << static_cast<int>(theme_v8) << std::endl;
+			it8.setByte(theme_v8);
+		}
+	}
+}
+
+void clearBox(SaveBinary::Iterator &it8, const SymbolDatabase &sym8, const std::string &boxName, int numEntries) {
+	js_info << "Clearing " << boxName << "..." << std::endl;
+	it8.seek(sym8.getSRAMAddress(boxName));
+	for (int i = 0; i < numEntries; i++) {
+		for (int j = 0; j < SAVEMON_STRUCT_LENGTH; j++) {
+			it8.setByte(0x00);
+			it8.next();
+		}
 	}
 }

@@ -50,6 +50,12 @@ uint16_t extractStoredNewboxChecksum(const SaveBinary& save, uint32_t startAddre
 
 void writeNewboxChecksum(SaveBinary& save, uint32_t startAddress);
 
+void writeDefaultBoxName(SaveBinary::Iterator& it, int boxNum);
+
+void migrateBoxData(SaveBinary::Iterator &it7, SaveBinary::Iterator &it8, const SymbolDatabase &sym7, const SymbolDatabase &sym8, const std::string &prefix);
+
+void clearBox(SaveBinary::Iterator &it8, const SymbolDatabase &sym8, const std::string &boxName, int numEntries);
+
 // bool patchVersion7to8 takes in arguments SaveBinary save7 and SaveBinary save8
 bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8);
 

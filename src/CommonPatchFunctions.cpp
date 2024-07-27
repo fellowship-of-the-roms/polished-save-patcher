@@ -7,3 +7,15 @@ uint16_t calculateChecksum(SaveBinary save, uint32_t start, uint32_t end) {
 	}
 	return checksum;
 }
+
+void copyDataBlock(SourceDest &sd, uint32_t source, uint32_t dest, int length) {
+	sd.sourceSave.seek(source);
+	sd.destSave.seek(dest);
+	sd.destSave.copy(sd.sourceSave, length);
+}
+
+void copyDataByte(SourceDest &sd, uint32_t source, uint32_t dest) {
+	sd.sourceSave.seek(source);
+	sd.destSave.seek(dest);
+	sd.destSave.setByte(sd.sourceSave.getByte());
+}
