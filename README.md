@@ -12,7 +12,7 @@ This project is a WebAssembly-based tool that patches Polished Crystal save file
 
 1. **Save your game inside a Pokémon Center.**
 2. **Back up your original save file somewhere safe.**
-3. Open the [Polished Crystal Save Patcher](https://vulcandth.github.io/polished-save-patcher/).
+3. Open the [Polished Crystal Save Patcher](https://fellowship-of-the-roms.github.io/polished-save-patcher/).
 4. Click the "Choose File" button to select your old save file.
 5. Click the "Patch Save" button to start the patching process.
 6. Once the patching is complete, a new save file will be downloaded automatically.
@@ -25,7 +25,7 @@ Then Follow these steps:
 
 1. **Clone the repository:**
    ```sh
-   git clone https://github.com/vulcandth/polished-save-patcher.git
+   git clone https://github.com/fellowship-of-the-roms/polished-save-patcher.git
    cd polished-save-patcher
    ```
 
@@ -39,3 +39,5 @@ Then Follow these steps:
    cd build
    python3 -m http.server
    ```
+
+4. Navigate to http://localhost:8000 in a browser.
