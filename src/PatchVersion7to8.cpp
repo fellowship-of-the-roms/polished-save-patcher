@@ -85,15 +85,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			// convert species & form
 			convertSpeciesAndForm(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_EXTSPECIES, species, seen_mons, caught_mons);
 			// convert item
-			uint8_t item_v8 = mapV7ItemToV8(item);
-			if (item_v8 == 0xFF) {
-				js_error <<  "Item " << std::hex << static_cast<int>(item) << " not found in version 8 item list." << std::endl;
-			} else {
-				if (item != item_v8) {
-					js_info <<  "Item " << std::hex << static_cast<int>(item) << " converted to " << std::hex << static_cast<int>(item_v8) << std::endl;
-				}
-				it8.setByte(sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_ITEM, item_v8);
-			}
+			convertItem(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_ITEM, item);
 			// convert caught location
 			uint8_t caught_location_v8 = mapV7LandmarkToV8(caught_location);
 			if (caught_location_v8 == 0xFF) {
@@ -138,15 +130,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			// convert species and form
 			convertSpeciesAndForm(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_EXTSPECIES, species, seen_mons, caught_mons);
 			// convert item
-			uint8_t item_v8 = mapV7ItemToV8(item);
-			if (item_v8 == 0xFF) {
-				js_error <<  "Item " << std::hex << static_cast<int>(item) << " not found in version 8 item list." << std::endl;
-			} else {
-				if (item != item_v8) {
-					js_info <<  "Item " << std::hex << static_cast<int>(item) << " converted to " << std::hex << static_cast<int>(item_v8) << std::endl;
-				}
-				it8.setByte(sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_ITEM, item_v8);
-			}
+			convertItem(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_ITEM, item);
 			// convert caught location
 			uint8_t caught_location_v8 = mapV7LandmarkToV8(caught_location);
 			if (caught_location_v8 == 0xFF) {
@@ -860,22 +844,8 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Fix party mon items..." << std::endl;
 	it8.seek(sym8.getPokemonDataAddress("wPartyMons"));
 	for (int i = 0; i < PARTY_LENGTH; i++) {
-		it8.seek(sym8.getPokemonDataAddress("wPartyMons") + i * PARTYMON_STRUCT_LENGTH + MON_ITEM);
-		uint8_t item = it8.getWord();
-		if (item == 0x00) {
-			continue;
-		}
-		uint8_t itemV8 = mapV7ItemToV8(item);
-		// warn if the item was not found
-		if (itemV8 == 0xFF) {
-			js_error <<  "Item " << std::hex << static_cast<int>(item) << " not found in version 8 item list." << std::endl;
-			continue;
-		}
-		// print found itemv7 and converted itemv8
-		if (item != itemV8){
-			js_info <<  "Item " << std::hex << static_cast<int>(item) << " converted to " << std::hex << static_cast<int>(itemV8) << std::endl;
-		}
-		it8.setByte(itemV8);
+		uint8_t item = it8.getByte(sym8.getPokemonDataAddress("wPartyMons") + i * PARTYMON_STRUCT_LENGTH + MON_ITEM);
+		convertItem(sd, sym8.getPokemonDataAddress("wPartyMons"), i, PARTYMON_STRUCT_LENGTH, MON_ITEM, item);
 	}
 
 	// fix party mon caught ball
@@ -940,23 +910,14 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Fix wBreedMon1Species..." << std::endl;
 	uint16_t species = it8.getByte(sym8.getPokemonDataAddress("wBreedMon1Species"));
 	if (species != 0x00) {
-		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wBreedMon1Species"), 0, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, species, seen_mons, caught_mons);
+		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wBreedMon1"), 0, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, species, seen_mons, caught_mons);
 	}
 
 	// fix wBreedMon1Item
 	js_info <<  "Fix wBreedMon1Item..." << std::endl;
 	uint8_t item = it8.getByte(sym8.getPokemonDataAddress("wBreedMon1Item"));
 	if (item != 0x00) {
-		uint8_t itemV8 = mapV7ItemToV8(item);
-		// warn if the item was not found
-		if (itemV8 == 0xFF) {
-			js_error <<  "Item " << std::hex << static_cast<int>(item) << " not found in version 8 item list." << std::endl;
-		}
-		// print found itemv7 and converted itemv8
-		if (item != itemV8){
-			js_info <<  "Item " << std::hex << static_cast<int>(item) << " converted to " << std::hex << static_cast<int>(itemV8) << std::endl;
-		}
-		it8.setByte(itemV8);
+		convertItem(sd, sym8.getPokemonDataAddress("wBreedMon1"), 0, PARTYMON_STRUCT_LENGTH, MON_ITEM, item);
 	}
 
 	// fix wBreedMon1CaughtBall
@@ -1001,16 +962,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Fix wBreedMon2Item..." << std::endl;
 	item = it8.getByte(sym8.getPlayerDataAddress("wBreedMon2Item"));
 	if (item != 0x00) {
-		uint8_t itemV8 = mapV7ItemToV8(item);
-		// warn if the item was not found
-		if (itemV8 == 0xFF) {
-			js_error <<  "Item " << std::hex << static_cast<int>(item) << " not found in version 8 item list." << std::endl;
-		}
-		// print found itemv7 and converted itemv8
-		if (item != itemV8){
-			js_info <<  "Item " << std::hex << static_cast<int>(item) << " converted to " << std::hex << static_cast<int>(itemV8) << std::endl;
-		}
-		it8.setByte(itemV8);
+		convertItem(sd, sym8.getPokemonDataAddress("wBreedMon2"), 0, PARTYMON_STRUCT_LENGTH, MON_ITEM, item);
 	}
 
 	// fix wBreedMon2CaughtBall
@@ -1073,16 +1025,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Fix wContestMonItem..." << std::endl;
 	item = it8.getByte(sym8.getPokemonDataAddress("wContestMonItem"));
 	if (item != 0x00) {
-		uint8_t itemV8 = mapV7ItemToV8(item);
-		// warn if the item was not found
-		if (itemV8 == 0xFF) {
-			js_error <<  "Item " << std::hex << static_cast<int>(item) << " not found in version 8 item list." << std::endl;
-		}
-		// print found itemv7 and converted itemv8
-		if (item != itemV8){
-			js_info <<  "Item " << std::hex << static_cast<int>(item) << " converted to " << std::hex << static_cast<int>(itemV8) << std::endl;
-		}
-		it8.setByte(itemV8);
+		convertItem(sd, sym8.getPokemonDataAddress("wContestMon"), 0, PARTYMON_STRUCT_LENGTH, MON_ITEM, item);
 	}
 
 	// fix wContestMonCaughtBall
@@ -1420,5 +1363,17 @@ void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int str
 			}
 		}
 		sd.destSave.setByte(personality);
+	}
+}
+
+void convertItem(SourceDest &sd, uint32_t base_address, int i, int struct_length, int item_offset, uint8_t item) {
+	uint8_t item_v8 = mapV7ItemToV8(item);
+	if (item_v8 == 0xFF) {
+		js_error <<  "Item " << std::hex << static_cast<int>(item) << " not found in version 8 item list." << std::endl;
+	} else {
+		if (item != item_v8) {
+			js_info <<  "Item " << std::hex << static_cast<int>(item) << " converted to " << std::hex << static_cast<int>(item_v8) << std::endl;
+		}
+		sd.destSave.setByte(base_address + i * struct_length + item_offset, item_v8);
 	}
 }
