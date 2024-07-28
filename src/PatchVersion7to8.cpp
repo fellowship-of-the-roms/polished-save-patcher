@@ -52,9 +52,8 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// Create vector to store caught mons
 	std::vector<uint16_t> caught_mons;
 
-	migrateBoxData(it7, it8, sym7, sym8, "sNewBox");
-
-	migrateBoxData(it7, it8, sym7, sym8, "sBackupNewBox");
+	migrateBoxData(sd, "sNewBox");
+	migrateBoxData(sd, "sBackupNewBox");
 
 	// copy sBoxMons1 to sBoxMons1A
 	js_info <<  "Copying from sBoxMons1 to sBoxMons1A..." << std::endl;
@@ -1183,7 +1182,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// copy from sHallOfFame to sHallOfFameEnd
 	js_info <<  "Copy from sHallOfFame to sHallOfFameEnd..." << std::endl;
-	copyDataBlock(sd, sym7.getSRAMAddress("sHallOfFame"), sym8.getSRAMAddress("sHallOfFame"), sym7.getSRAMAddress("sHallOfFameEnd") - sym7.getSRAMAddress("sHallOfFame"));
+	copyDataBlock(sd, sym7.getSRAMAddress("sHallOfFame"), sym8.getSRAMAddress("sHallOfFame"), sym8.getSRAMAddress("sHallOfFameEnd") - sym8.getSRAMAddress("sHallOfFame"));
 
 	// fix the hall of fame mon species
 	js_info <<  "Fix hall of fame mon species..." << std::endl;
@@ -1340,45 +1339,39 @@ void writeDefaultBoxName(SaveBinary::Iterator& it, int boxNum) {
 	}
 }
 
-void migrateBoxData(SaveBinary::Iterator &it7, SaveBinary::Iterator &it8, const SymbolDatabase &sym7, const SymbolDatabase &sym8, const std::string &prefix) {
+void migrateBoxData(SourceDest &sd, const std::string &prefix) {
 	// Clear the boxes
 	js_info << "Clearing v8 " << prefix << " boxes..." << std::endl;
 	for (int n = 1; n < NUM_BOXES_V8 + 1; n++) {
-		it8.seek(sym8.getSRAMAddress(prefix + std::to_string(n)));
+		sd.destSave.seek(sd.destSym.getSRAMAddress(prefix + std::to_string(n)));
 		for (int i = 0; i < NEWBOX_SIZE; i++) {
-			it8.setByte(0x00);
-			it8.next();
+			sd.destSave.setByte(0x00);
+			sd.destSave.next();
 		}
 	}
 
 	// Copy the boxes
 	for (int n = 1; n < NUM_BOXES_V7 + 1; n++) {
 		js_info << "Copying v7 " << prefix << n << " to v8..." << std::endl;
-		it7.seek(sym7.getSRAMAddress(prefix + std::to_string(n)));
-		it8.seek(sym8.getSRAMAddress(prefix + std::to_string(n)));
-		for (int i = 0; i < NEWBOX_SIZE; i++) {
-			it8.setByte(it7.getByte());
-			it7.next();
-			it8.next();
-		}
+		copyDataBlock(sd, sd.sourceSym.getSRAMAddress(prefix + std::to_string(n)), sd.destSym.getSRAMAddress(prefix + std::to_string(n)), NEWBOX_SIZE);
 	}
 
 	// Write default box names from NUM_BOXES_V7 + 1 to NUM_BOXES_V8
 	js_info <<  "Writing " << prefix << " default box names..." << std::endl;
 	for (int n = NUM_BOXES_V7 + 1; n < NUM_BOXES_V8 + 1; n++) {
-		it8.seek(sym8.getSRAMAddress(prefix + std::to_string(n) + "Name"));
+		sd.destSave.seek(sd.destSym.getSRAMAddress(prefix + std::to_string(n) + "Name"));
 		js_info <<  "Writing default box name for " << prefix << n << "..." << std::endl;
-		writeDefaultBoxName(it8, n);
+		writeDefaultBoxName(sd.destSave, n);
 	}
 
 	// convert pc box themes
 	js_info <<  "Converting " << prefix << " box themes..." << std::endl;
 	for (int n = 1; n < NUM_BOXES_V8 + 1; n++) {
-		uint8_t theme = it8.getByte(sym8.getSRAMAddress(prefix + std::to_string(n) + "Theme"));
+		uint8_t theme = sd.destSave.getByte(sd.destSym.getSRAMAddress(prefix + std::to_string(n) + "Theme"));
 		uint8_t theme_v8 = mapV7ThemeToV8(theme);
 		if (theme != theme_v8) {
 			js_info <<  "Theme " << std::hex << static_cast<int>(theme) << " converted to " << std::hex << static_cast<int>(theme_v8) << std::endl;
-			it8.setByte(theme_v8);
+			sd.destSave.setByte(theme_v8);
 		}
 	}
 }
