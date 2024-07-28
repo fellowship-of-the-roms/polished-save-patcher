@@ -144,8 +144,22 @@ uint8_t SaveBinary::Iterator::getByte() const {
 	return m_saveBinary.getByte(m_address);
 }
 
+// Get the byte at the requested address
+uint8_t SaveBinary::Iterator::getByte(uint32_t address) {
+	// seek to address
+	seek(address);
+	return m_saveBinary.getByte(m_address);
+}
+
 // Get the word at the current address (little endian)
 uint16_t SaveBinary::Iterator::getWord() const {
+	return m_saveBinary.getWord(m_address);
+}
+
+// Get the word at the requested address (little endian)
+uint16_t SaveBinary::Iterator::getWord(uint32_t address) {
+	// seek to address
+	seek(address);
 	return m_saveBinary.getWord(m_address);
 }
 
@@ -154,8 +168,22 @@ uint16_t SaveBinary::Iterator::getWordBE() const {
 	return m_saveBinary.getWordBE(m_address);
 }
 
+// Get the word at the requested address (big endian)
+uint16_t SaveBinary::Iterator::getWordBE(uint32_t address) {
+	// seek to address
+	seek(address);
+	return m_saveBinary.getWordBE(m_address);
+}
+
 // Update the byte at the current address
 void SaveBinary::Iterator::setByte(uint8_t value) {
+	m_saveBinary.setByte(m_address, value);
+}
+
+// Update the byte at the requested address
+void SaveBinary::Iterator::setByte(uint32_t address, uint8_t value) {
+	// seek to address
+	seek(address);
 	m_saveBinary.setByte(m_address, value);
 }
 
@@ -164,8 +192,22 @@ void SaveBinary::Iterator::setWord(uint16_t value) {
 	m_saveBinary.setWord(m_address, value);
 }
 
+// Update the word at the requested address (little endian)
+void SaveBinary::Iterator::setWord(uint32_t address, uint16_t value) {
+	// seek to address
+	seek(address);
+	m_saveBinary.setWord(m_address, value);
+}
+
 // Update the word at the current address (big endian)
 void SaveBinary::Iterator::setWordBE(uint16_t value) {
+	m_saveBinary.setWordBE(m_address, value);
+}
+
+// Update the word at the requested address (big endian)
+void SaveBinary::Iterator::setWordBE(uint32_t address, uint16_t value) {
+	// seek to address
+	seek(address);
 	m_saveBinary.setWordBE(m_address, value);
 }
 

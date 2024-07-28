@@ -41,16 +41,28 @@ public:
 			~Iterator();
 			// Get the byte at the current address
 			uint8_t getByte() const;
+			// Get the byte at the requested address
+			uint8_t getByte(uint32_t address);
 			// Get the word at the current address (little endian)
 			uint16_t getWord() const;
+			// Get the word at the requested address (little endian)
+			uint16_t getWord(uint32_t address);
 			// Get the word at the current address (big endian)
 			uint16_t getWordBE() const;
+			// Get the word at the requested address (big endian)
+			uint16_t getWordBE(uint32_t address);
 			// Update the byte at the current address
 			void setByte(uint8_t value);
+			// Update the byte at the requested address
+			void setByte(uint32_t address, uint8_t value);
 			// Update the word at the current address (little endian)
 			void setWord(uint16_t value);
+			// Update the word at the requested address (little endian)
+			void setWord(uint32_t address, uint16_t value);
 			// Update the word at the current address (big endian)
 			void setWordBE(uint16_t value);
+			// Update the word at the requested address (big endian)
+			void setWordBE(uint32_t address, uint16_t value);
 			// Move the iterator to the next byte
 			void next();
 			// Move the iterator to the previous byte

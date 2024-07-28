@@ -4,6 +4,7 @@
 #include "SaveBinary.h"
 #include "SymbolDatabase.h"
 #include "PatcherConstants.h"
+#include "CommonPatchFunctions.h"
 #include <iostream>
 
 constexpr int NUM_OBJECT_STRUCTS = 13;
@@ -56,8 +57,9 @@ constexpr int SAVEMON_CAUGHTBALL = 0x19;
 constexpr int SAVEMON_CAUGHTLOCATION = 0x1b;
 constexpr int BATTLETOWER_PARTYDATA_SIZE = 6;
 constexpr int NUM_HOF_TEAMS_V8 = 10;
-constexpr int HOF_MON_LENGTH = 1 + 2 + 2 + 1 + (MON_NAME_LENGTH - 1); // species, id, dvs, level, nick
+constexpr int HOF_MON_LENGTH = 1 + 2 + 2 + 1 + (MON_NAME_LENGTH - 1); // species, id, personality, level, nick
 constexpr int HOF_LENGTH = 1 + HOF_MON_LENGTH * PARTY_LENGTH + 1; // win count, party, terminator
+constexpr int HOF_MON_EXTSPECIES = 0x04;
 constexpr int MON_CENTER_2F_GROUP = 20;
 constexpr int MON_CENTER_2F_MAP = 1;
 const uint16_t INVALID_SPECIES = -1;
@@ -116,6 +118,8 @@ void writeDefaultBoxName(SaveBinary::Iterator& it, int boxNum);
 void migrateBoxData(SaveBinary::Iterator &it7, SaveBinary::Iterator &it8, const SymbolDatabase &sym7, const SymbolDatabase &sym8, const std::string &prefix);
 
 void clearBox(SaveBinary::Iterator &it8, const SymbolDatabase &sym8, const std::string &boxName, int numEntries);
+
+void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int struct_length, int extspecies_offset, uint16_t species, std::vector<uint16_t> &seen_mons, std::vector<uint16_t> &caught_mons);
 
 // bool patchVersion7to8 takes in arguments SaveBinary save7 and SaveBinary save8
 bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8);
