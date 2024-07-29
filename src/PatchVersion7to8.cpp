@@ -22,7 +22,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// verify the checksum of the version 7 file matches the calculated checksum
 	// calculate the checksum from lookup symbol name "sGameData" to "sGameDataEnd"
-	uint16_t calculated_checksum = calculateChecksum(save7, sym7.getSRAMAddress("sGameData"), sym7.getSRAMAddress("sGameDataEnd"));
+	uint16_t calculated_checksum = calculateSaveChecksum(save7, sym7.getSRAMAddress("sGameData"), sym7.getSRAMAddress("sGameDataEnd"));
 	if (save_checksum != calculated_checksum) {
 		js_error <<  "Checksum mismatch! Expected: " << std::hex << calculated_checksum << ", got: " << save_checksum << std::endl;
 		return false;
@@ -32,7 +32,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	uint16_t backup_checksum = save7.getWord(SAVE_BACKUP_CHECKSUM_ABS_ADDRESS);
 	// verify the backup checksum of the version 7 file matches the calculated checksum
 	// calculate the checksum from lookup symbol name "sBackupGameData" to "sBackupGameDataEnd"
-	uint16_t calculated_backup_checksum = calculateChecksum(save7, sym7.getSRAMAddress("sBackupGameData"), sym7.getSRAMAddress("sBackupGameDataEnd"));
+	uint16_t calculated_backup_checksum = calculateSaveChecksum(save7, sym7.getSRAMAddress("sBackupGameData"), sym7.getSRAMAddress("sBackupGameDataEnd"));
 	if (backup_checksum != calculated_backup_checksum) {
 		js_error <<  "Backup checksum mismatch! Expected: " << std::hex << calculated_backup_checksum << ", got: " << backup_checksum << std::endl;
 		return false;
@@ -1049,12 +1049,12 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// write new checksums to the version 8 save file
 	js_info <<  "Write new checksums..." << std::endl;
-	uint16_t new_checksum = calculateChecksum(save8, sym8.getSRAMAddress("sGameData"), sym8.getSRAMAddress("sGameDataEnd"));
+	uint16_t new_checksum = calculateSaveChecksum(save8, sym8.getSRAMAddress("sGameData"), sym8.getSRAMAddress("sGameDataEnd"));
 	save8.setWord(SAVE_CHECKSUM_ABS_ADDRESS, new_checksum);
 
 	// write new backup checksums to the version 8 save file
 	js_info <<  "Write new backup checksums..." << std::endl;
-	uint16_t new_backup_checksum = calculateChecksum(save8, sym8.getSRAMAddress("sBackupGameData"), sym8.getSRAMAddress("sBackupGameDataEnd"));
+	uint16_t new_backup_checksum = calculateSaveChecksum(save8, sym8.getSRAMAddress("sBackupGameData"), sym8.getSRAMAddress("sBackupGameDataEnd"));
 	save8.setWord(SAVE_BACKUP_CHECKSUM_ABS_ADDRESS, new_backup_checksum);
 
 	// write the modified save file to the output file and print success message
@@ -1062,6 +1062,8 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	return true;
 }
 
+// Calculate the newbox checksum for the given mon
+// Reference: https://github.com/Rangi42/polishedcrystal/blob/9bit/docs/newbox_format.md#checksum
 uint16_t calculateNewboxChecksum(const SaveBinary& save, uint32_t startAddress) {
 	uint16_t checksum = 127;
 
@@ -1081,6 +1083,8 @@ uint16_t calculateNewboxChecksum(const SaveBinary& save, uint32_t startAddress) 
 	return checksum;
 }
 
+// Extract the stored newbox checksum for the given mon
+// Reference: https://github.com/Rangi42/polishedcrystal/blob/9bit/docs/newbox_format.md#checksum
 uint16_t extractStoredNewboxChecksum(const SaveBinary& save, uint32_t startAddress) {
 	uint16_t storedChecksum = 0;
 
@@ -1092,6 +1096,8 @@ uint16_t extractStoredNewboxChecksum(const SaveBinary& save, uint32_t startAddre
 	return storedChecksum;
 }
 
+// Write the newbox checksum for the given mon
+// Reference: https://github.com/Rangi42/polishedcrystal/blob/9bit/docs/newbox_format.md#checksum
 void writeNewboxChecksum(SaveBinary& save, uint32_t startAddress) {
 	uint16_t checksum = calculateNewboxChecksum(save, startAddress);
 
@@ -1104,8 +1110,8 @@ void writeNewboxChecksum(SaveBinary& save, uint32_t startAddress) {
 	}
 }
 
+// Writes the default box name for the given box number
 void writeDefaultBoxName(SaveBinary::Iterator& it, int boxNum) {
-	// Writes the default box name for the given box number
 	// '  BOX XX' where XX is the box number
 	uint8_t box_name_char[] = {0x7f, 0x7f, 0x81, 0xae, 0xb7, 0x7f, static_cast<uint8_t>(0xe0 + (boxNum / 10)), static_cast<uint8_t>(0xe0 + (boxNum % 10))};
 	for (uint8_t box_char : box_name_char) {
@@ -1114,6 +1120,7 @@ void writeDefaultBoxName(SaveBinary::Iterator& it, int boxNum) {
 	}
 }
 
+// Migrate the newbox box data from version 7 to version 8
 void migrateBoxData(SourceDest &sd, const std::string &prefix) {
 	// Clear the boxes
 	js_info << "Clearing v8 " << prefix << " boxes..." << std::endl;
@@ -1147,6 +1154,7 @@ void migrateBoxData(SourceDest &sd, const std::string &prefix) {
 	}
 }
 
+// converts the species and form for a given mon
 void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int struct_length, int extspecies_offset, uint16_t species, std::vector<uint16_t> &seen_mons, std::vector<uint16_t> &caught_mons) {
 	// convert species & form
 	uint16_t species_v8 = mapV7PkmnToV8(species);
@@ -1183,6 +1191,7 @@ void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int str
 	}
 }
 
+// converts the item for a given mon
 void convertItem(SourceDest &sd, uint32_t base_address, int i, int struct_length, int item_offset, uint8_t item) {
 	uint8_t item_v8 = mapV7ItemToV8(item);
 	if (item_v8 == 0xFF) {
@@ -1195,6 +1204,7 @@ void convertItem(SourceDest &sd, uint32_t base_address, int i, int struct_length
 	}
 }
 
+// converts the caught location for a given mon
 void convertCaughtLocation(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_location_offset, uint8_t caught_location) {
 	uint8_t caught_location_v8 = mapV7LandmarkToV8(caught_location);
 	if (caught_location_v8 == 0xFF) {
@@ -1207,6 +1217,7 @@ void convertCaughtLocation(SourceDest &sd, uint32_t base_address, int i, int str
 	}
 }
 
+// converts the caught ball for a given mon
 void convertCaughtBall(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_ball_offset, uint8_t caught_ball) {
 	uint8_t caught_ball_v8 = mapV7ItemToV8(caught_ball);
 	if (caught_ball_v8 == 0xFF) {

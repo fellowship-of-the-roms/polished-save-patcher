@@ -159,6 +159,7 @@ uint32_t SymbolDatabase::getSRAMAddress(const std::string& name) const {
 	return symbol->bank * SRAM_BANK_SIZE + symbol->address - SRAM_START_ADDRESS;
 }
 
+// Returns the the distance of the wram symbol from wPlayerData and adds it to the address of sPlayerData
 uint32_t SymbolDatabase::getPlayerDataAddress(const std::string& wram_symbol_name) const {
 	// check if symbol is in WRAM
 	if (!isWRAM(wram_symbol_name)) {
@@ -188,6 +189,7 @@ uint32_t SymbolDatabase::getPlayerDataAddress(const std::string& wram_symbol_nam
 	return getSRAMAddress("sPlayerData") + distance;
 }
 
+// Returns the the distance of the wram symbol from wMapData and adds it to the address of sMapData
 uint32_t SymbolDatabase::getMapDataAddress(const std::string& wram_symbol_name) const {
 	// check if symbol is in WRAM
 	if (!isWRAM(wram_symbol_name)) {
@@ -218,6 +220,7 @@ uint32_t SymbolDatabase::getMapDataAddress(const std::string& wram_symbol_name) 
 	return getSRAMAddress("sMapData") + distance;
 }
 
+// Returns the the distance of the wram symbol from wPokemonData and adds it to the address of sPokemonData
 uint32_t SymbolDatabase::getPokemonDataAddress(const std::string& wram_symbol_name) const {
 	// check if symbol is in WRAM
 	if (!isWRAM(wram_symbol_name)) {

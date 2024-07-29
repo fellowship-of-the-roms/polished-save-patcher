@@ -39,7 +39,7 @@ uint8_t mapV7KeyItemToV8(uint8_t v7) {
 	return indexMap.find(v7) != indexMap.end() ? indexMap[v7] : 0xFF;
 }
 
-// converts a version 7 key item to a version 8 key item
+// converts a version 7 item to a version 8 item
 uint8_t mapV7ItemToV8(uint8_t v7) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
 		{0x00, 0x00},  // NO_ITEM
@@ -2920,7 +2920,7 @@ uint16_t mapV7PkmnToV8(uint16_t v7) {
 	return indexMap.find(v7) != indexMap.end() ? indexMap[v7] : INVALID_SPECIES;
 }
 
-// Converts a version 7 (group_id, map_id) tuple to a version 8 (group_id, map_id) tuple
+// converts a version 7 (uint8_t group, uint8_t map) tuple to a version 8 (uint8_t group, uint8_t map) tuple
 std::tuple<uint8_t, uint8_t> mapv7toV8(uint8_t v7_group, uint8_t v7_map) {
 	std::unordered_map<std::tuple<uint8_t, uint8_t>, std::tuple<uint8_t, uint8_t>, TupleHash> mapv7toV8 = {
 		{{1, 1}, {1, 1}},  // OLIVINE_POKECENTER_1F,
@@ -3619,7 +3619,7 @@ uint16_t mapV7SpeciesFormToV8Extspecies(uint16_t species, uint8_t form) {
 	}
 }
 
-// converts a version 7 key item to a version 8 key item
+// converts a version 7 magikarp form to a version 8 magikarp form
 uint8_t mapV7MagikarpFormToV8(uint8_t v7) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
 		{0x02, 0x02}, // MAGIKARP_SKELLY_FORM
@@ -3643,6 +3643,7 @@ uint8_t mapV7MagikarpFormToV8(uint8_t v7) {
 	return indexMap.find(v7) != indexMap.end() ? indexMap[v7] : 0xFF;
 }
 
+// converts a version 7 theme to a version 8 theme
 uint8_t mapV7ThemeToV8(uint8_t v7) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
 		{0x00, 0x00},  // THEME_STANDARD

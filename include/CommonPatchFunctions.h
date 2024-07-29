@@ -5,6 +5,7 @@
 #include "PatcherConstants.h"
 #include "Logging.h"
 
+// struct containing source and destination save data and symbol databases
 struct SourceDest {
 	SaveBinary::Iterator &sourceSave;
 	SaveBinary::Iterator &destSave;
@@ -12,15 +13,22 @@ struct SourceDest {
 	const SymbolDatabase &destSym;
 };
 
-// calculateChecksum function
-uint16_t calculateChecksum(SaveBinary save, uint32_t start, uint32_t end);
+// calculateSaveChecksum function
+uint16_t calculateSaveChecksum(SaveBinary save, uint32_t start, uint32_t end);
 
+// copy length bytes from source to dest
 void copyDataBlock(SourceDest &sd, uint32_t source, uint32_t dest, int length);
 
+// copy a single byte from source to dest
 void copyDataByte(SourceDest &sd, uint32_t source, uint32_t dest);
 
+// clear (0x00) length bytes starting at dest
+void clearDataBlock(SourceDest &sd, uint32_t dest, int length);
+
+// fill length bytes starting at dest with value
 void fillDataBlock(SourceDest &sd, uint32_t dest, int length, uint8_t value);
 
-void clearDataBlock(SourceDest &sd, uint32_t dest, int length);
+// assert that the iterator is at the specified address
+bool assertAddress(const SaveBinary::Iterator &it, uint32_t address);
 
 #endif

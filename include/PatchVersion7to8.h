@@ -84,9 +84,10 @@ uint8_t mapV7LandmarkToV8(uint8_t v7);
 // converts a version 7 spawn to a version 8 spawn
 uint8_t mapV7SpawnToV8(uint8_t v7);
 
-// converts a version 7 pokemon to a version 8 pokemon
+// converts a version 7 Pokémon index to a version 8 Pokémon index
 uint16_t mapV7PkmnToV8(uint16_t v7);
 
+// struct for hashing tuples
 struct TupleHash {
 	template <typename T>
 	std::size_t operator()(const T& tuple) const {
@@ -95,10 +96,10 @@ struct TupleHash {
 	}
 };
 
+// converts a version 7 (uint8_t group, uint8_t map) tuple to a version 8 (uint8_t group, uint8_t map) tuple
 std::tuple<uint8_t, uint8_t> mapv7toV8(uint8_t v7_group, uint8_t v7_map);
 
 // Converts a version 7 (uint16_t species, uint8_t form) tuple to a version 8 unint16_t extspecies
-// If the species is not in the map, it returns 0xFFFF; We only care about species that have a form
 uint16_t mapV7SpeciesFormToV8Extspecies(uint16_t species, uint8_t form);
 
 // converts a version 7 magikarp form to a version 8 magikarp form
@@ -107,22 +108,31 @@ uint8_t mapV7MagikarpFormToV8(uint8_t v7);
 // converts a version 7 theme to a version 8 theme
 uint8_t mapV7ThemeToV8(uint8_t v7);
 
+// Calculate the newbox checksum for the given mon
 uint16_t calculateNewboxChecksum(const SaveBinary& save, uint32_t startAddress);
 
+// Extract the stored newbox checksum for the given mon
 uint16_t extractStoredNewboxChecksum(const SaveBinary& save, uint32_t startAddress);
 
+// Write the newbox checksum for the given mon
 void writeNewboxChecksum(SaveBinary& save, uint32_t startAddress);
 
+// Writes the default box name for the given box number
 void writeDefaultBoxName(SaveBinary::Iterator& it, int boxNum);
 
+// Migrate the newbox box data from version 7 to version 8
 void migrateBoxData(SourceDest &sd, const std::string &prefix);
 
+// converts the species and form for a given mon
 void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int struct_length, int extspecies_offset, uint16_t species, std::vector<uint16_t> &seen_mons, std::vector<uint16_t> &caught_mons);
 
+// converts the item for a given mon
 void convertItem(SourceDest &sd, uint32_t base_address, int i, int struct_length, int item_offset, uint8_t item);
 
+// converts the caught location for a given mon
 void convertCaughtLocation(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_location_offset, uint8_t caught_location);
 
+// converts the caught ball for a given mon
 void convertCaughtBall(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_ball_offset, uint8_t caught_ball);
 
 // bool patchVersion7to8 takes in arguments SaveBinary save7 and SaveBinary save8

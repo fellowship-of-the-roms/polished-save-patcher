@@ -35,8 +35,13 @@ public:
 	bool isHRAM(const std::string& name) const;
 	// Returns abosolute sram address (up to 2MiB) of symbol by name
 	uint32_t getSRAMAddress(const std::string& name) const;
+
+	// Todo: These may get moved to CommonPatchFunctions.h
+	// Returns the the distance of the wram symbol from wPlayerData and adds it to the address of sPlayerData
 	uint32_t getPlayerDataAddress(const std::string& wram_symbol_name) const;
+	// Returns the the distance of the wram symbol from wMapData and adds it to the address of sMapData
 	uint32_t getMapDataAddress(const std::string& wram_symbol_name) const;
+	// Returns the the distance of the wram symbol from wPokemonData and adds it to the address of sPokemonData
 	uint32_t getPokemonDataAddress(const std::string& wram_symbol_name) const;
 
 private:

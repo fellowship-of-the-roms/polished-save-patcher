@@ -14,10 +14,10 @@ enum class LogLevel {
 
 class JSStreambuf : public std::streambuf {
 public:
-	JSStreambuf(LogLevel level);
+	JSStreambuf(LogLevel level); // constructor
 protected:
-	virtual int overflow(int c) override;
-	virtual std::streamsize xsputn(const char* s, std::streamsize n) override;
+	virtual int overflow(int c) override; // called when the buffer is full
+	virtual std::streamsize xsputn(const char* s, std::streamsize n) override; // called when writing a string
 private:
 	LogLevel level;
 	std::vector<char> buffer;
@@ -25,8 +25,8 @@ private:
 	void logToJs(const std::string& message);
 };
 
-extern std::ostream js_info;
-extern std::ostream js_warning;
-extern std::ostream js_error;
+extern std::ostream js_info; // output stream for info messages
+extern std::ostream js_warning; // output stream for warning messages
+extern std::ostream js_error; // output stream for error messages
 
 #endif // LOGGING_H
