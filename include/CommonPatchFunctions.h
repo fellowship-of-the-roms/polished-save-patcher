@@ -3,6 +3,7 @@
 #include "SaveBinary.h"
 #include "SymbolDatabase.h"
 #include "PatcherConstants.h"
+#include "Logging.h"
 
 struct SourceDest {
 	SaveBinary::Iterator &sourceSave;
@@ -17,6 +18,8 @@ uint16_t calculateChecksum(SaveBinary save, uint32_t start, uint32_t end);
 void copyDataBlock(SourceDest &sd, uint32_t source, uint32_t dest, int length);
 
 void copyDataByte(SourceDest &sd, uint32_t source, uint32_t dest);
+
+void fillDataBlock(SourceDest &sd, uint32_t dest, int length, uint8_t value);
 
 void clearDataBlock(SourceDest &sd, uint32_t dest, int length);
 

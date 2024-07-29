@@ -27,3 +27,19 @@ void clearDataBlock(SourceDest &sd, uint32_t dest, int length) {
 		sd.destSave.next();
 	}
 }
+
+void fillDataBlock(SourceDest &sd, uint32_t dest, int length, uint8_t value) {
+	sd.destSave.seek(dest);
+	for (int i = 0; i < length; i++) {
+		sd.destSave.setByte(value);
+		sd.destSave.next();
+	}
+}
+
+bool assertAddress(const SaveBinary::Iterator &it, uint32_t address) {
+	if (it.getAddress() != address) {
+		js_error << "Address mismatch: Expected " << std::hex << address << " but got " << it.getAddress() << std::endl;
+		return false;
+	}
+	return true;
+}
