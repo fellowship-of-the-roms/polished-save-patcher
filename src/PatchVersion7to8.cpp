@@ -87,15 +87,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			// convert item
 			convertItem(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_ITEM, item);
 			// convert caught location
-			uint8_t caught_location_v8 = mapV7LandmarkToV8(caught_location);
-			if (caught_location_v8 == 0xFF) {
-				js_error <<  "Landmark " << std::hex << static_cast<int>(caught_location) << " not found in version 8 landmark list." << std::endl;
-			} else {
-				if (caught_location != caught_location_v8) {
-					js_info <<  "Landmark " << std::hex << static_cast<int>(caught_location) << " converted to " << std::hex << static_cast<int>(caught_location_v8) << std::endl;
-				}
-				it8.setByte(sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_CAUGHTLOCATION, caught_location_v8);
-			}
+			convertCaughtLocation(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_CAUGHTLOCATION, caught_location);
 			// convert caught ball
 			uint8_t caught_ball_v8 = mapV7ItemToV8(caught_ball);
 			if (caught_ball_v8 == 0xFF) {
@@ -132,15 +124,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			// convert item
 			convertItem(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_ITEM, item);
 			// convert caught location
-			uint8_t caught_location_v8 = mapV7LandmarkToV8(caught_location);
-			if (caught_location_v8 == 0xFF) {
-				js_error <<  "Landmark " << std::hex << static_cast<int>(caught_location) << " not found in version 8 landmark list." << std::endl;
-			} else {
-				if (caught_location != caught_location_v8) {
-					js_info <<  "Landmark " << std::hex << static_cast<int>(caught_location) << " converted to " << std::hex << static_cast<int>(caught_location_v8) << std::endl;
-				}
-				it8.setByte(sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_CAUGHTLOCATION, caught_location_v8);
-			}
+			convertCaughtLocation(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_CAUGHTLOCATION, caught_location);
 			// convert caught ball
 			uint8_t caught_ball_v8 = mapV7ItemToV8(caught_ball);
 			if (caught_ball_v8 == 0xFF) {
@@ -873,19 +857,8 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Fix party mon caught locations..." << std::endl;
 	it8.seek(sym8.getPokemonDataAddress("wPartyMons"));
 	for (int i = 0; i < PARTY_LENGTH; i++) {
-		it8.seek(sym8.getPokemonDataAddress("wPartyMons") + i * PARTYMON_STRUCT_LENGTH + MON_CAUGHTLOCATION);
 		uint8_t caughtLoc = it8.getByte(sym8.getPokemonDataAddress("wPartyMons") + i * PARTYMON_STRUCT_LENGTH + MON_CAUGHTLOCATION);
-		uint8_t caughtLocV8 = mapV7LandmarkToV8(caughtLoc);
-		// warn if the caught location was not found
-		if (caughtLocV8 == 0xFF) {
-			js_error <<  "Caught Location " << std::hex << caughtLoc << " not found in version 8 caught location list." << std::endl;
-			continue;
-		}
-		// print found caught locationv7 and converted caught locationv8
-		if (caughtLoc != caughtLocV8){
-			js_info <<  "Caught Location " << std::hex << static_cast<int>(caughtLoc) << " converted to " << std::hex << caughtLocV8 << std::endl;
-		}
-		it8.setByte(caughtLocV8);
+		convertCaughtLocation(sd, sym8.getPokemonDataAddress("wPartyMons"), i, PARTYMON_STRUCT_LENGTH, MON_CAUGHTLOCATION, caughtLoc);
 	}
 
 	// copy wPartyMonOTs
@@ -940,16 +913,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// fix wBreedMon1CaughtLocation
 	js_info <<  "Fix wBreedMon1CaughtLocation..." << std::endl;
 	uint8_t caughtLoc = it8.getByte(sym8.getPokemonDataAddress("wBreedMon1CaughtLocation"));
-	uint8_t caughtLocV8 = mapV7LandmarkToV8(caughtLoc);
-	// warn if the caught location was not found
-	if (caughtLocV8 == 0xFF) {
-		js_error <<  "Caught Location " << std::hex << caughtLoc << " not found in version 8 caught location list." << std::endl;
-	}
-	// print found caught locationv7 and converted caught locationv8
-	if (caughtLoc != caughtLocV8){
-		js_info <<  "Caught Location " << std::hex << static_cast<int>(caughtLoc) << " converted to " << std::hex << caughtLocV8 << std::endl;
-	}
-	it8.setByte(caughtLocV8);
+	convertCaughtLocation(sd, sym8.getPokemonDataAddress("wBreedMon1"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTLOCATION, caughtLoc);
 
 	// fix wBreedMon2Species and wBreedMon2ExtSpecies
 	js_info <<  "Fix wBreedMon2Species..." << std::endl;
@@ -985,18 +949,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// fix wBreedMon2CaughtLocation
 	js_info <<  "Fix wBreedMon2CaughtLocation..." << std::endl;
 	caughtLoc = it8.getByte(sym8.getPokemonDataAddress("wBreedMon2CaughtLocation"));
-	caughtLocV8 = mapV7LandmarkToV8(caughtLoc);
-	// warn if the caught location was not found
-	if (caughtLocV8 == 0xFF) {
-		js_error <<  "Caught Location " << std::hex << caughtLoc << " not found in version 8 caught location list." << std::endl;
-	}
-	// print found caught locationv7 and converted caught locationv8
-	if (caughtLoc != caughtLocV8){
-		js_info <<  "Caught Location " << std::hex << static_cast<int>(caughtLoc) << " converted to " << std::hex << caughtLocV8 << std::endl;
-	} else {
-		js_info <<  "Caught Location " << std::hex << static_cast<int>(caughtLoc) << " not converted." << std::endl;
-	}
-	it8.setByte(caughtLocV8);
+	convertCaughtLocation(sd, sym8.getPokemonDataAddress("wBreedMon2"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTLOCATION, caughtLoc);
 
 	// Clear space from wLevelUpMonNickname to wBugContestBackupPartyCount in it8
 	js_info <<  "Clear space from wLevelUpMonNickname to wBugContestBackupPartyCount..." << std::endl;
@@ -1048,16 +1001,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// fix wContestMonCaughtLocation
 	js_info <<  "Fix wContestMonCaughtLocation..." << std::endl;
 	caughtLoc = it8.getByte(sym8.getPokemonDataAddress("wContestMonCaughtLocation"));
-	caughtLocV8 = mapV7LandmarkToV8(caughtLoc);
-	// warn if the caught location was not found
-	if (caughtLocV8 == 0xFF) {
-		js_error <<  "Caught Location " << std::hex << caughtLoc << " not found in version 8 caught location list." << std::endl;
-	}
-	// print found caught locationv7 and converted caught locationv8
-	if (caughtLoc != caughtLocV8){
-		js_info <<  "Caught Location " << std::hex << static_cast<int>(caughtLoc) << " converted to " << std::hex << caughtLocV8 << std::endl;
-	}
-	it8.setByte(caughtLocV8);
+	convertCaughtLocation(sd, sym8.getPokemonDataAddress("wContestMon"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTLOCATION, caughtLoc);
 
 	// map the version 7 wDunsparceMapGroup and wDunsparceMapNumber to the version 8 wDunsparceMapGroup and wDunsparceMapNumber
 	js_info <<  "Map wDunsp****MapGroup and wDunsp****MapNumber..." << std::endl;
@@ -1375,5 +1319,17 @@ void convertItem(SourceDest &sd, uint32_t base_address, int i, int struct_length
 			js_info <<  "Item " << std::hex << static_cast<int>(item) << " converted to " << std::hex << static_cast<int>(item_v8) << std::endl;
 		}
 		sd.destSave.setByte(base_address + i * struct_length + item_offset, item_v8);
+	}
+}
+
+void convertCaughtLocation(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_location_offset, uint8_t caught_location) {
+	uint8_t caught_location_v8 = mapV7LandmarkToV8(caught_location);
+	if (caught_location_v8 == 0xFF) {
+		js_error <<  "Landmark " << std::hex << static_cast<int>(caught_location) << " not found in version 8 landmark list." << std::endl;
+	} else {
+		if (caught_location != caught_location_v8) {
+			js_info <<  "Landmark " << std::hex << static_cast<int>(caught_location) << " converted to " << std::hex << static_cast<int>(caught_location_v8) << std::endl;
+		}
+		sd.destSave.setByte(base_address + i * struct_length + caught_location_offset, caught_location_v8);
 	}
 }

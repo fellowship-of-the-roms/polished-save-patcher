@@ -123,6 +123,8 @@ void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int str
 
 void convertItem(SourceDest &sd, uint32_t base_address, int i, int struct_length, int item_offset, uint8_t item);
 
+void convertCaughtLocation(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_location_offset, uint8_t caught_location);
+
 // bool patchVersion7to8 takes in arguments SaveBinary save7 and SaveBinary save8
 bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8);
 
