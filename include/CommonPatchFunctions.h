@@ -18,4 +18,6 @@ void copyDataBlock(SourceDest &sd, uint32_t source, uint32_t dest, int length);
 
 void copyDataByte(SourceDest &sd, uint32_t source, uint32_t dest);
 
+void clearDataBlock(SourceDest &sd, uint32_t dest, int length);
+
 #endif

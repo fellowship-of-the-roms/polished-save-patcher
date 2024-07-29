@@ -59,15 +59,19 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Copying from sBoxMons1 to sBoxMons1A..." << std::endl;
 	copyDataBlock(sd, sym7.getSRAMAddress("sBoxMons1"), sym8.getSRAMAddress("sBoxMons1A"), MONDB_ENTRIES_A_V8 * SAVEMON_STRUCT_LENGTH);
 
-	clearBox(it8, sym8, "sBoxMons1B", MONDB_ENTRIES_B_V8);
-	clearBox(it8, sym8, "sBoxMons1C", MONDB_ENTRIES_C_V8);
+	js_info << "Clearing " << "sBoxMons1B" << "..." << std::endl;
+	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons1B"), MONDB_ENTRIES_B_V8 * SAVEMON_STRUCT_LENGTH);
+	js_info << "Clearing " << "sBoxMons1C" << "..." << std::endl;
+	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons1C"), MONDB_ENTRIES_C_V8 * SAVEMON_STRUCT_LENGTH);
 
 	// copy sBoxMons2 to SBoxMons2A
 	js_info <<  "Copying from sBoxMons2 to sBoxMons2A..." << std::endl;
 	copyDataBlock(sd, sym7.getSRAMAddress("sBoxMons2"), sym8.getSRAMAddress("sBoxMons2A"), MONDB_ENTRIES_A_V8 * SAVEMON_STRUCT_LENGTH);
 
-	clearBox(it8, sym8, "sBoxMons2B", MONDB_ENTRIES_B_V8);
-	clearBox(it8, sym8, "sBoxMons2C", MONDB_ENTRIES_C_V8);
+	js_info << "Clearing " << "sBoxMons2B" << "..." << std::endl;
+	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons2B"), MONDB_ENTRIES_B_V8 * SAVEMON_STRUCT_LENGTH);
+	js_info << "Clearing " << "sBoxMons2C" << "..." << std::endl;
+	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons2C"), MONDB_ENTRIES_C_V8 * SAVEMON_STRUCT_LENGTH);
 
 	// Patching sBoxMons1A if checksums match
 	js_info <<  "Checking sBoxMons1A checksums..." << std::endl;
@@ -89,18 +93,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			// convert caught location
 			convertCaughtLocation(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_CAUGHTLOCATION, caught_location);
 			// convert caught ball
-			uint8_t caught_ball_v8 = mapV7ItemToV8(caught_ball);
-			if (caught_ball_v8 == 0xFF) {
-				js_error <<  "Ball " << std::hex << static_cast<int>(caught_ball) << " not found in version 8 item list." << std::endl;
-			} else {
-				if (caught_ball != caught_ball_v8) {
-					js_info <<  "Ball " << std::hex << static_cast<int>(caught_ball) << " converted to " << std::hex << static_cast<int>(caught_ball_v8) << std::endl;
-				}
-				uint8_t caught_ball_byte = it8.getByte(sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_CAUGHTBALL);
-				caught_ball_byte &= ~CAUGHT_BALL_MASK;
-				caught_ball_byte |= caught_ball_v8 & CAUGHT_BALL_MASK;
-				it8.setByte(caught_ball_v8);
-			}
+			convertCaughtBall(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_CAUGHTBALL, caught_ball);
 			// write the new checksum
 			writeNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH);
 		}
@@ -126,18 +119,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			// convert caught location
 			convertCaughtLocation(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_CAUGHTLOCATION, caught_location);
 			// convert caught ball
-			uint8_t caught_ball_v8 = mapV7ItemToV8(caught_ball);
-			if (caught_ball_v8 == 0xFF) {
-				js_error <<  "Ball " << std::hex << static_cast<int>(caught_ball) << " not found in version 8 item list." << std::endl;
-			} else {
-				if (caught_ball != caught_ball_v8) {
-					js_info <<  "Ball " << std::hex << static_cast<int>(caught_ball) << " converted to " << std::hex << static_cast<int>(caught_ball_v8) << std::endl;
-				}
-				uint8_t caught_ball_byte = it8.getByte(sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_CAUGHTBALL);
-				caught_ball_byte &= ~CAUGHT_BALL_MASK;
-				caught_ball_byte |= caught_ball_v8 & CAUGHT_BALL_MASK;
-				it8.setByte(caught_ball_v8);
-			}
+			convertCaughtBall(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_CAUGHTBALL, caught_ball);
 			// write the new checksum
 			writeNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH);
 		}
@@ -550,13 +532,9 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// clear it8 wEventFlags
 	js_info <<  "Clear wEventFlags..." << std::endl;
-	it8.seek(sym8.getPlayerDataAddress("wEventFlags"));
-	for (int i = 0; i < NUM_EVENTS; i++) {
-		it8.setByte(0x00);
-		it8.next();
-	}
-	it8.seek(sym8.getPlayerDataAddress("wEventFlags"));
+	clearDataBlock(sd, sym8.getPlayerDataAddress("wEventFlags"), NUM_EVENTS / 8);
 
+	it8.seek(sym8.getPlayerDataAddress("wEventFlags"));
 	// wEventFlags is a flag_array of NUM_EVENTS bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
 	js_info <<  "Patching wEventFlags..." << std::endl;
 	for (int i = 0; i < NUM_EVENTS; i++) {
@@ -591,14 +569,10 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// set it8 wUsedObjectPals to 0x00
 	js_info <<  "Clear wUsedObjectPals..." << std::endl;
-	it8.seek(sym8.getPlayerDataAddress("wUsedObjectPals"));
-	for (int i = 0; i < 0x10; i++) {
-		it8.setByte(0x00);
-		it8.next();
-	}
+	clearDataBlock(sd, sym8.getPlayerDataAddress("wUsedObjectPals"), 0x10);
 
 	// set it8 wLoadedObjPal0-7 to -1
-	js_info <<  "Clear wLoadedObjPal0-7..." << std::endl;
+	js_info <<  "Set wLoadedObjPal0-7 to -1..." << std::endl;
 	it8.seek(sym8.getPlayerDataAddress("wLoadedObjPal0"));
 	for (int i = 0; i < 8; i++) {
 		it8.setByte(0xFF);
@@ -619,11 +593,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// Clear wNuzlockeLandmarkFlags
 	js_info <<  "Clear wNuzlockeLandmarkFlags..." << std::endl;
-	it8.seek(sym8.getPlayerDataAddress("wNuzlockeLandmarkFlags"));
-	for (int i = 0; i < NUM_LANDMARKS_V8 + 7 / 8; i++) {
-		it8.setByte(0x00);
-		it8.next();
-	}
+	clearDataBlock(sd, sym8.getPlayerDataAddress("wNuzlockeLandmarkFlags"), NUM_LANDMARKS_V8 + 7 / 8);
 
 	// wNuzlockeLandmarkFlags is a flag_array of NUM_LANDMARKS bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
 	js_info <<  "Patching wNuzlockeLandmarkFlags..." << std::endl;
@@ -655,12 +625,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// clear wHiddenGrottoContents to wCurHiddenGrotto
 	js_info <<  "Clear wHiddenGrottoContents to wCurHiddenGrotto..." << std::endl;
-	it8.seek(sym8.getPlayerDataAddress("wHiddenGrottoContents"));
-	while (it8.getAddress() <= sym8.getPlayerDataAddress("wCurHiddenGrotto")) {
-		it8.setByte(0x00);
-		it8.next();
-	}
-
+	clearDataBlock(sd, sym8.getPlayerDataAddress("wHiddenGrottoContents"), sym8.getPlayerDataAddress("wCurHiddenGrotto") - sym8.getPlayerDataAddress("wHiddenGrottoContents"));
 
 	// copy from wLuckyNumberDayBuffer to wPhoneList
 	js_info <<  "Copy from wLuckyNumberDayBuffer to wPhoneList..." << std::endl;
@@ -668,11 +633,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// Clear v8 wPhoneList
 	js_info <<  "Clear wPhoneList..." << std::endl;
-	it8.seek(sym8.getPlayerDataAddress("wPhoneList"));
-	for (int i = 0; i < NUM_PHONE_CONTACTS_V8 + 7 / 8; i++) {
-		it8.setByte(0x00);
-		it8.next();
-	}
+	clearDataBlock(sd, sym8.getPlayerDataAddress("wPhoneList"), NUM_PHONE_CONTACTS_V8 + 7 / 8);
 
 	// wPhoneList has been converted to a bit flag array in version 8.
 	// for each byte in v7 up to CONTACT_LIST_SIZE_V7, if the byte is non-zero, set the corresponding bit in v8
@@ -837,20 +798,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	it8.seek(sym8.getPokemonDataAddress("wPartyMons"));
 	for (int i = 0; i < PARTY_LENGTH; i++) {
 		uint8_t caughtBall = it8.getByte(sym8.getPokemonDataAddress("wPartyMons") + i * PARTYMON_STRUCT_LENGTH + MON_CAUGHTBALL) & CAUGHT_BALL_MASK;
-		uint8_t caughtBallV8 = mapV7ItemToV8(caughtBall);
-		// warn if the caught ball was not found
-		if (caughtBallV8 == 0xFF) {
-			js_error <<  "Caught Ball " << std::hex << caughtBall << " not found in version 8 item list." << std::endl;
-			continue;
-		}
-		// print found caught ballv7 and converted caught ballv8
-		if (caughtBall != caughtBallV8){
-			js_info <<  "Caught Ball " << std::hex << static_cast<int>(caughtBall) << " converted to " << std::hex << caughtBallV8 << std::endl;
-		}
-		uint8_t currentCaughtBall = it8.getByte();
-		currentCaughtBall &= ~CAUGHT_BALL_MASK;
-		currentCaughtBall |= caughtBallV8 & CAUGHT_BALL_MASK;
-		it8.setByte(currentCaughtBall);
+		convertCaughtBall(sd, sym8.getPokemonDataAddress("wPartyMons"), i, PARTYMON_STRUCT_LENGTH, MON_CAUGHTBALL, caughtBall);
 	}
 
 	// fix party mon caught locations
@@ -896,19 +844,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// fix wBreedMon1CaughtBall
 	js_info <<  "Fix wBreedMon1CaughtBall..." << std::endl;
 	uint8_t caughtBall = it8.getByte(sym8.getPokemonDataAddress("wBreedMon1CaughtBall")) & CAUGHT_BALL_MASK;
-	uint8_t caughtBallV8 = mapV7ItemToV8(caughtBall);
-	// warn if the caught ball was not found
-	if (caughtBallV8 == 0xFF) {
-		js_error <<  "Caught Ball " << std::hex << caughtBall << " not found in version 8 item list." << std::endl;
-	}
-	// print found caught ballv7 and converted caught ballv8
-	if (caughtBall != caughtBallV8){
-		js_info <<  "Caught Ball " << std::hex << static_cast<int>(caughtBall) << " converted to " << std::hex << caughtBallV8 << std::endl;
-	}
-	uint8_t currentCaughtBall = it8.getByte();
-	currentCaughtBall &= ~CAUGHT_BALL_MASK;
-	currentCaughtBall |= caughtBallV8 & CAUGHT_BALL_MASK;
-	it8.setByte(currentCaughtBall);
+	convertCaughtBall(sd, sym8.getPokemonDataAddress("wBreedMon1"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTBALL, caughtBall);
 
 	// fix wBreedMon1CaughtLocation
 	js_info <<  "Fix wBreedMon1CaughtLocation..." << std::endl;
@@ -932,19 +868,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// fix wBreedMon2CaughtBall
 	js_info <<  "Fix wBreedMon2CaughtBall..." << std::endl;
 	caughtBall = it8.getByte(sym8.getPokemonDataAddress("wBreedMon2CaughtBall")) & CAUGHT_BALL_MASK;
-	caughtBallV8 = mapV7ItemToV8(caughtBall);
-	// warn if the caught ball was not found
-	if (caughtBallV8 == 0xFF) {
-		js_error <<  "Caught Ball " << std::hex << caughtBall << " not found in version 8 item list." << std::endl;
-	}
-	// print found caught ballv7 and converted caught ballv8
-	if (caughtBall != caughtBallV8){
-		js_info <<  "Caught Ball " << std::hex << static_cast<int>(caughtBall) << " converted to " << std::hex << caughtBallV8 << std::endl;
-	}
-	currentCaughtBall = it8.getByte();
-	currentCaughtBall &= ~CAUGHT_BALL_MASK;
-	currentCaughtBall |= caughtBallV8 & CAUGHT_BALL_MASK;
-	it8.setByte(currentCaughtBall);
+	convertCaughtBall(sd, sym8.getPokemonDataAddress("wBreedMon2"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTBALL, caughtBall);
 
 	// fix wBreedMon2CaughtLocation
 	js_info <<  "Fix wBreedMon2CaughtLocation..." << std::endl;
@@ -953,11 +877,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// Clear space from wLevelUpMonNickname to wBugContestBackupPartyCount in it8
 	js_info <<  "Clear space from wLevelUpMonNickname to wBugContestBackupPartyCount..." << std::endl;
-	it8.seek(sym8.getPokemonDataAddress("wLevelUpMonNickname"));
-	while (it8.getAddress() < sym8.getPokemonDataAddress("wBugContestBackupPartyCount")) {
-		it8.setByte(0x00);
-		it8.next();
-	}
+	clearDataBlock(sd, sym8.getPokemonDataAddress("wLevelUpMonNickname"), sym8.getPokemonDataAddress("wBugContestBackupPartyCount") - sym8.getPokemonDataAddress("wLevelUpMonNickname"));
 
 	// copy wBugContestBackupPartyCount
 	js_info <<  "Copy wBugContestBackupPartyCount..." << std::endl;
@@ -984,19 +904,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// fix wContestMonCaughtBall
 	js_info <<  "Fix wContestMonCaughtBall..." << std::endl;
 	caughtBall = it8.getByte(sym8.getPokemonDataAddress("wContestMonCaughtBall")) & CAUGHT_BALL_MASK;
-	caughtBallV8 = mapV7ItemToV8(caughtBall);
-	// warn if the caught ball was not found
-	if (caughtBallV8 == 0xFF) {
-		js_error <<  "Caught Ball " << std::hex << caughtBall << " not found in version 8 item list." << std::endl;
-	}
-	// print found caught ballv7 and converted caught ballv8
-	if (caughtBall != caughtBallV8){
-		js_info <<  "Caught Ball " << std::hex << static_cast<int>(caughtBall) << " converted to " << std::hex << caughtBallV8 << std::endl;
-	}
-	currentCaughtBall = it8.getByte();
-	currentCaughtBall &= ~CAUGHT_BALL_MASK;
-	currentCaughtBall |= caughtBallV8 & CAUGHT_BALL_MASK;
-	it8.setByte(currentCaughtBall);
+	convertCaughtBall(sd, sym8.getPokemonDataAddress("wContestMon"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTBALL, caughtBall);
 
 	// fix wContestMonCaughtLocation
 	js_info <<  "Fix wContestMonCaughtLocation..." << std::endl;
@@ -1230,11 +1138,7 @@ void migrateBoxData(SourceDest &sd, const std::string &prefix) {
 	// Clear the boxes
 	js_info << "Clearing v8 " << prefix << " boxes..." << std::endl;
 	for (int n = 1; n < NUM_BOXES_V8 + 1; n++) {
-		sd.destSave.seek(sd.destSym.getSRAMAddress(prefix + std::to_string(n)));
-		for (int i = 0; i < NEWBOX_SIZE; i++) {
-			sd.destSave.setByte(0x00);
-			sd.destSave.next();
-		}
+		clearDataBlock(sd, sd.destSym.getSRAMAddress(prefix + std::to_string(n)), NEWBOX_SIZE);
 	}
 
 	// Copy the boxes
@@ -1259,17 +1163,6 @@ void migrateBoxData(SourceDest &sd, const std::string &prefix) {
 		if (theme != theme_v8) {
 			js_info <<  "Theme " << std::hex << static_cast<int>(theme) << " converted to " << std::hex << static_cast<int>(theme_v8) << std::endl;
 			sd.destSave.setByte(theme_v8);
-		}
-	}
-}
-
-void clearBox(SaveBinary::Iterator &it8, const SymbolDatabase &sym8, const std::string &boxName, int numEntries) {
-	js_info << "Clearing " << boxName << "..." << std::endl;
-	it8.seek(sym8.getSRAMAddress(boxName));
-	for (int i = 0; i < numEntries; i++) {
-		for (int j = 0; j < SAVEMON_STRUCT_LENGTH; j++) {
-			it8.setByte(0x00);
-			it8.next();
 		}
 	}
 }
@@ -1331,5 +1224,20 @@ void convertCaughtLocation(SourceDest &sd, uint32_t base_address, int i, int str
 			js_info <<  "Landmark " << std::hex << static_cast<int>(caught_location) << " converted to " << std::hex << static_cast<int>(caught_location_v8) << std::endl;
 		}
 		sd.destSave.setByte(base_address + i * struct_length + caught_location_offset, caught_location_v8);
+	}
+}
+
+void convertCaughtBall(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_ball_offset, uint8_t caught_ball) {
+	uint8_t caught_ball_v8 = mapV7ItemToV8(caught_ball);
+	if (caught_ball_v8 == 0xFF) {
+		js_error <<  "Ball " << std::hex << static_cast<int>(caught_ball) << " not found in version 8 item list." << std::endl;
+	} else {
+		if (caught_ball != caught_ball_v8) {
+			js_info <<  "Ball " << std::hex << static_cast<int>(caught_ball) << " converted to " << std::hex << static_cast<int>(caught_ball_v8) << std::endl;
+		}
+		uint8_t caught_ball_byte = sd.destSave.getByte(base_address + i * struct_length + caught_ball_offset);
+		caught_ball_byte &= ~CAUGHT_BALL_MASK;
+		caught_ball_byte |= caught_ball_v8 & CAUGHT_BALL_MASK;
+		sd.destSave.setByte(caught_ball_v8);
 	}
 }

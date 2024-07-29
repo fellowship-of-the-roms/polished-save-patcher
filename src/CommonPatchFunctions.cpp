@@ -19,3 +19,11 @@ void copyDataByte(SourceDest &sd, uint32_t source, uint32_t dest) {
 	sd.destSave.seek(dest);
 	sd.destSave.setByte(sd.sourceSave.getByte());
 }
+
+void clearDataBlock(SourceDest &sd, uint32_t dest, int length) {
+	sd.destSave.seek(dest);
+	for (int i = 0; i < length; i++) {
+		sd.destSave.setByte(0);
+		sd.destSave.next();
+	}
+}
