@@ -300,7 +300,7 @@ uint8_t mapV7ItemToV8(uint8_t v7) {
 
 	};
 
-	// return the corresponding version 8 key item or 0xFF if not found
+	// return the corresponding version 8 item or 0xFF if not found
 	return indexMap.find(v7) != indexMap.end() ? indexMap[v7] : 0xFF;
 }
 
@@ -3639,7 +3639,7 @@ uint8_t mapV7MagikarpFormToV8(uint8_t v7) {
 		{0x10, 0x14}, // MAGIKARP_RAINDROP_FORM
 	};
 
-	// return the corresponding version 8 key item or 0xFF if not found
+	// return the corresponding version 8 magikarp form or 0xFF if not found
 	return indexMap.find(v7) != indexMap.end() ? indexMap[v7] : 0xFF;
 }
 

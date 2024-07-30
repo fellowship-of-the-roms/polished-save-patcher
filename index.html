@@ -4,6 +4,7 @@
 	<title>Polished Crystal Save Patcher</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
+		/* Same CSS as before */
 		body {
 			font-family: Arial, sans-serif;
 			margin: 20px;
@@ -33,7 +34,7 @@
 			width: 100%;
 			box-sizing: border-box;
 		}
-		button {
+		button, select {
 			background-color: #b39ddb;
 			color: #121212;
 			border: none;
@@ -44,8 +45,12 @@
 			width: 100%;
 			box-sizing: border-box;
 		}
-		button:hover {
+		button:hover, select:hover {
 			background-color: #9575cd;
+		}
+		button:disabled {
+			background-color: #555;
+			cursor: not-allowed;
 		}
 		pre {
 			background-color: #1e1e1e;
@@ -122,7 +127,7 @@
 		<h1>Polished Crystal Save Patcher</h1>
 		<div class="instructions">
 			<p>
-				This tool allows you to patch your Polished Crystal save files from Version 7 (3.0.0-beta) to Version 8 (9bit).
+				This tool allows you to patch your Polished Crystal save files between various versions.
 				Follow the steps below to patch your save file:
 			</p>
 			<ol>
@@ -131,20 +136,57 @@
 				</span> (Where you normally do link battles/trades)</li>
 				<li>Back up your original save file somewhere safe.</li>
 				<li>Click the "Choose File" button to select your old save file.</li>
+				<li>Click the "Upload Save" button to upload your save file and display the current save version.</li>
+				<li>Select your target save version from the dropdown menu (default is the highest version).</li>
 				<li>Click the "Patch Save" button to start the patching process.</li>
 				<li>Once the patching is complete, a new save file will be downloaded automatically.</li>
+				<li>If the download doesn't start automatically, click the "Download Patched Save" button.</li>
 				<li>After loading your patched save for the first time, promptly exit the Mon Healing Center P.C. before interacting with anything.</li>
 			</ol>
 		</div>
 		<input type="file" id="oldSave" />
-		<button onclick="patchSave()" id="patchButton">Patch Save</button>
+		<button onclick="uploadSave()" id="uploadButton">Upload Save</button>
+		<div id="currentVersion"></div>
+		<select id="targetVersion">
+			<option value="9" selected>Version 9 (3.1.0)</option>
+			<option value="8">Version 8 (3.0.0)</option>
+		</select>
+		<button onclick="patchSave()" id="patchButton" disabled>Patch Save</button>
 		<div id="indicator">Ready to patch.</div>
 		<pre id="output"></pre>
+		<button id="manualDownloadButton" onclick="manualDownload()" disabled>Download Patched Save</button>
 		<button onclick="downloadLog()">Download Log</button>
 	</div>
 	<script>
+		let patchedBlobUrl = null;
+
+		function uploadSave() {
+			var oldSaveFile = document.getElementById('oldSave').files[0];
+			if (!oldSaveFile) {
+				alert("Please select the save file you want to upload.");
+				return;
+			}
+
+			var reader = new FileReader();
+			reader.onload = function(event) {
+				var data = new Uint8Array(event.target.result);
+				FS.writeFile('/old_save.sav', data);
+				// Call the C++ function to get the save version
+				var saveVersion = Module.get_save_version('/old_save.sav');
+				if (saveVersion) {
+					document.getElementById('currentVersion').textContent = 'Current Save Version: ' + saveVersion.toString(16);
+					document.getElementById('patchButton').disabled = false; // Enable the Patch Save button
+				} else {
+					document.getElementById('currentVersion').textContent = 'Invalid save file.';
+					document.getElementById('patchButton').disabled = true; // Disable the Patch Save button
+				}
+			};
+			reader.readAsArrayBuffer(oldSaveFile);
+		}
+
 		function patchSave() {
 			var oldSaveFile = document.getElementById('oldSave').files[0];
+			var targetVersion = parseInt(document.getElementById('targetVersion').value, 10);
 			if (!oldSaveFile) {
 				alert("Please select the save file you want to patch.");
 				return;
@@ -153,11 +195,13 @@
 			var indicatorElement = document.getElementById('indicator');
 			var outputElement = document.getElementById('output');
 			var patchButton = document.getElementById('patchButton');
+			var manualDownloadButton = document.getElementById('manualDownloadButton');
 
 			// Clear previous output and update indicator
 			outputElement.textContent = '';
 			indicatorElement.textContent = 'Patching in progress...';
 			patchButton.disabled = true;
+			manualDownloadButton.disabled = true;
 
 			var oldSavePath = '/old_save.sav';
 			var newSavePath = '/new_save.sav';
@@ -172,20 +216,23 @@
 				FS.writeFile(oldSavePath, data);
 
 				// Call the C++ function and handle the result
-				var result = Module.patch_save(oldSavePath, newSavePath);
+				var result = Module.patch_save(oldSavePath, newSavePath, targetVersion);
 				if (result.success) {
 					var patchedData = FS.readFile(newSavePath, { encoding: 'binary', flags: 'r' });
 					if (patchedData) {
+						if (patchedBlobUrl) {
+							URL.revokeObjectURL(patchedBlobUrl);
+						}
 						var blob = new Blob([patchedData], { type: 'application/octet-stream' });
-						var url = URL.createObjectURL(blob);
+						patchedBlobUrl = URL.createObjectURL(blob);
 						var a = document.createElement('a');
-						a.href = url;
+						a.href = patchedBlobUrl;
 						a.download = 'patched_save.sav';
 						a.click();
-						URL.revokeObjectURL(url);
 
 						indicatorElement.textContent = 'Patching complete. Save file downloaded successfully.';
 						indicatorElement.classList.remove('error');
+						manualDownloadButton.disabled = false;
 					} else {
 						indicatorElement.textContent = 'Patching complete with errors. Failed to read the patched save file.';
 						indicatorElement.classList.add('error');
@@ -197,6 +244,15 @@
 				patchButton.disabled = false;
 			};
 			reader.readAsArrayBuffer(oldSaveFile);
+		}
+
+		function manualDownload() {
+			if (patchedBlobUrl) {
+				var a = document.createElement('a');
+				a.href = patchedBlobUrl;
+				a.download = 'patched_save.sav';
+				a.click();
+			}
 		}
 
 		function downloadLog() {

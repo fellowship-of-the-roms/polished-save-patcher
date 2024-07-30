@@ -1058,7 +1058,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	save8.setWord(SAVE_BACKUP_CHECKSUM_ABS_ADDRESS, new_backup_checksum);
 
 	// write the modified save file to the output file and print success message
-	js_info <<  "Save file patched successfully!" << std::endl;
+	js_info <<  "Sucessfully patched to 3.0.0 save version 8!" << std::endl;
 	return true;
 }
 

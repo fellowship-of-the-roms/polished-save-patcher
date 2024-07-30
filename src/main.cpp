@@ -1,6 +1,7 @@
 #include "SaveBinary.h"
 #include "SymbolDatabase.h"
 #include "PatchVersion7to8.h"
+#include "PatchVersion8to9.h"
 #include "PatcherConstants.h"
 #include "Logging.h"
 #include <iostream>
@@ -10,8 +11,7 @@
 #include <emscripten/emscripten.h>
 #include <vector>
 
-
-emscripten::val patch_save(const std::string &old_save_path, const std::string &new_save_path) {
+emscripten::val patch_save(const std::string &old_save_path, const std::string &new_save_path, int target_version) {
 	// Result object to return to JavaScript
 	emscripten::val result = emscripten::val::object();
 	bool success = true;
@@ -23,14 +23,29 @@ emscripten::val patch_save(const std::string &old_save_path, const std::string &
 	// load the save version big endian word
 
 	uint16_t saveVersion = oldSave.getWordBE(SAVE_VERSION_ABS_ADDRESS);
-	if (saveVersion != 0x07) {
+	if (saveVersion != 0x07 && saveVersion != 0x08) {
 		js_error << "Unsupported save version: " << std::hex << saveVersion << std::endl;
 		success = false;
 	} else {
-		if (!patchVersion7to8(oldSave, newSave)) {
-			js_error << "Failed to patch save file." << std::endl;
-			success = false;
-		} else {
+		if (saveVersion == 0x07 && target_version >= 8) {
+			if (!patchVersion7to8(oldSave, newSave)) {
+				js_error << "Failed to patch save file from version 7 to 8." << std::endl;
+				success = false;
+			} else {
+				js_info << "Patched save file from version 7 to 8." << std::endl;
+				saveVersion = 0x08; // Update the save version to 8
+				oldSave = newSave; // Update the old save to the new save
+			}
+		}
+		if (saveVersion == 0x08 && target_version >= 9) {
+			if (!patchVersion8to9(oldSave, newSave)) {
+				js_error << "Failed to patch save file from version 8 to 9." << std::endl;
+				success = false;
+			} else {
+				js_info << "Patched save file from version 8 to 9." << std::endl;
+			}
+		}
+		if (success) {
 			js_info << "Saving file..." << std::endl;
 			newSave.save(new_save_path);
 			js_info << "File saved successfully!" << std::endl;
@@ -41,8 +56,14 @@ emscripten::val patch_save(const std::string &old_save_path, const std::string &
 	return result;
 }
 
+uint16_t get_save_version(const std::string &old_save_path) {
+	SaveBinary oldSave(old_save_path);
+	return oldSave.getWordBE(SAVE_VERSION_ABS_ADDRESS);
+}
+
 EMSCRIPTEN_BINDINGS(patch_save_module) {
 	emscripten::function("patch_save", &patch_save);
+	emscripten::function("get_save_version", &get_save_version);
 }
 
 int main(int argc, char* argv[]) {

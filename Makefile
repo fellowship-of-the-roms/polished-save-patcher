@@ -18,6 +18,7 @@ BUILD_DIR := build
 SOURCES := $(SRC_DIR)/CommonPatchFunctions.cpp \
            $(SRC_DIR)/PatchVersion7to8.cpp \
            $(SRC_DIR)/PatchVersion7to8_unorderedmaps.cpp \
+           $(SRC_DIR)/PatchVersion8to9.cpp \
            $(SRC_DIR)/SaveBinary.cpp \
            $(SRC_DIR)/SymbolDatabase.cpp \
            $(SRC_DIR)/Logging.cpp \
