@@ -7,8 +7,9 @@
 #include "CommonPatchFunctions.h"
 #include <iostream>
 
-// NUM_KEY_ITEMS_V8 defined in PatchVersion7to8.h
-constexpr int NUM_KEY_ITEMS_V9 = 0x25;
+namespace {
+	constexpr int NUM_KEY_ITEMS_V9 = 0x25;
+}
 
 // converts a version 8 key item to a version 8 key item
 uint8_t mapV8KeyItemToV9(uint8_t v8);

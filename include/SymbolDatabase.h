@@ -37,11 +37,13 @@ public:
 	uint32_t getSRAMAddress(const std::string& name) const;
 
 	// Todo: These may get moved to CommonPatchFunctions.h
-	// Returns the the distance of the wram symbol from wPlayerData and adds it to the address of sPlayerData
+	// Returns the distance of the wram symbol from wOptions and adds it to the address of sOptions
+	uint32_t getOptionsAddress(const std::string& wram_symbol_name) const;
+	// Returns the distance of the wram symbol from wPlayerData and adds it to the address of sPlayerData
 	uint32_t getPlayerDataAddress(const std::string& wram_symbol_name) const;
-	// Returns the the distance of the wram symbol from wMapData and adds it to the address of sMapData
+	// Returns the distance of the wram symbol from wMapData and adds it to the address of sMapData
 	uint32_t getMapDataAddress(const std::string& wram_symbol_name) const;
-	// Returns the the distance of the wram symbol from wPokemonData and adds it to the address of sPokemonData
+	// Returns the distance of the wram symbol from wPokemonData and adds it to the address of sPokemonData
 	uint32_t getPokemonDataAddress(const std::string& wram_symbol_name) const;
 
 private:

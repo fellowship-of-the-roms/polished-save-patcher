@@ -79,7 +79,7 @@ public:
 			void copy(Iterator& it, uint32_t address, uint32_t numBytes);
 			// Return the current address
 			uint32_t getAddress();
-		
+
 		private:
 			SaveBinary& m_saveBinary;
 			uint32_t m_address;

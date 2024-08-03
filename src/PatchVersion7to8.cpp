@@ -149,10 +149,16 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Copying from sOptions to sGameData..." << std::endl;
 	copyDataBlock(sd, sym7.getSRAMAddress("sOptions"), sym8.getSRAMAddress("sOptions"), sym7.getSRAMAddress("sGameData") - sym7.getSRAMAddress("sOptions"));
 
+	// Reset NUZLOCKE bit to off; this becomes the affection option.
+	js_info <<  "Resetting NUZLOCKE bit..." << std::endl;
+	it8.seek(sym8.getOptionsAddress("wInitialOptions"));
+	it8.setByte(it8.getByte() & ~NUZLOCKE_OPT);
+
+
 	// copy bytes from wPlayerData to wObjectStructs - 1 from version 7 to version 8
 	js_info <<  "Copying from wPlayerData to wObjectStructs..." << std::endl;
 	copyDataBlock(sd, sym7.getPlayerDataAddress("wPlayerData"), sym8.getPlayerDataAddress("wPlayerData"), sym7.getPlayerDataAddress("wObjectStructs") - sym7.getPlayerDataAddress("wPlayerData"));
-	
+
 	js_info <<  "Patching Object Structs..." << std::endl;
 
 	// version 8 expanded each object struct by 1 byte to add the palette index byte at the end.
@@ -190,7 +196,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// copy bytes from wMapObjects to wEnteredMapFromContinue
 	js_info <<  "Copying from wMapObjects to wEnteredMapFromContinue..." << std::endl;
 	copyDataBlock(sd, sym7.getPlayerDataAddress("wMapObjects"), sym8.getPlayerDataAddress("wMapObjects"), sym7.getPlayerDataAddress("wEnteredMapFromContinue") - sym7.getPlayerDataAddress("wMapObjects"));
-	
+
 	// copy it7 wEnteredMapFromContinue to it8 wEnteredMapFromContinue
 	js_info <<  "Copy wEnteredMapFromContinue" << std::endl;
 	copyDataByte(sd, sym7.getPlayerDataAddress("wEnteredMapFromContinue"), sym8.getPlayerDataAddress("wEnteredMapFromContinue"));

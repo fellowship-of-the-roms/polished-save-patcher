@@ -159,6 +159,36 @@ uint32_t SymbolDatabase::getSRAMAddress(const std::string& name) const {
 	return symbol->bank * SRAM_BANK_SIZE + symbol->address - SRAM_START_ADDRESS;
 }
 
+// Returns the the distance of the wram symbol from wOptions and adds it to the address of sOptions
+uint32_t SymbolDatabase::getOptionsAddress(const std::string& wram_symbol_name) const {
+	// check if symbol is in WRAM
+	if (!isWRAM(wram_symbol_name)) {
+		js_error <<  "Symbol " << wram_symbol_name << " is not in WRAM" << std::endl;
+		return 0;
+	}
+	// we need to find the equivalent SRAM address of the WRAM symbol
+	// this is done by adding the distance between the wram symbol and wOptions to sOptions
+
+	// get the address of the wOptions symbol
+	const Symbol* wOptions = getSymbol("wOptions");
+	if (wOptions == nullptr) {
+		return 0;
+	}
+	// calculate the distance between wram_symbol and wOptions error if result is negative
+	const Symbol* wram_symbol = getSymbol(wram_symbol_name);
+	if (wram_symbol == nullptr) {
+		return 0;
+	}
+	int32_t distance = wram_symbol->address - wOptions->address;
+	if (distance < 0) {
+		js_error <<  "Symbol " << wram_symbol_name << " is before wOptions" << std::endl;
+		return 0;
+	}
+
+	// calculate the absolute address of the options
+	return getSRAMAddress("sOptions") + distance;
+}
+
 // Returns the the distance of the wram symbol from wPlayerData and adds it to the address of sPlayerData
 uint32_t SymbolDatabase::getPlayerDataAddress(const std::string& wram_symbol_name) const {
 	// check if symbol is in WRAM
@@ -168,7 +198,7 @@ uint32_t SymbolDatabase::getPlayerDataAddress(const std::string& wram_symbol_nam
 	}
 	// we need to find the equivalent SRAM address of the WRAM symbol
 	// this is done by adding the distance between the wram symbol and wPlayerData to sPlayerData
-	
+
 	// get the address of the wPlayerData symbol
 	const Symbol* wPlayerData = getSymbol("wPlayerData");
 	if (wPlayerData == nullptr) {
@@ -198,7 +228,7 @@ uint32_t SymbolDatabase::getMapDataAddress(const std::string& wram_symbol_name) 
 	}
 	// we need to find the equivalent SRAM address of the WRAM symbol
 	// this is done by adding the distance between the wram symbol and wCurMapData to sMapData
-	
+
 	// get the address of the wMapData symbol
 	const Symbol* wMapData = getSymbol("wCurMapData");
 	if (wMapData == nullptr) {
@@ -229,7 +259,7 @@ uint32_t SymbolDatabase::getPokemonDataAddress(const std::string& wram_symbol_na
 	}
 	// we need to find the equivalent SRAM address of the WRAM symbol
 	// this is done by adding the distance between the wram symbol and wPokemonData to sPokemonData
-	
+
 	// get the address of the wPokemonData symbol
 	const Symbol* wPokemonData = getSymbol("wPokemonData");
 	if (wPokemonData == nullptr) {
