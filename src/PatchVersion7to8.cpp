@@ -205,9 +205,21 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// copy it7 wStatusFlags3 to it8 wStatusFlags3
 	copyDataByte(sd, sym7.getPlayerDataAddress("wStatusFlags3"), sym8.getPlayerDataAddress("wStatusFlags3"));
 
-	js_info <<  "Copying from wTimeOfDayPal to wTMsHMsEnd..." << std::endl;
+	js_info <<  "Copying from wTimeOfDayPal to wBadgesEnd..." << std::endl;
 	// copy from it7 wTimeOfDayPal to it7 wTMsHMsEnd
-	copyDataBlock(sd, sym7.getPlayerDataAddress("wTimeOfDayPal"), sym8.getPlayerDataAddress("wTimeOfDayPal"), sym7.getPlayerDataAddress("wTMsHMsEnd") - sym7.getPlayerDataAddress("wTimeOfDayPal"));
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wTimeOfDayPal"), sym8.getPlayerDataAddress("wTimeOfDayPal"), sym7.getPlayerDataAddress("wBadgesEnd") - sym7.getPlayerDataAddress("wTimeOfDayPal"));
+
+	// clear it8 wPokemonJournals
+	js_info <<  "Clearing wPokemonJournals..." << std::endl;
+	clearDataBlock(sd, sym8.getPlayerDataAddress("wPokemonJournals"), sym8.getPlayerDataAddress("wPokemonJournalsEnd") - sym8.getPlayerDataAddress("wPokemonJournals"));
+
+	// copy it7 wPokemonJournals to it8 wPokemonJournals
+	js_info <<  "Copying wPokemonJournals..." << std::endl;
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wPokemonJournals"), sym8.getPlayerDataAddress("wPokemonJournals"), sym7.getPlayerDataAddress("wPokemonJournalsEnd") - sym7.getPlayerDataAddress("wPokemonJournals"));
+
+	// copy TMsHMs
+	js_info <<  "Copying from wTMsHMs to wTMsHMsEnd..." << std::endl;
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wTMsHMs"), sym8.getPlayerDataAddress("wTMsHMs"), sym7.getPlayerDataAddress("wTMsHMsEnd") - sym7.getPlayerDataAddress("wTMsHMs"));
 
 	// clear it8 wKeyItems
 	js_info <<  "Clearing wKeyItems..." << std::endl;
@@ -649,6 +661,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// copy from wParkBallsRemaining to wPlayerDataEnd
 	js_info <<  "Copy from wParkBallsRemaining to wPlayerDataEnd..." << std::endl;
 	copyDataBlock(sd, sym7.getPlayerDataAddress("wParkBallsRemaining"), sym8.getPlayerDataAddress("wParkBallsRemaining"), sym7.getPlayerDataAddress("wPlayerDataEnd") - sym7.getPlayerDataAddress("wParkBallsRemaining"));
+
+
+	// clear wVisitedSpawns in v8 before patching
+	js_info <<  "Clear wVisitedSpawns..." << std::endl;
+	clearDataBlock(sd, sym8.getMapDataAddress("wVisitedSpawns"), NUM_SPAWNS_V8 / 8);
 
 	// wVisitedSpawns is a flag_array of NUM_SPAWNS bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
 	js_info <<  "Patching wVisitedSpawns..." << std::endl;
