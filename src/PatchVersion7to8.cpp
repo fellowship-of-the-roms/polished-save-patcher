@@ -615,9 +615,9 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 					js_info <<  "Landmark Flag " << std::hex << static_cast<int>(landmarkFlagIndex) << " converted to " << std::hex << static_cast<int>(landmarkFlagIndexV8) << std::endl;
 				}
 				// seek to the byte containing the bit
-				it8.seek(sym8.getPlayerDataAddress("wNuzlockeLandmarkFlags") + i / 8);
+				it8.seek(sym8.getPlayerDataAddress("wNuzlockeLandmarkFlags") + landmarkFlagIndexV8 / 8);
 				// set the bit
-				it8.setByte(it8.getByte() | (1 << (i % 8)));
+				it8.setByte(it8.getByte() | (1 << (landmarkFlagIndexV8 % 8)));
 			}
 		}
 		if (i % 8 == 7) {
@@ -687,9 +687,9 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 					js_info <<  "Spawn " << std::hex << static_cast<int>(spawnIndex) << " converted to " << std::hex << static_cast<int>(spawnIndexV8) << std::endl;
 				}
 				// seek to the byte containing the bit
-				it8.seek(sym8.getMapDataAddress("wVisitedSpawns") + i / 8);
+				it8.seek(sym8.getMapDataAddress("wVisitedSpawns") + spawnIndexV8 / 8);
 				// set the bit
-				it8.setByte(it8.getByte() | (1 << (i % 8)));
+				it8.setByte(it8.getByte() | (1 << (spawnIndexV8 % 8)));
 			}
 		}
 		if (i % 8 == 7) {
