@@ -42,7 +42,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	uint8_t map_group = it7.getByte(sym7.getMapDataAddress("wMapGroup"));
 	it7.next();
 	uint8_t map_num = it7.getByte();
-	if (map_group != MON_CENTER_2F_GROUP && map_num != MON_CENTER_2F_MAP) {
+	if (map_group != MON_CENTER_2F_GROUP || map_num != MON_CENTER_2F_MAP) {
 		js_error <<  "Player is not in the Mon Healing Center P.C. 2nd Floor. Go to where you heal in game, and head upstairs. Then re-save your game and try again." << std::endl;
 		return false;
 	}
