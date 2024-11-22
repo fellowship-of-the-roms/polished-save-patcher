@@ -53,7 +53,7 @@ jobs:
 
     strategy:
       matrix:
-        languages: ${{ matrix.language }}
+        language: [ 'cpp', 'javascript' ]
 
     steps:
       - name: Checkout code
