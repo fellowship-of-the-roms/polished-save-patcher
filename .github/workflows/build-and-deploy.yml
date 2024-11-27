@@ -37,6 +37,12 @@ jobs:
           source ./emsdk/emsdk_env.sh
           make release
 
+      - name: Upload emsdk as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: emsdk
+          path: emsdk
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -58,6 +64,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Download emsdk artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: emsdk
+
+      - name: Setup Emscripten environment
+        run: source ./emsdk/emsdk_env.sh
+        shell: bash
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
