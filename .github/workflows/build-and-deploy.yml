@@ -51,6 +51,7 @@ jobs:
           publish_branch: gh-pages
 
   codeql-analysis:
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       actions: read
