@@ -37,12 +37,6 @@ jobs:
           source ./emsdk/emsdk_env.sh
           make release
 
-      - name: Upload emsdk as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: emsdk
-          path: emsdk
-
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -66,10 +60,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download emsdk artifact
-        uses: actions/download-artifact@v3
+      - name: Cache emsdk
+        uses: actions/cache@v4
         with:
-          name: emsdk
+          path: emsdk
+          key: ${{ runner.os }}-emsdk-${{ hashFiles('emsdk/emsdk_manifest.json') }}
+          restore-keys: |
+            ${{ runner.os }}-emsdk-
 
       - name: Setup Emscripten environment
         run: source ./emsdk/emsdk_env.sh
@@ -82,7 +79,7 @@ jobs:
 
       - name: Build project manually
         run: |
-          source emsdk/emsdk_env.sh
+          source ./emsdk/emsdk_env.sh
           make
 
       - name: Perform CodeQL Analysis
