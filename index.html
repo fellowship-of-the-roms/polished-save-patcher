@@ -2,6 +2,7 @@
 <html>
 <head>
 	<title>Polished Crystal Save Patcher</title>
+	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
 		/* Updated CSS with drag-and-drop functionality and other improvements */
@@ -79,6 +80,7 @@
 			padding: 10px;
 			box-sizing: border-box;
 			border-radius: 4px;
+			margin-bottom: 20px;
 		}
 		pre {
 			background-color: #1e1e1e;
@@ -108,6 +110,12 @@
 			font-weight: bold;
 			margin-bottom: 20px;
 			text-align: center;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		#indicatorIcon {
+			margin-right: 8px;
 		}
 		.tooltip {
 			position: relative;
@@ -154,7 +162,16 @@
 			h1 {
 				font-size: 24px;
 			}
+			.container {
+				padding: 15px;
+			}
 			button, select {
+				font-size: 14px;
+			}
+			.instructions {
+				font-size: 14px;
+			}
+			.drop-zone p {
 				font-size: 14px;
 			}
 		}
@@ -183,21 +200,26 @@
 				<li>After loading your patched save for the first time, promptly exit the Mon Healing Center P.C. before interacting with anything.</li>
 			</ol>
 		</div>
-		<div id="dropZone" class="drop-zone">
+		<div id="dropZone" class="drop-zone" tabindex="0" role="button">
 			<p>Drag and drop your save file here, or click to select.</p>
 			<input type="file" id="oldSave" accept=".sav" />
 		</div>
+		<div id="fileDetails" style="margin-top: 10px;"></div>
 		<button onclick="uploadSave()" id="uploadButton" disabled>Upload Save</button>
 		<div id="currentVersion"></div>
-		<select id="targetVersion">
+		<select id="targetVersion" title="Select the version to patch your save file to.">
 			<option value="9" selected>Version 9 (3.1.0)</option>
 			<option value="8">Version 8 (3.0.0)</option>
 		</select>
 		<button onclick="patchSave()" id="patchButton" disabled>Patch Save</button>
-		<div id="indicator">Initializing...</div>
+		<div id="indicator">
+			<span id="indicatorIcon"></span>
+			<span id="indicatorMessage">Initializing...</span>
+		</div>
 		<pre id="output"></pre>
 		<button id="manualDownloadButton" onclick="manualDownload()" disabled>Download Patched Save</button>
-		<button onclick="downloadLog()">Download Log</button>
+		<button id="downloadLogButton" onclick="downloadLog()">Download Log</button>
+		<button id="resetButton" style="background-color: #f44336; color: white;">Reset</button>
 	</div>
 
 	<script>
@@ -226,6 +248,28 @@
 			outputElement.scrollTop = outputElement.scrollHeight;
 		}
 
+		function updateIndicator(message, type = 'info') {
+			const indicatorMessage = document.getElementById('indicatorMessage');
+			const indicatorIcon = document.getElementById('indicatorIcon');
+
+			indicatorMessage.textContent = message;
+
+			switch (type) {
+				case 'success':
+					indicatorIcon.innerHTML = '✅';
+					break;
+				case 'error':
+					indicatorIcon.innerHTML = '❌';
+					break;
+				case 'info':
+					indicatorIcon.innerHTML = 'ℹ️';
+					break;
+				default:
+					indicatorIcon.innerHTML = '';
+					break;
+			}
+		}
+
 		// Wait for the Module to be fully initialized
 		if (typeof Module !== 'undefined') {
 			Module.onRuntimeInitialized = onModuleInitialized;
@@ -239,7 +283,7 @@
 		function onModuleInitialized() {
 			document.getElementById('uploadButton').disabled = false;
 			logMessage('Module initialized successfully.');
-			document.getElementById('indicator').textContent = 'Ready to patch.';
+			updateIndicator('Ready to patch.', 'info');
 		}
 
 		function uploadSave() {
@@ -250,31 +294,39 @@
 			}
 
 			const reader = new FileReader();
+			logMessage('Loading save file...');
+			updateIndicator('Loading save file...', 'info');
 			reader.onload = function(event) {
 				const data = new Uint8Array(event.target.result);
 
 				// Ensure FS is available
 				if (typeof FS === 'undefined') {
 					logMessage('File system not initialized.', 'error');
+					updateIndicator('File system not initialized.', 'error');
 					return;
 				}
 
 				FS.writeFile('/old_save.sav', data);
 				try {
+					logMessage('Checking save file version...');
+					updateIndicator('Checking save file version...', 'info');
 					const saveVersion = Module.get_save_version('/old_save.sav');
 					if (saveVersion) {
 						document.getElementById('currentVersion').textContent = 'Current Save Version: ' + saveVersion.toString(16);
 						document.getElementById('patchButton').disabled = false; // Enable the Patch Save button
 						logMessage('Save file uploaded successfully. Version: ' + saveVersion.toString(16));
+						updateIndicator('Save file uploaded successfully.', 'success');
 					} else {
 						document.getElementById('currentVersion').textContent = 'Invalid save file.';
 						document.getElementById('patchButton').disabled = true; // Disable the Patch Save button
 						logMessage('Invalid save file.', 'error');
+						updateIndicator('Invalid save file.', 'error');
 					}
 				} catch (e) {
 					document.getElementById('currentVersion').textContent = 'Error reading save file.';
 					document.getElementById('patchButton').disabled = true;
 					logMessage('Error reading save file: ' + e.message, 'error');
+					updateIndicator('Error reading save file.', 'error');
 				}
 			};
 			reader.readAsArrayBuffer(oldSaveFile);
@@ -288,16 +340,13 @@
 				return;
 			}
 
-			const indicatorElement = document.getElementById('indicator');
-			const outputElement = document.getElementById('output');
 			const patchButton = document.getElementById('patchButton');
 			const manualDownloadButton = document.getElementById('manualDownloadButton');
 
 			// Clear previous output and update indicator
-			outputElement.textContent = '';
+			document.getElementById('output').textContent = '';
 			logMessages = [];
-			indicatorElement.textContent = 'Patching in progress...';
-			indicatorElement.classList.remove('error');
+			updateIndicator('Patching in progress...', 'info');
 			patchButton.disabled = true;
 			manualDownloadButton.disabled = true;
 
@@ -311,54 +360,43 @@
 				FS.unlink(newSavePath);
 			}
 
-			const reader = new FileReader();
-			reader.onload = function(event) {
-				const data = new Uint8Array(event.target.result);
-				FS.writeFile(oldSavePath, data);
-
-				// Use setTimeout to allow UI to update before heavy computation
-				setTimeout(function() {
-					try {
-						const result = Module.patch_save(oldSavePath, newSavePath, targetVersion);
-						if (result.success) {
-							const patchedData = FS.readFile(newSavePath, { encoding: 'binary', flags: 'r' });
-							if (patchedData) {
-								if (patchedBlobUrl) {
-									URL.revokeObjectURL(patchedBlobUrl);
-								}
-								const blob = new Blob([patchedData], { type: 'application/octet-stream' });
-								patchedBlobUrl = URL.createObjectURL(blob);
-								const a = document.createElement('a');
-								a.href = patchedBlobUrl;
-								a.download = 'patched_save.sav';
-								a.click();
-
-								indicatorElement.textContent = 'Patching complete. Save file downloaded successfully.';
-								indicatorElement.classList.remove('error');
-								manualDownloadButton.disabled = false;
-								logMessage('Patching completed successfully.');
-							} else {
-								indicatorElement.textContent = 'Patching complete with errors. Failed to read the patched save file.';
-								indicatorElement.classList.add('error');
-								logMessage('Failed to read the patched save file.', 'error');
+			setTimeout(function() {
+				try {
+					logMessage('Patching save file...');
+					const result = Module.patch_save(oldSavePath, newSavePath, targetVersion);
+					if (result.success) {
+						const patchedData = FS.readFile(newSavePath, { encoding: 'binary', flags: 'r' });
+						if (patchedData) {
+							if (patchedBlobUrl) {
+								URL.revokeObjectURL(patchedBlobUrl);
 							}
+							const blob = new Blob([patchedData], { type: 'application/octet-stream' });
+							patchedBlobUrl = URL.createObjectURL(blob);
+							const a = document.createElement('a');
+							a.href = patchedBlobUrl;
+							a.download = 'patched_save.sav';
+							a.click();
+
+							updateIndicator('Patching complete. Save file downloaded.', 'success');
+							manualDownloadButton.disabled = false;
+							logMessage('Patching completed successfully.');
 						} else {
-							indicatorElement.textContent = 'Patching failed. See errors in the output.';
-							indicatorElement.classList.add('error');
-							logMessage('Patching failed.', 'error');
+							updateIndicator('Failed to read the patched save file.', 'error');
+							logMessage('Failed to read the patched save file.', 'error');
 						}
-					} catch (e) {
-						indicatorElement.textContent = 'An error occurred during patching.';
-						indicatorElement.classList.add('error');
-						logMessage('Error during patching: ' + e.message, 'error');
-					} finally {
-						patchButton.disabled = false;
-						// Reset cursor
-						document.body.style.cursor = 'default';
+					} else {
+						updateIndicator('Patching failed. See errors in the output.', 'error');
+						logMessage('Patching failed.', 'error');
 					}
-				}, 0);
-			};
-			reader.readAsArrayBuffer(oldSaveFile);
+				} catch (e) {
+					updateIndicator('An error occurred during patching.', 'error');
+					logMessage('Error during patching: ' + e.message, 'error');
+				} finally {
+					patchButton.disabled = false;
+					// Reset cursor
+					document.body.style.cursor = 'default';
+				}
+			}, 0);
 		}
 
 		function manualDownload() {
@@ -381,9 +419,26 @@
 			URL.revokeObjectURL(url);
 		}
 
+		// Reset functionality
+		document.getElementById('resetButton').addEventListener('click', () => {
+			const oldSaveInput = document.getElementById('oldSave');
+			const dropZone = document.getElementById('dropZone');
+			oldSaveInput.value = '';
+			dropZone.querySelector('p').textContent = 'Drag and drop your save file here, or click to select.';
+			document.getElementById('fileDetails').innerHTML = '';
+			document.getElementById('output').textContent = '';
+			updateIndicator('Ready to patch.', 'info');
+			document.getElementById('currentVersion').textContent = '';
+			document.getElementById('patchButton').disabled = true;
+			document.getElementById('manualDownloadButton').disabled = true;
+			logMessages = [];
+			patchedBlobUrl = null;
+		});
+
 		// Drag and drop functionality
 		const dropZone = document.getElementById('dropZone');
 		const oldSaveInput = document.getElementById('oldSave');
+		const fileDetails = document.getElementById('fileDetails');
 
 		dropZone.addEventListener('click', () => {
 			oldSaveInput.click();
@@ -415,10 +470,16 @@
 
 		oldSaveInput.addEventListener('change', () => {
 			if (oldSaveInput.files.length > 0) {
-				const fileName = oldSaveInput.files[0].name;
-				dropZone.querySelector('p').textContent = 'Selected file: ' + fileName;
+				const file = oldSaveInput.files[0];
+				dropZone.querySelector('p').textContent = 'Selected file: ' + file.name;
+				fileDetails.innerHTML = `
+					<p><strong>File Name:</strong> ${file.name}</p>
+					<p><strong>File Size:</strong> ${(file.size / 1024).toFixed(2)} KB</p>
+					<p><strong>Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}</p>
+				`;
 			} else {
 				dropZone.querySelector('p').textContent = 'Drag and drop your save file here, or click to select.';
+				fileDetails.innerHTML = '';
 			}
 		});
 
