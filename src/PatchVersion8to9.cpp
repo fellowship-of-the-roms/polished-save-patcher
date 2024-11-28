@@ -102,6 +102,16 @@ bool patchVersion8to9(SaveBinary& save8, SaveBinary& save9) {
 		it9.next();
 	}
 
+	// Clear version 9 unused event flags
+	js_info <<  "Clearing unused event flags..." << std::endl;
+	for (int i : unusedEventIndexesV9) {
+		// seek to the byte containing the bit
+		it9.seek(sym9.getPlayerDataAddress("wEventFlags") + i / 8);
+		js_info <<  "Clearing event flag " << std::hex << i << std::endl;
+		// clear the bit
+		it9.setByte(it9.getByte() & ~(1 << (i % 8)));
+	}
+
 	// copy sGameData to sBackupGameData
 //	js_info <<  "Copying sGameData to sBackupGameData" << std::endl;
 //	for (int i = sym9.getSRAMAddress("sGameData"); i < sym9.getSRAMAddress("sGameDataEnd"); i++) {
@@ -139,7 +149,7 @@ bool patchVersion8to9(SaveBinary& save8, SaveBinary& save9) {
 
 }
 
-// converts a version 8 key item to a version 8 key item
+// converts a version 8 key item to a version 9 key item
 uint8_t mapV8KeyItemToV9(uint8_t v8) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
 		{0x01, 0x01},  // BICYCLE
