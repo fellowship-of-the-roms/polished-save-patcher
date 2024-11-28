@@ -35,12 +35,12 @@ bool patchVersion8to9(SaveBinary& save8, SaveBinary& save9) {
 		return false;
 	}
 
-	// check if the player is in the Mon Healing Center P.C. 2nd Floor
+	// check if the player is in the PKMN Center 2nd Floor
 	uint8_t map_group = it8.getByte(sym8.getMapDataAddress("wMapGroup"));
 	it8.next();
 	uint8_t map_num = it8.getByte();
 	if (map_group != MON_CENTER_2F_GROUP || map_num != MON_CENTER_2F_MAP) {
-		js_error <<  "Player is not in the Mon Healing Center P.C. 2nd Floor. Go to where you heal in game, and head upstairs. Then re-save your game and try again." << std::endl;
+		js_error <<  "Player is not in the PKMN Center 2nd Floor. Go to where you heal in game, and head upstairs. Then re-save your game and try again." << std::endl;
 		return false;
 	}
 
