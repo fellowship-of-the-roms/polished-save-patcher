@@ -4,7 +4,7 @@
 	<title>Polished Crystal Save Patcher</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
-		/* Updated CSS with progress bar removed */
+		/* Updated CSS with drag-and-drop functionality and other improvements */
 		body {
 			font-family: Arial, sans-serif;
 			margin: 0;
@@ -28,15 +28,29 @@
 			margin-bottom: 20px;
 			line-height: 1.6;
 		}
-		input[type="file"] {
-			margin-bottom: 10px;
-			background-color: #2e2e2e;
-			color: #e0e0e0;
-			border: 1px solid #555;
-			padding: 10px;
-			width: 100%;
-			box-sizing: border-box;
+		.drop-zone {
+			border: 2px dashed #555;
+			border-radius: 5px;
+			padding: 20px;
+			text-align: center;
 			cursor: pointer;
+			margin-bottom: 20px;
+			transition: background-color 0.3s ease;
+		}
+		.drop-zone:hover {
+			background-color: #2e2e2e;
+		}
+		.drop-zone.dragover {
+			background-color: #2e2e2e;
+			border-color: #b39ddb;
+		}
+		.drop-zone p {
+			margin: 0;
+			font-size: 16px;
+			color: #e0e0e0;
+		}
+		input[type="file"] {
+			display: none;
 		}
 		button, select {
 			background-color: #673ab7;
@@ -57,6 +71,14 @@
 		button:disabled {
 			background-color: #555;
 			cursor: not-allowed;
+		}
+		select {
+			background-color: #2e2e2e;
+			color: #e0e0e0;
+			border: 1px solid #555;
+			padding: 10px;
+			box-sizing: border-box;
+			border-radius: 4px;
 		}
 		pre {
 			background-color: #1e1e1e;
@@ -110,6 +132,10 @@
 			opacity: 0;
 			transition: opacity 0.3s;
 		}
+		.tooltip .tooltiptext img {
+			max-width: 100%;
+			height: auto;
+		}
 		.tooltip .tooltiptext::after {
 			content: "";
 			position: absolute;
@@ -146,18 +172,21 @@
 			<ol>
 				<li>Save your game on the second floor of the <span class="tooltip">Mon Healing Center P.C.
 					<span class="tooltiptext"><img src="https://tcrf.net/images/7/76/PokemonCrystal_PokeCenter_2F_International.png" alt="Mon Healing Center P.C." width="200"></span>
-				</span> (Where you normally do link battles/trades)</li>
+				</span> (Where you normally do link battles/trades).</li>
 				<li>Back up your original save file somewhere safe.</li>
-				<li>Click the "Choose File" button to select your old save file.</li>
+				<li>Drag and drop your save file into the area below, or click to select your old save file.</li>
 				<li>Click the "Upload Save" button to upload your save file and display the current save version.</li>
 				<li>Select your target save version from the dropdown menu (default is the highest version).</li>
 				<li>Click the "Patch Save" button to start the patching process.</li>
 				<li>Once the patching is complete, a new save file will be downloaded automatically.</li>
 				<li>If the download doesn't start automatically, click the "Download Patched Save" button.</li>
-				<li>After loading your patched save for the first time, promptly exit the Pokémon Center before interacting with anything.</li>
+				<li>After loading your patched save for the first time, promptly exit the Mon Healing Center P.C. before interacting with anything.</li>
 			</ol>
 		</div>
-		<input type="file" id="oldSave" />
+		<div id="dropZone" class="drop-zone">
+			<p>Drag and drop your save file here, or click to select.</p>
+			<input type="file" id="oldSave" accept=".sav" />
+		</div>
 		<button onclick="uploadSave()" id="uploadButton" disabled>Upload Save</button>
 		<div id="currentVersion"></div>
 		<select id="targetVersion">
@@ -272,6 +301,9 @@
 			patchButton.disabled = true;
 			manualDownloadButton.disabled = true;
 
+			// Change cursor to 'wait'
+			document.body.style.cursor = 'wait';
+
 			const oldSavePath = '/old_save.sav';
 			const newSavePath = '/new_save.sav';
 
@@ -284,42 +316,47 @@
 				const data = new Uint8Array(event.target.result);
 				FS.writeFile(oldSavePath, data);
 
-				// Call the C++ function and handle the result
-				try {
-					const result = Module.patch_save(oldSavePath, newSavePath, targetVersion);
-					if (result.success) {
-						const patchedData = FS.readFile(newSavePath, { encoding: 'binary', flags: 'r' });
-						if (patchedData) {
-							if (patchedBlobUrl) {
-								URL.revokeObjectURL(patchedBlobUrl);
-							}
-							const blob = new Blob([patchedData], { type: 'application/octet-stream' });
-							patchedBlobUrl = URL.createObjectURL(blob);
-							const a = document.createElement('a');
-							a.href = patchedBlobUrl;
-							a.download = 'patched_save.sav';
-							a.click();
+				// Use setTimeout to allow UI to update before heavy computation
+				setTimeout(function() {
+					try {
+						const result = Module.patch_save(oldSavePath, newSavePath, targetVersion);
+						if (result.success) {
+							const patchedData = FS.readFile(newSavePath, { encoding: 'binary', flags: 'r' });
+							if (patchedData) {
+								if (patchedBlobUrl) {
+									URL.revokeObjectURL(patchedBlobUrl);
+								}
+								const blob = new Blob([patchedData], { type: 'application/octet-stream' });
+								patchedBlobUrl = URL.createObjectURL(blob);
+								const a = document.createElement('a');
+								a.href = patchedBlobUrl;
+								a.download = 'patched_save.sav';
+								a.click();
 
-							indicatorElement.textContent = 'Patching complete. Save file downloaded successfully.';
-							indicatorElement.classList.remove('error');
-							manualDownloadButton.disabled = false;
-							logMessage('Patching completed successfully.');
+								indicatorElement.textContent = 'Patching complete. Save file downloaded successfully.';
+								indicatorElement.classList.remove('error');
+								manualDownloadButton.disabled = false;
+								logMessage('Patching completed successfully.');
+							} else {
+								indicatorElement.textContent = 'Patching complete with errors. Failed to read the patched save file.';
+								indicatorElement.classList.add('error');
+								logMessage('Failed to read the patched save file.', 'error');
+							}
 						} else {
-							indicatorElement.textContent = 'Patching complete with errors. Failed to read the patched save file.';
+							indicatorElement.textContent = 'Patching failed. See errors in the output.';
 							indicatorElement.classList.add('error');
-							logMessage('Failed to read the patched save file.', 'error');
+							logMessage('Patching failed.', 'error');
 						}
-					} else {
-						indicatorElement.textContent = 'Patching failed. See errors in the output.';
+					} catch (e) {
+						indicatorElement.textContent = 'An error occurred during patching.';
 						indicatorElement.classList.add('error');
-						logMessage('Patching failed.', 'error');
+						logMessage('Error during patching: ' + e.message, 'error');
+					} finally {
+						patchButton.disabled = false;
+						// Reset cursor
+						document.body.style.cursor = 'default';
 					}
-				} catch (e) {
-					indicatorElement.textContent = 'An error occurred during patching.';
-					indicatorElement.classList.add('error');
-					logMessage('Error during patching: ' + e.message, 'error');
-				}
-				patchButton.disabled = false;
+				}, 0);
 			};
 			reader.readAsArrayBuffer(oldSaveFile);
 		}
@@ -343,6 +380,48 @@
 			a.click();
 			URL.revokeObjectURL(url);
 		}
+
+		// Drag and drop functionality
+		const dropZone = document.getElementById('dropZone');
+		const oldSaveInput = document.getElementById('oldSave');
+
+		dropZone.addEventListener('click', () => {
+			oldSaveInput.click();
+		});
+
+		dropZone.addEventListener('dragover', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			dropZone.classList.add('dragover');
+		});
+
+		dropZone.addEventListener('dragleave', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			dropZone.classList.remove('dragover');
+		});
+
+		dropZone.addEventListener('drop', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			dropZone.classList.remove('dragover');
+
+			if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+				oldSaveInput.files = e.dataTransfer.files;
+				oldSaveInput.dispatchEvent(new Event('change'));
+				e.dataTransfer.clearData();
+			}
+		});
+
+		oldSaveInput.addEventListener('change', () => {
+			if (oldSaveInput.files.length > 0) {
+				const fileName = oldSaveInput.files[0].name;
+				dropZone.querySelector('p').textContent = 'Selected file: ' + fileName;
+			} else {
+				dropZone.querySelector('p').textContent = 'Drag and drop your save file here, or click to select.';
+			}
+		});
+
 	</script>
 </body>
 </html>
