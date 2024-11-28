@@ -44,6 +44,14 @@ bool patchVersion8to9(SaveBinary& save8, SaveBinary& save9) {
 		return false;
 	}
 
+	// Clear wRoamMons_CurMapNumber to wRoamMons_LastMapGroup in version 9 so we may mark wram as unused
+	// we will do this by clearing the 4 bytes before wBestMagikarpLengthMm since the symbols are not present in version 9
+	js_info <<  "Clearing wRoamMons_CurMapNumber to wRoamMons_LastMapGroup..." << std::endl;
+	it9.setByte(sym9.getPokemonDataAddress("wBestMagikarpLengthMm") - 1, 0x00);
+	it9.setByte(sym9.getPokemonDataAddress("wBestMagikarpLengthMm") - 2, 0x00);
+	it9.setByte(sym9.getPokemonDataAddress("wBestMagikarpLengthMm") - 3, 0x00);
+	it9.setByte(sym9.getPokemonDataAddress("wBestMagikarpLengthMm") - 4, 0x00);
+
 	// Copy from address sBoxMons1B to wKeyItemsEnd
 	js_info <<  "Copying from sBoxMons1B to wKeyItemsEnd" << std::endl;
 	copyDataBlock(sd, sym8.getSRAMAddress("sBoxMons1B"), sym9.getSRAMAddress("sBoxMons1B"), sym8.getPlayerDataAddress("wKeyItemsEnd") - sym8.getSRAMAddress("sBoxMons1B"));

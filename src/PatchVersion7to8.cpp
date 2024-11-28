@@ -932,41 +932,13 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	it8.next();
 	it8.setByte(std::get<1>(dunsparceMap));
 
-	// map the version 7 wRoamMons_CurMapNumber and wRoamMons_CurMapGroup to the version 8 wRoamMons_CurMapNumber and wRoamMons_CurMapGroup
-	js_info <<  "Map wRoamMons_CurMapNumber and wRoamMons_CurMapGroup..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wRoamMons_CurMapNumber"));
-	it8.seek(sym8.getPokemonDataAddress("wRoamMons_CurMapNumber"));
-	uint8_t roamMons_CurMapNumber = it7.getByte();
-	it7.next();
-	uint8_t roamMons_CurMapGroup = it7.getByte();
-	// create tuple to store the map group and map number
-	std::tuple<uint8_t, uint8_t> roamMons_CurMap = mapv7toV8(roamMons_CurMapGroup, roamMons_CurMapNumber);
-	// print found roamMons_CurMapv7 and converted roamMons_CurMapv8
-	if (roamMons_CurMapGroup != std::get<0>(roamMons_CurMap) || roamMons_CurMapNumber != std::get<1>(roamMons_CurMap)){
-		js_info <<  "RoamMons_CurMap " << std::hex << static_cast<int>(roamMons_CurMapGroup) << " " << std::hex << static_cast<int>(roamMons_CurMapNumber) << " converted to " << std::hex << static_cast<int>(std::get<0>(roamMons_CurMap)) << " " << std::hex << static_cast<int>(std::get<1>(roamMons_CurMap)) << std::endl;
-	}
-	// write the map group and map number
-	it8.setByte(std::get<0>(roamMons_CurMap));
-	it8.next();
-	it8.setByte(std::get<1>(roamMons_CurMap));
-
-	// map the version 7 wRoamMons_LastMapNumber and wRoamMons_LastMapGroup to the version 8 wRoamMons_LastMapNumber and wRoamMons_LastMapGroup
-	js_info <<  "Map wRoamMons_LastMapNumber and wRoamMons_LastMapGroup..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wRoamMons_LastMapNumber"));
-	it8.seek(sym8.getPokemonDataAddress("wRoamMons_LastMapNumber"));
-	uint8_t roamMons_LastMapNumber = it7.getByte();
-	it7.next();
-	uint8_t roamMons_LastMapGroup = it7.getByte();
-	// create tuple to store the map group and map number
-	std::tuple<uint8_t, uint8_t> roamMons_LastMap = mapv7toV8(roamMons_LastMapGroup, roamMons_LastMapNumber);
-	// print found roamMons_LastMapv7 and converted roamMons_LastMapv8
-	if (roamMons_LastMapGroup != std::get<0>(roamMons_LastMap) || roamMons_LastMapNumber != std::get<1>(roamMons_LastMap)){
-		js_info <<  "RoamMons_LastMap " << std::hex << static_cast<int>(roamMons_LastMapGroup) << " " << std::hex << static_cast<int>(roamMons_LastMapNumber) << " converted to " << std::hex << static_cast<int>(std::get<0>(roamMons_LastMap)) << " " << std::hex << static_cast<int>(std::get<1>(roamMons_LastMap)) << std::endl;
-	}
-	// write the map group and map number
-	it8.setByte(std::get<0>(roamMons_LastMap));
-	it8.next();
-	it8.setByte(std::get<1>(roamMons_LastMap));
+	// Clear wRoamMons_CurMapNumber to wRoamMons_LastMapGroup in version 8
+	// we will do this by clearing the 4 bytes before wBestMagikarpLengthMm since the symbols are not present in version 8
+	js_info <<  "Clearing wRoamMons_CurMapNumber to wRoamMons_LastMapGroup..." << std::endl;
+	it8.setByte(sym8.getPokemonDataAddress("wBestMagikarpLengthMm") - 1, 0x00);
+	it8.setByte(sym8.getPokemonDataAddress("wBestMagikarpLengthMm") - 2, 0x00);
+	it8.setByte(sym8.getPokemonDataAddress("wBestMagikarpLengthMm") - 3, 0x00);
+	it8.setByte(sym8.getPokemonDataAddress("wBestMagikarpLengthMm") - 4, 0x00);
 
 	// copy sCheckValue2
 	js_info <<  "Copy sCheckValue2..." << std::endl;
