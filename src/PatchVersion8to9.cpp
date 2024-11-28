@@ -108,6 +108,18 @@ bool patchVersion8to9(SaveBinary& save8, SaveBinary& save9) {
 //		it9.setByte(sym9.getSRAMAddress("sBackupGameData") + i, it9.getByte(sym9.getSRAMAddress("sGameData") + i));
 //	}
 
+	// set v9 wCurMapSceneScriptCount and wCurMapCallbackCount to 0
+	// set v9 wCurMapSceneScriptPointer word to 0
+	// this is done to prevent the game from running any map scripts on load
+	js_info <<  "Set wCurMapSceneScriptCount and wCurMapCallbackCount to 0..." << std::endl;
+	it9.seek(sym9.getPlayerDataAddress("wCurMapSceneScriptCount"));
+	it9.setByte(0);
+	it9.seek(sym9.getPlayerDataAddress("wCurMapCallbackCount"));
+	it9.setByte(0);
+	js_info <<  "Set wCurMapSceneScriptPointer to 0..." << std::endl;
+	it9.seek(sym9.getPlayerDataAddress("wCurMapSceneScriptPointer"));
+	it9.setWord(0);
+
 	// write the new save version number big endian
 	js_info <<  "Writing the new save version number" << std::endl;
 	uint16_t new_save_version = 0x09;

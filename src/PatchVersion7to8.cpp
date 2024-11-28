@@ -1065,6 +1065,18 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		js_info <<  "Found seen mon " << std::hex << static_cast<int>(mon) << std::endl;
 	}
 
+	// set v8 wCurMapSceneScriptCount and wCurMapCallbackCount to 0
+	// set v8 wCurMapSceneScriptPointer word to 0
+	// this is done to prevent the game from running any map scripts on load
+	js_info <<  "Set wCurMapSceneScriptCount and wCurMapCallbackCount to 0..." << std::endl;
+	it8.seek(sym8.getPlayerDataAddress("wCurMapSceneScriptCount"));
+	it8.setByte(0);
+	it8.seek(sym8.getPlayerDataAddress("wCurMapCallbackCount"));
+	it8.setByte(0);
+	js_info <<  "Set wCurMapSceneScriptPointer to 0..." << std::endl;
+	it8.seek(sym8.getPlayerDataAddress("wCurMapSceneScriptPointer"));
+	it8.setWord(0);
+
 	// write the new save version number big endian
 	js_info <<  "Write new save version number..." << std::endl;
 	uint16_t new_save_version = 0x08;
