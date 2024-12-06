@@ -80,6 +80,8 @@ jobs:
         uses: github/codeql-action/init@v2
         with:
           languages: ${{ matrix.language }}
+          exclude: |
+            emsdk/
 
       - name: Build project manually
         env:
