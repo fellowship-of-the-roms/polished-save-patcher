@@ -152,8 +152,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// Reset NUZLOCKE bit to off; this becomes the affection option.
 	js_info <<  "Resetting NUZLOCKE bit..." << std::endl;
 	it8.seek(sym8.getOptionsAddress("wInitialOptions"));
-	it8.setByte(it8.getByte() & ~NUZLOCKE_OPT);
-
+	it8.resetBit(AFFECTION_OPT); // previously NUZLOCKE_OPT
+	// Reset Initial Options so the game asks the player to set them again.
+	js_info <<  "Resetting Initial Options..." << std::endl;
+	it8.next(); // skip to wInitialOptions2
+	it8.resetBit(RESET_INIT_OPTS);
 
 	// copy bytes from wPlayerData to wObjectStructs - 1 from version 7 to version 8
 	js_info <<  "Copying from wPlayerData to wObjectStructs..." << std::endl;
@@ -596,34 +599,6 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// Clear wNuzlockeLandmarkFlags
 	js_info <<  "Clear wNuzlockeLandmarkFlags..." << std::endl;
 	clearDataBlock(sd, sym8.getPlayerDataAddress("wNuzlockeLandmarkFlags"), NUM_LANDMARKS_V8 + 7 / 8);
-
-	// wNuzlockeLandmarkFlags is a flag_array of NUM_LANDMARKS bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
-	js_info <<  "Patching wNuzlockeLandmarkFlags..." << std::endl;
-	it7.seek(sym7.getPlayerDataAddress("wNuzlockeLandmarkFlags"));
-	it8.seek(sym8.getPlayerDataAddress("wNuzlockeLandmarkFlags"));
-	for (int i = 0; i < NUM_LANDMARKS_V7; i++) {
-		// check if the bit is set
-		if (it7.getByte() & (1 << (i % 8))) {
-			// get the landmark flag index is equal to the bit index
-			uint8_t landmarkFlagIndex = i;
-			// map the version 7 landmark flag to the version 8 landmark flag
-			uint8_t landmarkFlagIndexV8 = mapV7LandmarkToV8(landmarkFlagIndex);
-			// if the landmark flag is found set the corresponding bit in it8
-			if (landmarkFlagIndexV8 != 0xFF) {
-				// print found landmark flagv7 and converted landmark flagv8
-				if (landmarkFlagIndex != landmarkFlagIndexV8){
-					js_info <<  "Landmark Flag " << std::hex << static_cast<int>(landmarkFlagIndex) << " converted to " << std::hex << static_cast<int>(landmarkFlagIndexV8) << std::endl;
-				}
-				// seek to the byte containing the bit
-				it8.seek(sym8.getPlayerDataAddress("wNuzlockeLandmarkFlags") + landmarkFlagIndexV8 / 8);
-				// set the bit
-				it8.setByte(it8.getByte() | (1 << (landmarkFlagIndexV8 % 8)));
-			}
-		}
-		if (i % 8 == 7) {
-			it7.next();
-		}
-	}
 
 	// clear wHiddenGrottoContents to wCurHiddenGrotto
 	js_info <<  "Clear wHiddenGrottoContents to wCurHiddenGrotto..." << std::endl;

@@ -51,6 +51,10 @@ public:
 			uint16_t getWordBE() const;
 			// Get the word at the requested address (big endian)
 			uint16_t getWordBE(uint32_t address);
+			// get the specified bit from the byte at the current address
+			bool getBit(uint8_t bit) const;
+			// get the specified bit from the byte at the requested address
+			bool getBit(uint32_t address, uint8_t bit);
 			// Update the byte at the current address
 			void setByte(uint8_t value);
 			// Update the byte at the requested address
@@ -63,6 +67,14 @@ public:
 			void setWordBE(uint16_t value);
 			// Update the word at the requested address (big endian)
 			void setWordBE(uint32_t address, uint16_t value);
+			// set the specified bit in the byte at the current address
+			void setBit(uint8_t bit);
+			// set the specified bit in the byte at the requested address
+			void setBit(uint32_t address, uint8_t bit);
+			// reset the specified bit in the byte at the current address
+			void resetBit(uint8_t bit);
+			// reset the specified bit in the byte at the requested address
+			void resetBit(uint32_t address, uint8_t bit);
 			// Move the iterator to the next byte
 			void next();
 			// Move the iterator to the previous byte

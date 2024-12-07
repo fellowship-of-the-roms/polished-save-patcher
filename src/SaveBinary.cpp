@@ -175,6 +175,18 @@ uint16_t SaveBinary::Iterator::getWordBE(uint32_t address) {
 	return m_saveBinary.getWordBE(m_address);
 }
 
+// get the specified bit from the byte at the current address
+bool SaveBinary::Iterator::getBit(uint8_t bit) const {
+	return m_saveBinary.getByte(m_address) & (1 << bit);
+}
+
+// get the specified bit from the byte at the requested address
+bool SaveBinary::Iterator::getBit(uint32_t address, uint8_t bit) {
+	// seek to address
+	seek(address);
+	return m_saveBinary.getByte(m_address) & (1 << bit);
+}
+
 // Update the byte at the current address
 void SaveBinary::Iterator::setByte(uint8_t value) {
 	m_saveBinary.setByte(m_address, value);
@@ -209,6 +221,38 @@ void SaveBinary::Iterator::setWordBE(uint32_t address, uint16_t value) {
 	// seek to address
 	seek(address);
 	m_saveBinary.setWordBE(m_address, value);
+}
+
+// set the specified bit in the byte at the current address
+void SaveBinary::Iterator::setBit(uint8_t bit) {
+	uint8_t value = m_saveBinary.getByte(m_address);
+	value |= (1 << bit);
+	m_saveBinary.setByte(m_address, value);
+}
+
+// reset the specified bit in the byte at the current address
+void SaveBinary::Iterator::resetBit(uint8_t bit) {
+	uint8_t value = m_saveBinary.getByte(m_address);
+	value &= ~(1 << bit);
+	m_saveBinary.setByte(m_address, value);
+}
+
+// reset the specified bit in the byte at the requested address
+void SaveBinary::Iterator::resetBit(uint32_t address, uint8_t bit) {
+	// seek to address
+	seek(address);
+	uint8_t value = m_saveBinary.getByte(m_address);
+	value &= ~(1 << bit);
+	m_saveBinary.setByte(m_address, value);
+}
+
+// set the specified bit in the byte at the requested address
+void SaveBinary::Iterator::setBit(uint32_t address, uint8_t bit) {
+	// seek to address
+	seek(address);
+	uint8_t value = m_saveBinary.getByte(m_address);
+	value |= (1 << bit);
+	m_saveBinary.setByte(m_address, value);
 }
 
 // Move the iterator to the next byte

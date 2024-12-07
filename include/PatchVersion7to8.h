@@ -67,7 +67,8 @@ namespace {
 	constexpr uint8_t GYARADOS_V8 = 0x82;
 	constexpr uint8_t GYARADOS_RED_FORM_V7 = 0x11;
 	constexpr uint8_t GYARADOS_RED_FORM_V8 = 0x15;
-	constexpr uint8_t NUZLOCKE_OPT = 1 << 5;
+	constexpr int AFFECTION_OPT = 5;
+	constexpr int RESET_INIT_OPTS = 7;
 }
 
 // converts a version 7 key item to a version 8 key item
