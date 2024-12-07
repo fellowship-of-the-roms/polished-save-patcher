@@ -31,4 +31,7 @@ void fillDataBlock(SourceDest &sd, uint32_t dest, int length, uint8_t value);
 // assert that the iterator is at the specified address
 bool assertAddress(const SaveBinary::Iterator &it, uint32_t address);
 
+// calculate the number of bytes needed to store index_size bits
+int flag_array(uint32_t index_size);
+
 #endif

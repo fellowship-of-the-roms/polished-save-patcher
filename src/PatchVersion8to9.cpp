@@ -117,7 +117,7 @@ bool patchVersion8to9(SaveBinary& save8, SaveBinary& save9) {
 		it9.seek(sym9.getPlayerDataAddress("wEventFlags") + i / 8);
 		js_info <<  "Clearing event flag " << std::hex << i << std::endl;
 		// clear the bit
-		it9.setByte(it9.getByte() & ~(1 << (i % 8)));
+		it9.resetBit(i % 8);
 	}
 
 	// copy sGameData to sBackupGameData

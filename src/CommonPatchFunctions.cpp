@@ -49,3 +49,8 @@ bool assertAddress(const SaveBinary::Iterator &it, uint32_t address) {
 	}
 	return true;
 }
+
+// calculate the number of bytes needed to store index_size bits
+int flag_array(uint32_t index_size) {
+	return (index_size + 7) / 8;
+}

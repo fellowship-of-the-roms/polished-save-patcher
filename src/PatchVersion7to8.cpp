@@ -151,12 +151,10 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// Reset NUZLOCKE bit to off; this becomes the affection option.
 	js_info <<  "Resetting NUZLOCKE bit..." << std::endl;
-	it8.seek(sym8.getOptionsAddress("wInitialOptions"));
-	it8.resetBit(AFFECTION_OPT); // previously NUZLOCKE_OPT
+	it8.resetBit(sym8.getOptionsAddress("wInitialOptions"), AFFECTION_OPT); // previously NUZLOCKE_OPT
 	// Reset Initial Options so the game asks the player to set them again.
 	js_info <<  "Resetting Initial Options..." << std::endl;
-	it8.next(); // skip to wInitialOptions2
-	it8.resetBit(RESET_INIT_OPTS);
+	it8.resetBit(sym8.getOptionsAddress("wInitialOptions2"), RESET_INIT_OPTS);
 
 	// copy bytes from wPlayerData to wObjectStructs - 1 from version 7 to version 8
 	js_info <<  "Copying from wPlayerData to wObjectStructs..." << std::endl;
@@ -550,7 +548,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		// seek to the byte containing the bit
 		it7.seek(sym7.getPlayerDataAddress("wEventFlags") + i / 8);
 		// check if the bit is set
-		if (it7.getByte() & (1 << (i % 8))) {
+		if (it7.getBit(i % 8)) {
 			// get the event flag index is equal to the bit index
 			uint16_t eventFlagIndex = i;
 			// map the version 7 event flag to the version 8 event flag
@@ -564,7 +562,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				// seek to the byte containing the bit
 				it8.seek(sym8.getPlayerDataAddress("wEventFlags") + eventFlagIndexV8 / 8);
 				// set the bit
-				it8.setByte(it8.getByte() | (1 << (eventFlagIndexV8 % 8)));
+				it8.setBit(eventFlagIndexV8 % 8);
 			} else {
 				// warn we couldn't find v7 event flag in v8
 				js_warning <<  "Event Flag " << eventFlagIndex << " not found in version 8 event flag list." << std::endl;
@@ -594,11 +592,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// Copy wFruitTreeFlags
 	js_info <<  "Copy wFruitTreeFlags..." << std::endl;
-	copyDataBlock(sd, sym7.getPlayerDataAddress("wFruitTreeFlags"), sym8.getPlayerDataAddress("wFruitTreeFlags"), NUM_FRUIT_TREES_V7 + 7 / 8);
+	copyDataBlock(sd, sym7.getPlayerDataAddress("wFruitTreeFlags"), sym8.getPlayerDataAddress("wFruitTreeFlags"), flag_array(NUM_FRUIT_TREES_V7));
 
 	// Clear wNuzlockeLandmarkFlags
 	js_info <<  "Clear wNuzlockeLandmarkFlags..." << std::endl;
-	clearDataBlock(sd, sym8.getPlayerDataAddress("wNuzlockeLandmarkFlags"), NUM_LANDMARKS_V8 + 7 / 8);
+	clearDataBlock(sd, sym8.getPlayerDataAddress("wNuzlockeLandmarkFlags"), flag_array(NUM_LANDMARKS_V8));
 
 	// clear wHiddenGrottoContents to wCurHiddenGrotto
 	js_info <<  "Clear wHiddenGrottoContents to wCurHiddenGrotto..." << std::endl;
@@ -610,7 +608,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// Clear v8 wPhoneList
 	js_info <<  "Clear wPhoneList..." << std::endl;
-	clearDataBlock(sd, sym8.getPlayerDataAddress("wPhoneList"), NUM_PHONE_CONTACTS_V8 + 7 / 8);
+	clearDataBlock(sd, sym8.getPlayerDataAddress("wPhoneList"), flag_array(NUM_PHONE_CONTACTS_V8));
 
 	// wPhoneList has been converted to a bit flag array in version 8.
 	// for each byte in v7 up to CONTACT_LIST_SIZE_V7, if the byte is non-zero, set the corresponding bit in v8
@@ -628,7 +626,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			contactIndexV8--; // bit index starts at 0 not 1
 			it8.seek(sym8.getPlayerDataAddress("wPhoneList") + (contactIndexV8 / 8));
 			// set the bit
-			it8.setByte(it8.getByte() | (1 << (contactIndexV8 % 8)));
+			it8.setBit(contactIndexV8 % 8);
 		}
 		it7.next();
 	}
@@ -650,7 +648,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Current Address: " << std::hex << it7.getAddress() << std::endl;
 	for (int i = 0; i < NUM_SPAWNS_V7; i++) {
 		// check if the bit is set
-		if (it7.getByte() & (1 << (i % 8))) {
+		if (it7.getBit(i % 8)) {
 			// get the spawn index is equal to the bit index
 			uint8_t spawnIndex = i;
 			// map the version 7 spawn to the version 8 spawn
@@ -664,7 +662,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				// seek to the byte containing the bit
 				it8.seek(sym8.getMapDataAddress("wVisitedSpawns") + spawnIndexV8 / 8);
 				// set the bit
-				it8.setByte(it8.getByte() | (1 << (spawnIndexV8 % 8)));
+				it8.setBit(spawnIndexV8 % 8);
 			}
 		}
 		if (i % 8 == 7) {
@@ -948,7 +946,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	it8.seek(sym8.getPokemonDataAddress("wPokedexCaught"));
 	for (int i = 0; i < NUM_POKEMON_V7; i++) {
 		// check if the bit is set
-		if (it7.getByte() & (1 << (i % 8))) {
+		if (it7.getBit(i % 8)) {
 			// get the pokemon index is equal to the bit index
 			uint16_t pokemonIndex = i + 1;
 			// map the version 7 pokemon to the version 8 pokemon
@@ -962,7 +960,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				// seek to the byte containing the bit
 				it8.seek(sym8.getPokemonDataAddress("wPokedexCaught") + pokemonIndexV8 / 8);
 				// set the bit
-				it8.setByte(it8.getByte() | (1 << (pokemonIndexV8 % 8)));
+				it8.setBit(pokemonIndexV8 % 8);
 			}
 		}
 		if (i % 8 == 7) {
@@ -983,7 +981,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	it8.seek(sym8.getPokemonDataAddress("wPokedexSeen"));
 	for (int i = 0; i < NUM_POKEMON_V7; i++) {
 		// check if the bit is set
-		if (it7.getByte() & (1 << (i % 8))) {
+		if (it7.getBit(i % 8)) {
 			// get the pokemon index is equal to the bit index
 			uint16_t pokemonIndex = i + 1;
 			// map the version 7 pokemon to the version 8 pokemon
@@ -997,7 +995,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				// seek to the byte containing the bit
 				it8.seek(sym8.getPokemonDataAddress("wPokedexSeen") + pokemonIndexV8 / 8);
 				// set the bit
-				it8.setByte(it8.getByte() | (1 << (pokemonIndexV8 % 8)));
+				it8.setBit(pokemonIndexV8 % 8);
 			}
 		}
 		if (i % 8 == 7) {
@@ -1008,7 +1006,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	for (uint16_t mon : seen_mons){
 		uint16_t monIndexV8 = mon - 1;
 		it8.seek(sym8.getPokemonDataAddress("wPokedexSeen") + monIndexV8 / 8);
-		it8.setByte(it8.getByte() | (1 << (monIndexV8 % 8)));
+		it8.setBit(monIndexV8 % 8);
 		js_info <<  "Found seen mon " << std::hex << static_cast<int>(mon) << std::endl;
 	}
 
