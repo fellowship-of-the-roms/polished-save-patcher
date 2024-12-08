@@ -115,10 +115,21 @@ bool patchVersion8to9(SaveBinary& save8, SaveBinary& save9) {
 	for (int i : unusedEventIndexesV9) {
 		// seek to the byte containing the bit
 		it9.seek(sym9.getPlayerDataAddress("wEventFlags") + i / 8);
-		js_info <<  "Clearing event flag " << std::hex << i << std::endl;
-		// clear the bit
-		it9.resetBit(i % 8);
+		// check if it was set
+		if (it9.getBit(i % 8)) {
+			// print the event flag index
+			js_info <<  "Clearing event flag " << std::hex << i << std::endl;
+			// clear the bit
+			it9.resetBit(i % 8);
+		}
 	}
+
+	// Clear old wNuzlockeLandmarkFlags space
+	js_info <<  "Clearing old wNuzlockeLandmarkFlags space..." << std::endl;
+	it8.seek(sym8.getPlayerDataAddress("wHiddenGrottoContents") - 19);
+	// Clear wNuzlockeLandmarkFlags
+	js_info <<  "Clear wNuzlockeLandmarkFlags..." << std::endl;
+	clearDataBlock(sd, it8.getAddress(), 19);
 
 	// copy sGameData to sBackupGameData
 //	js_info <<  "Copying sGameData to sBackupGameData" << std::endl;
