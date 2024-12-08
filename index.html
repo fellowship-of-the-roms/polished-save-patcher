@@ -471,9 +471,11 @@
 		oldSaveInput.addEventListener('change', () => {
 			if (oldSaveInput.files.length > 0) {
 				const file = oldSaveInput.files[0];
+				// Escape the file name to prevent XSS
+				const sanitizedFileName = file.name.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 				dropZone.querySelector('p').textContent = 'Selected file: ' + file.name;
 				fileDetails.innerHTML = `
-					<p><strong>File Name:</strong> ${file.name}</p>
+					<p><strong>File Name:</strong> ${sanitizedFileName}</p>
 					<p><strong>File Size:</strong> ${(file.size / 1024).toFixed(2)} KB</p>
 					<p><strong>Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}</p>
 				`;
