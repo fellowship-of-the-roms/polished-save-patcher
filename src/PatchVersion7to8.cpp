@@ -254,268 +254,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// write 0x00 to the end of wKeyItems
 	it8.setByte(0x00);
 
-	js_info <<  "Copy wNumItems..." << std::endl;
-	// Copy it7 wNumItems to it8 wNumItems
-	it7.seek(sym7.getPlayerDataAddress("wNumItems"));
-	it8.seek(sym8.getPlayerDataAddress("wNumItems"));
-	// save the number of items
-	uint8_t numItemsv7 = it7.getByte();
-	uint8_t numItemsv8 = 0;
-	it8.setByte(numItemsv7);
-	it7.next();
-	it8.next();
-	// wItems is in the structure of ITEM_ID, QUANTITY. With an ITEM_ID of 0xFF indicating the end of the list.
-	// we need to convert the ITEM_ID from version 7 to version 8 and copy the QUANTITY.
-	js_info <<  "Patching wItems..." << std::endl;
-	// assert that the address is correct
-	if (it7.getAddress() != sym7.getPlayerDataAddress("wItems")) {
-		js_error <<  "Unexpected address for wItems in version 7 save file: " << std::hex << it7.getAddress() << std::endl;
-	}
-	if (it8.getAddress() != sym8.getPlayerDataAddress("wItems")) {
-		js_error <<  "Unexpected address for wItems in version 8 save file: " << std::hex << it8.getAddress() << std::endl;
-	}
-	// for numItemsv7, convert the ITEM_ID from version 7 to version 8 and copy the QUANTITY
-	for (int i = 0; i < numItemsv7 + 1; i++) {
-		// get the ITEM_ID from version 7
-		uint8_t itemIDV7 = it7.getByte();
-		it7.next();
-		if (itemIDV7 == 0xFF) {
-			it8.setByte(0xFF);
-			break;
-		}
-		// map the version 7 item to the version 8 item
-		uint8_t itemIDV8 = mapV7ItemToV8(itemIDV7);
-		// if the item is found write to the next byte in it8.
-		if (itemIDV8 != 0xFF) {
-			// print found itemv7 and converted itemv8
-			if (itemIDV7 != itemIDV8){
-				js_info <<  "Item ID " << std::hex << static_cast<int>(itemIDV7) << " converted to " << std::hex << static_cast<int>(itemIDV8) << std::endl;
-			}
-			numItemsv8++;
-			it8.setByte(itemIDV8);
-			it8.next();
-			// copy the quantity
-			it8.setByte(it7.getByte());
-			it7.next();
-			it8.next();
-		} else {
-			// warn we couldn't find v7 item in v8
-			js_error <<  "Item ID " << std::hex << itemIDV7 << " not found in version 8 item list." << std::endl;
-			// skip this v7 item and move to the next v7 item
-			it7.next();
-			it7.next();
-		}
-	}
-	// update the number of items v8
-	it8.setByte(sym8.getPlayerDataAddress("wNumItems"), numItemsv8);
-
-	js_info <<  "Copy wNumMedicine..." << std::endl;
-	// Copy it7 wNumMedicine to it8 wNumMedicine
-	it7.seek(sym7.getPlayerDataAddress("wNumMedicine"));
-	it8.seek(sym8.getPlayerDataAddress("wNumMedicine"));
-	// save the number of medcine items
-	uint8_t numMedicinev7 = it7.getByte();
-	uint8_t numMedicinev8 = 0;
-	it8.setByte(numMedicinev7);
-	it7.next();
-	it8.next();
-	// wMedicine is in the structure of ITEM_ID, QUANTITY. With an ITEM_ID of 0xFF indicating the end of the list.
-	// we need to convert the ITEM_ID from version 7 to version 8 and copy the QUANTITY.
-	js_info <<  "Patching wMedicine..." << std::endl;
-	// assert that the address is correct
-	if (it7.getAddress() != sym7.getPlayerDataAddress("wMedicine")) {
-		js_error <<  "Unexpected address for wMedicine in version 7 save file: " << std::hex << it7.getAddress() << std::endl;
-	}
-	// for numMedicinev7, convert the ITEM_ID from version 7 to version 8 and copy the QUANTITY
-	for (int i = 0; i < numMedicinev7 + 1; i++) {
-		// get the ITEM_ID from version 7
-		uint8_t itemIDV7 = it7.getByte();
-		it7.next();
-		if (itemIDV7 == 0xFF) {
-			it8.setByte(0xFF);
-			break;
-		}
-		// map the version 7 item to the version 8 item
-		uint8_t itemIDV8 = mapV7ItemToV8(itemIDV7);
-		// if the item is found write to the next byte in it8.
-		if (itemIDV8 != 0xFF) {
-			// print found itemv7 and converted itemv8
-			if (itemIDV7 != itemIDV8){
-				js_info <<  "Item ID " << std::hex << static_cast<int>(itemIDV7) << " converted to " << std::hex << static_cast<int>(itemIDV8) << std::endl;
-			}
-			numMedicinev8++;
-			it8.setByte(itemIDV8);
-			it8.next();
-			// copy the quantity
-			it8.setByte(it7.getByte());
-			it7.next();
-			it8.next();
-		} else {
-			// warn we couldn't find v7 item in v8
-			js_error <<  "Item ID " << std::hex << itemIDV7 << " not found in version 8 item list." << std::endl;
-			// skip this v7 item and move to the next v7 item
-			it7.next();
-			it7.next();
-		}
-	}
-	// update the number of medicine v8
-	it8.setByte(sym8.getPlayerDataAddress("wNumMedicine"), numMedicinev8);
-
-	js_info <<  "Copy wNumBalls..." << std::endl;
-	// Copy it7 wNumBalls to it8 wNumBalls
-	it7.seek(sym7.getPlayerDataAddress("wNumBalls"));
-	it8.seek(sym8.getPlayerDataAddress("wNumBalls"));
-	// save the number of ball items
-	uint8_t numBallsv7 = it7.getByte();
-	uint8_t numBallsV8 = 0;
-	it8.setByte(numBallsv7);
-	it7.next();
-	it8.next();
-	// wBalls is in the structure of ITEM_ID, QUANTITY. With an ITEM_ID of 0xFF indicating the end of the list.
-	// we need to convert the ITEM_ID from version 7 to version 8 and copy the QUANTITY.
-	js_info <<  "Patching wBalls..." << std::endl;
-	// assert that the address is correct
-	if (it7.getAddress() != sym7.getPlayerDataAddress("wBalls")) {
-		js_error <<  "Unexpected address for wBalls in version 7 save file: " << std::hex << it7.getAddress() << std::endl;
-	}
-	// for numBallsv7, convert the ITEM_ID from version 7 to version 8 and copy the QUANTITY
-	for (int i = 0; i < numBallsv7 + 1; i++) {
-		// get the ITEM_ID from version 7
-		uint8_t itemIDV7 = it7.getByte();
-		it7.next();
-		if (itemIDV7 == 0xFF) {
-			it8.setByte(0xFF);
-			break;
-		}
-		// map the version 7 item to the version 8 item
-		uint8_t itemIDV8 = mapV7ItemToV8(itemIDV7);
-		// if the item is found write to the next byte in it8.
-		if (itemIDV8 != 0xFF) {
-			// print found itemv7 and converted itemv8
-			if (itemIDV7 != itemIDV8){
-				js_info <<  "Item ID " << std::hex << static_cast<int>(itemIDV7) << " converted to " << std::hex << static_cast<int>(itemIDV8) << std::endl;
-			}
-			numBallsV8++;
-			it8.setByte(itemIDV8);
-			it8.next();
-			// copy the quantity
-			it8.setByte(it7.getByte());
-			it7.next();
-			it8.next();
-		} else {
-			// warn we couldn't find v7 item in v8
-			js_error <<  "Item ID " << std::hex << itemIDV7 << " not found in version 8 item list." << std::endl;
-			// skip this v7 item and move to the next v7 item
-			it7.next();
-			it7.next();
-		}
-	}
-	// update the number of balls v8
-	it8.setByte(sym8.getPlayerDataAddress("wNumBalls"), numBallsV8);
-
-	js_info <<  "Copy wNumBerries..." << std::endl;
-	// Copy it7 wNumBerries to it8 wNumBerries
-	it7.seek(sym7.getPlayerDataAddress("wNumBerries"));
-	it8.seek(sym8.getPlayerDataAddress("wNumBerries"));
-	// save the number of berry items
-	uint8_t numBerriesv7 = it7.getByte();
-	uint8_t numBerriesv8 = 0;
-	it8.setByte(numBerriesv7);
-	it7.next();
-	it8.next();
-	// wBerries is in the structure of ITEM_ID, QUANTITY. With an ITEM_ID of 0xFF indicating the end of the list.
-	// we need to convert the ITEM_ID from version 7 to version 8 and copy the QUANTITY.
-	js_info <<  "Patching wBerries..." << std::endl;
-	// assert that the address is correct
-	if (it7.getAddress() != sym7.getPlayerDataAddress("wBerries")) {
-		js_error <<  "Unexpected address for wBerries in version 7 save file: " << std::hex << it7.getAddress() << std::endl;
-	}
-	// for numBerriesv7, convert the ITEM_ID from version 7 to version 8 and copy the QUANTITY
-	for (int i = 0; i < numBerriesv7 + 1; i++) {
-		// get the ITEM_ID from version 7
-		uint8_t itemIDV7 = it7.getByte();
-		it7.next();
-		if (itemIDV7 == 0xFF) {
-			it8.setByte(0xFF);
-			break;
-		}
-		// map the version 7 item to the version 8 item
-		uint8_t itemIDV8 = mapV7ItemToV8(itemIDV7);
-		// if the item is found write to the next byte in it8.
-		if (itemIDV8 != 0xFF) {
-			// print found itemv7 and converted itemv8
-			if (itemIDV7 != itemIDV8){
-				js_info <<  "Item ID " << std::hex << static_cast<int>(itemIDV7) << " converted to " << std::hex << static_cast<int>(itemIDV8) << std::endl;
-			}
-			numBerriesv8++;
-			it8.setByte(itemIDV8);
-			it8.next();
-			// copy the quantity
-			it8.setByte(it7.getByte());
-			it7.next();
-			it8.next();
-		} else {
-			// warn we couldn't find v7 item in v8
-			js_error <<  "Item ID " << std::hex << itemIDV7 << " not found in version 8 item list." << std::endl;
-			// skip this v7 item and move to the next v7 item
-			it7.next();
-			it7.next();
-		}
-	}
-	// update the number of berries v8
-	it8.setByte(sym8.getPlayerDataAddress("wNumBerries"), numBerriesv8);
-
-	js_info <<  "Copy wNumPCItems..." << std::endl;
-	// Copy it7 wNumPCItems to it8 wNumPCItems
-	it7.seek(sym7.getPlayerDataAddress("wNumPCItems"));
-	it8.seek(sym8.getPlayerDataAddress("wNumPCItems"));
-	// save the number of pc items
-	uint8_t numPCItems = it7.getByte();
-	uint8_t numPCItemsV8 = 0;
-	it8.setByte(numPCItems);
-	it7.next();
-	it8.next();
-	// wPCItems is in the structure of ITEM_ID, QUANTITY. With an ITEM_ID of 0xFF indicating the end of the list.
-	// we need to convert the ITEM_ID from version 7 to version 8 and copy the QUANTITY.
-	js_info <<  "Patching wPCItems..." << std::endl;
-	// assert that the address is correct
-	if (it7.getAddress() != sym7.getPlayerDataAddress("wPCItems")) {
-		js_error <<  "Unexpected address for wPCItems in version 7 save file: " << std::hex << it7.getAddress() << std::endl;
-	}
-	// for numPCItems, convert the ITEM_ID from version 7 to version 8 and copy the QUANTITY
-	for (int i = 0; i < numPCItems + 1; i++) {
-		// get the ITEM_ID from version 7
-		uint8_t itemIDV7 = it7.getByte();
-		it7.next();
-		if (itemIDV7 == 0xFF) {
-			it8.setByte(0xFF);
-			break;
-		}
-		// map the version 7 item to the version 8 item
-		uint8_t itemIDV8 = mapV7ItemToV8(itemIDV7);
-		// if the item is found write to the next byte in it8.
-		if (itemIDV8 != 0xFF) {
-			// print found itemv7 and converted itemv8
-			if (itemIDV7 != itemIDV8){
-				js_info <<  "Item ID " << std::hex << static_cast<int>(itemIDV7) << " converted to " << std::hex << static_cast<int>(itemIDV8) << std::endl;
-			}
-			numPCItemsV8++;
-			it8.setByte(itemIDV8);
-			it8.next();
-			// copy the quantity
-			it8.setByte(it7.getByte());
-			it7.next();
-			it8.next();
-		} else {
-			// warn we couldn't find v7 item in v8
-			js_error <<  "Item ID " << std::hex << itemIDV7 << " not found in version 8 item list." << std::endl;
-			// skip this v7 item and move to the next v7 item
-			it7.next();
-			it7.next();
-		}
-	}
-	// update the number of pc items v8
-	it8.setByte(sym8.getPlayerDataAddress("wNumPCItems"), numPCItemsV8);
+	convertItemList(sd, sym7.getPlayerDataAddress("wNumItems"), sym7.getPlayerDataAddress("wItems"), sym8.getPlayerDataAddress("wNumItems"), sym8.getPlayerDataAddress("wItems"), "wItems");
+	convertItemList(sd, sym7.getPlayerDataAddress("wNumMedicine"), sym7.getPlayerDataAddress("wMedicine"), sym8.getPlayerDataAddress("wNumMedicine"), sym8.getPlayerDataAddress("wMedicine"), "wMedicine");
+	convertItemList(sd, sym7.getPlayerDataAddress("wNumBalls"), sym7.getPlayerDataAddress("wBalls"), sym8.getPlayerDataAddress("wNumBalls"), sym8.getPlayerDataAddress("wBalls"), "wBalls");
+	convertItemList(sd, sym7.getPlayerDataAddress("wNumBerries"), sym7.getPlayerDataAddress("wBerries"), sym8.getPlayerDataAddress("wNumBerries"), sym8.getPlayerDataAddress("wBerries"), "wBerries");
+	convertItemList(sd, sym7.getPlayerDataAddress("wNumPCItems"), sym7.getPlayerDataAddress("wPCItems"), sym8.getPlayerDataAddress("wNumPCItems"), sym8.getPlayerDataAddress("wPCItems"), "wPCItems");
 
 	js_info <<  "Copy wApricorns..." << std::endl;
 	copyDataBlock(sd, sym7.getPlayerDataAddress("wApricorns"), sym8.getPlayerDataAddress("wApricorns"), NUM_APRICORNS);
@@ -660,77 +403,10 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Copy from wDigWarpNumber to wCurMapDataEnd..." << std::endl;
 	copyDataBlock(sd, sym7.getMapDataAddress("wDigWarpNumber"), sym8.getMapDataAddress("wDigWarpNumber"), sym7.getMapDataAddress("wCurMapDataEnd") - sym7.getMapDataAddress("wDigWarpNumber"));
 
-	// map the v7 wDigMapGroup and wDigMapNumber to v8 wDigMapGroup and wDigMapNumber
-	js_info <<  "Map wDigMapGroup and wDigMapNumber..." << std::endl;
-	it7.seek(sym7.getMapDataAddress("wDigMapGroup"));
-	it8.seek(sym8.getMapDataAddress("wDigMapGroup"));
-	uint8_t digMapGroupV7 = it7.getByte();
-	it7.next();
-	uint8_t digMapNumberV7 = it7.getByte();
-	// create the tuple for the dig map group and number
-	std::tuple<uint8_t, uint8_t> digMapV8 = mapv7toV8(digMapGroupV7, digMapNumberV7);
-	// print found dig map group and number v7 and converted dig map group and number v8
-	if (digMapGroupV7 != std::get<0>(digMapV8) || digMapNumberV7 != std::get<1>(digMapV8)){
-		js_info <<  "Dig Map Group " << std::hex << static_cast<int>(digMapGroupV7) << " and Number " << std::hex << static_cast<int>(digMapNumberV7) << " converted to Group " << std::hex << static_cast<int>(std::get<0>(digMapV8)) << " and Number " << std::hex << static_cast<int>(std::get<1>(digMapV8)) << std::endl;
-	}
-	// write the dig map group and number to v8
-	it8.setByte(std::get<0>(digMapV8));
-	it8.next();
-	it8.setByte(std::get<1>(digMapV8));
-
-	// map the v7 wBackupMapGroup and wBackupMapNumber to v8 wBackupMapGroup and wBackupMapNumber
-	js_info <<  "Map wBackupMapGroup and wBackupMapNumber..." << std::endl;
-	it7.seek(sym7.getMapDataAddress("wBackupMapGroup"));
-	it8.seek(sym8.getMapDataAddress("wBackupMapGroup"));
-	uint8_t backupMapGroupV7 = it7.getByte();
-	it7.next();
-	uint8_t backupMapNumberV7 = it7.getByte();
-	// create the tuple for the backup map group and number
-	std::tuple<uint8_t, uint8_t> backupMapV8 = mapv7toV8(backupMapGroupV7, backupMapNumberV7);
-	// print found backup map group and number v7 and converted backup map group and number v8
-	if (backupMapGroupV7 != std::get<0>(backupMapV8) || backupMapNumberV7 != std::get<1>(backupMapV8)){
-		js_info <<  "Backup Map Group " << std::hex << static_cast<int>(backupMapGroupV7) << " and Number " << std::hex << static_cast<int>(backupMapNumberV7) << " converted to Group " << std::hex << static_cast<int>(std::get<0>(backupMapV8)) << " and Number " << std::hex << static_cast<int>(std::get<1>(backupMapV8)) << std::endl;
-	}
-	// write the backup map group and number to v8
-	it8.setByte(std::get<0>(backupMapV8));
-	it8.next();
-	it8.setByte(std::get<1>(backupMapV8));
-
-	// map the v7 wLastSpawnMapGroup and wLastSpawnMapNumber to v8 wLastSpawnMapGroup and wLastSpawnMapNumber
-	js_info <<  "Map wLastSpawnMapGroup and wLastSpawnMapNumber..." << std::endl;
-	it7.seek(sym7.getMapDataAddress("wLastSpawnMapGroup"));
-	it8.seek(sym8.getMapDataAddress("wLastSpawnMapGroup"));
-	uint8_t lastSpawnMapGroupV7 = it7.getByte();
-	it7.next();
-	uint8_t lastSpawnMapNumberV7 = it7.getByte();
-	// create the tuple for the last spawn map group and number
-	std::tuple<uint8_t, uint8_t> lastSpawnMapV8 = mapv7toV8(lastSpawnMapGroupV7, lastSpawnMapNumberV7);
-	// print found last spawn map group and number v7 and converted last spawn map group and number v8
-	if (lastSpawnMapGroupV7 != std::get<0>(lastSpawnMapV8) || lastSpawnMapNumberV7 != std::get<1>(lastSpawnMapV8)){
-		js_info <<  "Last Spawn Map Group " << std::hex << static_cast<int>(lastSpawnMapGroupV7) << " and Number " << std::hex << static_cast<int>(lastSpawnMapNumberV7) << " converted to Group " << std::hex << static_cast<int>(std::get<0>(lastSpawnMapV8)) << " and Number " << std::hex << static_cast<int>(std::get<1>(lastSpawnMapV8)) << std::endl;
-	}
-	// write the last spawn map group and number to v8
-	it8.setByte(std::get<0>(lastSpawnMapV8));
-	it8.next();
-	it8.setByte(std::get<1>(lastSpawnMapV8));
-
-	// map the v7 wMapGroup and wMapNumber to v8 wMapGroup and wMapNumber
-	js_info <<  "Map wMapGroup and wMapNumber..." << std::endl;
-	it7.seek(sym7.getMapDataAddress("wMapGroup"));
-	it8.seek(sym8.getMapDataAddress("wMapGroup"));
-	uint8_t mapGroupV7 = it7.getByte();
-	it7.next();
-	uint8_t mapNumberV7 = it7.getByte();
-	// create the tuple for the map group and number
-	std::tuple<uint8_t, uint8_t> mapV8 = mapv7toV8(mapGroupV7, mapNumberV7);
-	// print found map group and number v7 and converted map group and number v8
-	if (mapGroupV7 != std::get<0>(mapV8) || mapNumberV7 != std::get<1>(mapV8)){
-		js_info <<  "Map Group " << std::hex << static_cast<int>(mapGroupV7) << " and Number " << std::hex << static_cast<int>(mapNumberV7) << " converted to Group " << std::hex << static_cast<int>(std::get<0>(mapV8)) << " and Number " << std::hex << static_cast<int>(std::get<1>(mapV8)) << std::endl;
-	}
-	// write the map group and number to v8
-	it8.setByte(std::get<0>(mapV8));
-	it8.next();
-	it8.setByte(std::get<1>(mapV8));
+	mapAndWriteMapGroupNumber(sd, sym7.getMapDataAddress("wDigMapGroup"), sym8.getMapDataAddress("wDigMapGroup"), sym7.getMapDataAddress("wDigMapNumber"), sym8.getMapDataAddress("wDigMapNumber"), "wDigMap");
+	mapAndWriteMapGroupNumber(sd, sym7.getMapDataAddress("wBackupMapGroup"), sym8.getMapDataAddress("wBackupMapGroup"), sym7.getMapDataAddress("wBackupMapNumber"), sym8.getMapDataAddress("wBackupMapNumber"), "wBackupMap");
+	mapAndWriteMapGroupNumber(sd, sym7.getMapDataAddress("wLastSpawnMapGroup"), sym8.getMapDataAddress("wLastSpawnMapGroup"), sym7.getMapDataAddress("wLastSpawnMapNumber"), sym8.getMapDataAddress("wLastSpawnMapNumber"), "wLastSpawnMap");
+	mapAndWriteMapGroupNumber(sd, sym7.getMapDataAddress("wMapGroup"), sym8.getMapDataAddress("wMapGroup"), sym7.getMapDataAddress("wMapNumber"), sym8.getMapDataAddress("wMapNumber"), "wMap");
 
 	// Copy wPartyCount
 	js_info <<  "Copy wPartyCount..." << std::endl;
@@ -873,23 +549,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	caughtLoc = it8.getByte(sym8.getPokemonDataAddress("wContestMonCaughtLocation"));
 	convertCaughtLocation(sd, sym8.getPokemonDataAddress("wContestMon"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTLOCATION, caughtLoc);
 
-	// map the version 7 wDunsparceMapGroup and wDunsparceMapNumber to the version 8 wDunsparceMapGroup and wDunsparceMapNumber
-	js_info <<  "Map wDunsp****MapGroup and wDunsp****MapNumber..." << std::endl;
-	it7.seek(sym7.getPokemonDataAddress("wDunsparceMapGroup"));
-	it8.seek(sym8.getPokemonDataAddress("wDunsparceMapGroup"));
-	uint8_t dunsparceMapGroup = it7.getByte();
-	it7.next();
-	uint8_t dunsparceMapNumber = it7.getByte();
-	// create tuple to store the map group and map number
-	std::tuple<uint8_t, uint8_t> dunsparceMap = mapv7toV8(dunsparceMapGroup, dunsparceMapNumber);
-	// print found dunsparce mapv7 and converted dunsparce mapv8
-	if (dunsparceMapGroup != std::get<0>(dunsparceMap) || dunsparceMapNumber != std::get<1>(dunsparceMap)){
-		js_info <<  "Dunsp**** Map " << std::hex << static_cast<int>(dunsparceMapGroup) << " " << std::hex << static_cast<int>(dunsparceMapNumber) << " converted to " << std::hex << static_cast<int>(std::get<0>(dunsparceMap)) << " " << std::hex << static_cast<int>(std::get<1>(dunsparceMap)) << std::endl;
-	}
-	// write the map group and map number
-	it8.setByte(std::get<0>(dunsparceMap));
-	it8.next();
-	it8.setByte(std::get<1>(dunsparceMap));
+	mapAndWriteMapGroupNumber(sd, sym7.getPokemonDataAddress("wDunsparceMapGroup"), sym8.getPokemonDataAddress("wDunsparceMapGroup"), sym7.getPokemonDataAddress("wDunsparceMapNumber"), sym8.getPokemonDataAddress("wDunsparceMapNumber"), "wDunsp****");
 
 	// Clear wRoamMons_CurMapNumber to wRoamMons_LastMapGroup in version 8
 	// we will do this by clearing the 4 bytes before wBestMagikarpLengthMm since the symbols are not present in version 8
@@ -1158,6 +818,50 @@ void convertItem(SourceDest &sd, uint32_t base_address, int i, int struct_length
 	}
 }
 
+// a helper function to convert item lists
+void convertItemList(SourceDest &sd, uint32_t numItemsAddr7, uint32_t itemsAddr7, uint32_t numItemsAddr8, uint32_t itemsAddr8, const std::string &itemListName){
+	js_info << "Copy " << itemListName << "..." << std::endl;
+
+	// Set iterators to the number-of-items address
+	sd.sourceSave.seek(numItemsAddr7);
+	uint8_t numItemsV7 = sd.sourceSave.getByte();
+	uint8_t numItemsV8 = 0;
+	sd.destSave.setByte(numItemsAddr8, numItemsV7);
+	sd.sourceSave.next();
+	sd.destSave.next();
+
+	js_info << "Patching " << itemListName << "..." << std::endl;
+	for (int i = 0; i < numItemsV7 + 1; i++) {
+		uint8_t itemIDV7 = sd.sourceSave.getByte();
+		sd.sourceSave.next();
+		if (itemIDV7 == 0xFF) {
+			sd.destSave.setByte(0xFF);
+			break;
+		}
+
+		uint8_t itemIDV8 = mapV7ItemToV8(itemIDV7);
+		if (itemIDV8 != 0xFF) {
+			if (itemIDV7 != itemIDV8) {
+				js_info << "Item " << std::hex << static_cast<int>(itemIDV7) << " converted to " << std::hex << static_cast<int>(itemIDV8) << std::endl;
+			}
+			numItemsV8++;
+			sd.destSave.setByte(itemIDV8);
+			sd.destSave.next();
+			// copy quantity
+			sd.destSave.setByte(sd.sourceSave.getByte());
+			sd.sourceSave.next();
+			sd.destSave.next();
+		} else {
+			js_error << "Item " << std::hex << static_cast<int>(itemIDV7) << " not found in version 8 item list." << std::endl;
+			// skip quantity
+			sd.sourceSave.next();
+			sd.destSave.next();
+		}
+	}
+	// Update number of items in v8
+	sd.destSave.setByte(numItemsAddr8, numItemsV8);
+}
+
 // converts the caught location for a given mon
 void convertCaughtLocation(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_location_offset, uint8_t caught_location) {
 	uint8_t caught_location_v8 = mapV7LandmarkToV8(caught_location);
@@ -1185,4 +889,20 @@ void convertCaughtBall(SourceDest &sd, uint32_t base_address, int i, int struct_
 		caught_ball_byte |= caught_ball_v8 & CAUGHT_BALL_MASK;
 		sd.destSave.setByte(caught_ball_v8);
 	}
+}
+
+// Helper to map a map group/number pair
+void mapAndWriteMapGroupNumber(SourceDest &sd, uint32_t mapGroupAddr7, uint32_t mapGroupAddr8, uint32_t mapNumberAddr7, uint32_t mapNumberAddr8, const std::string &mapName) {
+	uint8_t groupV7 = sd.sourceSave.getByte(mapGroupAddr7);
+	uint8_t numberV7 = sd.sourceSave.getByte(mapNumberAddr7);
+
+	auto v8Map = mapv7toV8(groupV7, numberV7);
+	if (groupV7 != std::get<0>(v8Map) || numberV7 != std::get<1>(v8Map)) {
+		js_info << mapName << " Group " << std::hex << static_cast<int>(groupV7)
+				<< " Number " << std::hex << static_cast<int>(numberV7)
+				<< " converted to Group " << std::hex << (int)std::get<0>(v8Map)
+				<< " Number " << std::hex << (int)std::get<1>(v8Map) << std::endl;
+	}
+	sd.destSave.setByte(mapGroupAddr8, std::get<0>(v8Map));
+	sd.destSave.setByte(mapNumberAddr8, std::get<1>(v8Map));
 }

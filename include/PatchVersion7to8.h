@@ -131,11 +131,17 @@ void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int str
 // converts the item for a given mon
 void convertItem(SourceDest &sd, uint32_t base_address, int i, int struct_length, int item_offset, uint8_t item);
 
+// a helper function to convert item lists
+void convertItemList(SourceDest &sd, uint32_t numItemsAddr7, uint32_t itemsAddr7, uint32_t numItemsAddr8, uint32_t itemsAddr8, const std::string &itemListName);
+
 // converts the caught location for a given mon
 void convertCaughtLocation(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_location_offset, uint8_t caught_location);
 
 // converts the caught ball for a given mon
 void convertCaughtBall(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_ball_offset, uint8_t caught_ball);
+
+// Helper to map a map group/number pair
+void mapAndWriteMapGroupNumber(SourceDest &sd, uint32_t mapGroupAddr7, uint32_t mapGroupAddr8, uint32_t mapNumberAddr7, uint32_t mapNumberAddr8, const std::string &mapName);
 
 // bool patchVersion7to8 takes in arguments SaveBinary save7 and SaveBinary save8
 bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8);
