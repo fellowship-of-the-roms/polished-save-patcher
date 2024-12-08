@@ -87,7 +87,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			uint8_t caught_location = it8.getByte(sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_CAUGHTLOCATION);
 			uint8_t caught_ball = it8.getByte(sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_CAUGHTBALL) & CAUGHT_BALL_MASK;
 			// convert species & form
-			convertSpeciesAndForm(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_EXTSPECIES, species, seen_mons, caught_mons);
+			convertSpeciesAndForm(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_EXTSPECIES, SAVEMON_MOVES, species, seen_mons, caught_mons);
 			// convert item
 			convertItem(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_ITEM, item);
 			// convert caught location
@@ -113,7 +113,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			uint8_t caught_location = it8.getByte(sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_CAUGHTLOCATION);
 			uint8_t caught_ball = it8.getByte(sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_CAUGHTBALL) & CAUGHT_BALL_MASK;
 			// convert species and form
-			convertSpeciesAndForm(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_EXTSPECIES, species, seen_mons, caught_mons);
+			convertSpeciesAndForm(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_EXTSPECIES, SAVEMON_MOVES, species, seen_mons, caught_mons);
 			// convert item
 			convertItem(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_ITEM, item);
 			// convert caught location
@@ -425,7 +425,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		if (species == 0x00) {
 			continue;
 		}
-		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wPartyMons"), i, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, species, seen_mons, caught_mons);
+		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wPartyMons"), i, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, MON_MOVES, species, seen_mons, caught_mons);
 	}
 
 	// fix the party mon items
@@ -471,7 +471,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Fix wBreedMon1Species..." << std::endl;
 	uint16_t species = it8.getByte(sym8.getPokemonDataAddress("wBreedMon1Species"));
 	if (species != 0x00) {
-		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wBreedMon1"), 0, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, species, seen_mons, caught_mons);
+		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wBreedMon1"), 0, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, MON_MOVES, species, seen_mons, caught_mons);
 	}
 
 	// fix wBreedMon1Item
@@ -495,7 +495,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Fix wBreedMon2Species..." << std::endl;
 	species = it8.getByte(sym8.getPokemonDataAddress("wBreedMon2Species"));
 	if (species != 0x00) {
-		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wBreedMon2Species"), 0, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, species, seen_mons, caught_mons);
+		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wBreedMon2Species"), 0, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, MON_MOVES, species, seen_mons, caught_mons);
 	}
 
 	// fix wBreedMon2Item
@@ -531,7 +531,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Fix wContestMonSpecies..." << std::endl;
 	species = it8.getByte(sym8.getPokemonDataAddress("wContestMonSpecies"));
 	if (species != 0x00) {
-		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wContestMonSpecies"), 0, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, species, seen_mons, caught_mons);
+		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wContestMonSpecies"), 0, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, MON_MOVES, species, seen_mons, caught_mons);
 	}
 
 	// fix wContestMonItem
@@ -770,6 +770,31 @@ void migrateBoxData(SourceDest &sd, const std::string &prefix) {
 	}
 }
 
+// converts the species and form for a given mon; check moves for pikachu surf and fly
+void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int struct_length, int extspecies_offset, int moves_offset, uint16_t species, std::vector<uint16_t> &seen_mons, std::vector<uint16_t> &caught_mons) {
+	uint16_t species_v8 = mapV7PkmnToV8(species);
+	if (species_v8 == PIKACHU_V8){
+		// for NUM_MOVES, scan for SURF_V7 and FLY_V7
+		// if found, set form to PIKACHU_SURF_FORM_V7 or PIKACHU_FLY_FORM_V7 respectively
+		uint8_t personality = sd.destSave.getByte(base_address + i * struct_length + extspecies_offset);
+		uint8_t form = personality & FORM_MASK;
+		for (int j = 0; j < NUM_MOVES; j++) {
+			uint8_t move = sd.destSave.getByte(base_address + i * struct_length + moves_offset + j);
+			if (move == SURF_V7) {
+				form = PIKACHU_SURF_FORM_V7; // we use v7 cause we will let the convertSpeciesAndForm function handle the conversion
+				break;
+			} else if (move == FLY_V7) {
+				form = PIKACHU_FLY_FORM_V7;
+				break;
+			}
+		}
+		personality &= ~FORM_MASK;
+		personality |= form;
+		sd.destSave.setByte(base_address + i * struct_length + extspecies_offset, personality);
+	}
+	convertSpeciesAndForm(sd, base_address, i, struct_length, extspecies_offset, species, seen_mons, caught_mons);
+}
+
 // converts the species and form for a given mon
 void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int struct_length, int extspecies_offset, uint16_t species, std::vector<uint16_t> &seen_mons, std::vector<uint16_t> &caught_mons) {
 	// convert species & form
@@ -787,6 +812,8 @@ void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int str
 		personality |= (species_v8 >> 8) << MON_EXTSPECIES_F;
 		uint8_t form = personality & FORM_MASK;
 		uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
+		form = personality & FORM_MASK;
+		js_info << "Species " << std::hex << species << " Form " << std::hex << static_cast<int>(form) << " ExtSpecies " << std::hex << extspecies_v8 << std::endl;
 		if (extspecies_v8 != INVALID_SPECIES) {
 			seen_mons.push_back(extspecies_v8);
 			caught_mons.push_back(extspecies_v8);

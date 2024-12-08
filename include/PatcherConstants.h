@@ -52,5 +52,6 @@ constexpr const char* VERSION_9_SYMBOL_FILE = "resources/version9/version9.sym";
 // Common patch constants
 constexpr int MON_CENTER_2F_GROUP = 20;
 constexpr int MON_CENTER_2F_MAP = 1;
+constexpr int NUM_MOVES = 4;
 
 #endif

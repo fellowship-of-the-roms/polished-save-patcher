@@ -35,6 +35,7 @@ namespace {
 	constexpr int MON_EXTSPECIES_F = 5;
 	constexpr uint8_t CAUGHT_BALL_MASK = 0b00011111;
 	constexpr int MON_ITEM = 0x01;
+	constexpr int MON_MOVES = 0x02;
 	constexpr int MON_FORM = 0x15;
 	constexpr int MON_CAUGHTBALL = 0x1c;
 	constexpr int MON_CAUGHTLOCATION = 0x1e;
@@ -53,6 +54,7 @@ namespace {
 	constexpr int NEWBOX_SIZE = MONS_PER_BOX + ((MONS_PER_BOX + 7) / 8) + BOX_NAME_LENGTH + 1;
 	constexpr int SAVEMON_EXTSPECIES = 0x15;
 	constexpr int SAVEMON_ITEM = 0x01;
+	constexpr int SAVEMON_MOVES = 0x02;
 	constexpr int SAVEMON_FORM = 0x15;
 	constexpr int SAVEMON_CAUGHTBALL = 0x19;
 	constexpr int SAVEMON_CAUGHTLOCATION = 0x1b;
@@ -67,6 +69,11 @@ namespace {
 	constexpr uint8_t GYARADOS_V8 = 0x82;
 	constexpr uint8_t GYARADOS_RED_FORM_V7 = 0x11;
 	constexpr uint8_t GYARADOS_RED_FORM_V8 = 0x15;
+	constexpr uint8_t PIKACHU_V8 = 0x19;
+	constexpr uint8_t PIKACHU_SURF_FORM_V7 = 0x03;
+	constexpr uint8_t PIKACHU_FLY_FORM_V7 = 0x02;
+	constexpr uint8_t SURF_V7 = 0x39;
+	constexpr uint8_t FLY_V7 = 0x13;
 	constexpr int AFFECTION_OPT = 5;
 	constexpr int RESET_INIT_OPTS = 7;
 }
@@ -124,6 +131,9 @@ void writeDefaultBoxName(SaveBinary::Iterator& it, int boxNum);
 
 // Migrate the newbox box data from version 7 to version 8
 void migrateBoxData(SourceDest &sd, const std::string &prefix);
+
+// converts the species and form for a given mon; check moves for pikachu surf and fly
+void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int struct_length, int extspecies_offset, int moves_offset, uint16_t species, std::vector<uint16_t> &seen_mons, std::vector<uint16_t> &caught_mons);
 
 // converts the species and form for a given mon
 void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int struct_length, int extspecies_offset, uint16_t species, std::vector<uint16_t> &seen_mons, std::vector<uint16_t> &caught_mons);
