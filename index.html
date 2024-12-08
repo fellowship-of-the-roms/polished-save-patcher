@@ -472,7 +472,12 @@
 			if (oldSaveInput.files.length > 0) {
 				const file = oldSaveInput.files[0];
 				// Escape the file name to prevent XSS
-				const sanitizedFileName = file.name.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+				const sanitizedFileName = file.name
+					.replace(/&/g, "&amp;")  // Replace '&' first to prevent double-escaping
+					.replace(/</g, "&lt;")
+					.replace(/>/g, "&gt;")
+					.replace(/"/g, "&quot;")
+					.replace(/'/g, "&#039;");
 				dropZone.querySelector('p').textContent = 'Selected file: ' + file.name;
 				fileDetails.innerHTML = `
 					<p><strong>File Name:</strong> ${sanitizedFileName}</p>
