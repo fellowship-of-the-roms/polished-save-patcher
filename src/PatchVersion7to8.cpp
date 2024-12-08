@@ -232,7 +232,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// it7 wKeyItems is a bit flag array of NUM_KEY_ITEMS_V7 bits. If v7 bit is set, lookup the bit index in the map and write the index to the next byte in it8.
 	for (int i = 0; i < NUM_KEY_ITEMS_V7; i++) {
 		// check if the bit is set
-		if (it7.getByte() & (1 << (i % 8))) {
+		if (isFlagBitSet(it7, sym7.getPlayerDataAddress("wKeyItems"), i)) {
 			// get the key item index is equal to the bit index
 			uint8_t keyItemIndex = i;
 			// map the version 7 key item to the version 8 key item
@@ -249,9 +249,6 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				// warn we couldn't find v7 key item in v8
 				js_error <<  "Key Item " << std::hex << keyItemIndex << " not found in version 8 key item list." << std::endl;
 			}
-		}
-		if (i % 8 == 7) {
-			it7.next();
 		}
 	}
 	// write 0x00 to the end of wKeyItems
@@ -545,10 +542,8 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// wEventFlags is a flag_array of NUM_EVENTS bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
 	js_info <<  "Patching wEventFlags..." << std::endl;
 	for (int i = 0; i < NUM_EVENTS; i++) {
-		// seek to the byte containing the bit
-		it7.seek(sym7.getPlayerDataAddress("wEventFlags") + i / 8);
 		// check if the bit is set
-		if (it7.getBit(i % 8)) {
+		if (isFlagBitSet(it7, sym7.getPlayerDataAddress("wEventFlags"), i)) {
 			// get the event flag index is equal to the bit index
 			uint16_t eventFlagIndex = i;
 			// map the version 7 event flag to the version 8 event flag
@@ -559,10 +554,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				if (eventFlagIndex != eventFlagIndexV8){
 					js_info <<  "Event Flag " << std::dec << eventFlagIndex << " converted to " << eventFlagIndexV8 << std::endl;
 				}
-				// seek to the byte containing the bit
-				it8.seek(sym8.getPlayerDataAddress("wEventFlags") + eventFlagIndexV8 / 8);
-				// set the bit
-				it8.setBit(eventFlagIndexV8 % 8);
+				setFlagBit(it8, sym8.getPlayerDataAddress("wEventFlags"), eventFlagIndexV8);
 			} else {
 				// warn we couldn't find v7 event flag in v8
 				js_warning <<  "Event Flag " << eventFlagIndex << " not found in version 8 event flag list." << std::endl;
@@ -624,9 +616,8 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			js_info <<  "Found Contact Index " << std::hex << static_cast<int>(contactIndexV8) << std::endl;
 			// seek to the byte containing the bit
 			contactIndexV8--; // bit index starts at 0 not 1
-			it8.seek(sym8.getPlayerDataAddress("wPhoneList") + (contactIndexV8 / 8));
 			// set the bit
-			it8.setBit(contactIndexV8 % 8);
+			setFlagBit(it8, sym8.getPlayerDataAddress("wPhoneList"), contactIndexV8);
 		}
 		it7.next();
 	}
@@ -648,7 +639,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Current Address: " << std::hex << it7.getAddress() << std::endl;
 	for (int i = 0; i < NUM_SPAWNS_V7; i++) {
 		// check if the bit is set
-		if (it7.getBit(i % 8)) {
+		if (isFlagBitSet(it7, sym7.getMapDataAddress("wVisitedSpawns"), i)) {
 			// get the spawn index is equal to the bit index
 			uint8_t spawnIndex = i;
 			// map the version 7 spawn to the version 8 spawn
@@ -659,14 +650,9 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				if (spawnIndex != spawnIndexV8){
 					js_info <<  "Spawn " << std::hex << static_cast<int>(spawnIndex) << " converted to " << std::hex << static_cast<int>(spawnIndexV8) << std::endl;
 				}
-				// seek to the byte containing the bit
-				it8.seek(sym8.getMapDataAddress("wVisitedSpawns") + spawnIndexV8 / 8);
 				// set the bit
-				it8.setBit(spawnIndexV8 % 8);
+				setFlagBit(it8, sym8.getMapDataAddress("wVisitedSpawns"), spawnIndexV8);
 			}
-		}
-		if (i % 8 == 7) {
-			it7.next();
 		}
 	}
 
@@ -946,7 +932,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	it8.seek(sym8.getPokemonDataAddress("wPokedexCaught"));
 	for (int i = 0; i < NUM_POKEMON_V7; i++) {
 		// check if the bit is set
-		if (it7.getBit(i % 8)) {
+		if (isFlagBitSet(it7, sym7.getPokemonDataAddress("wPokedexCaught"), i)) {
 			// get the pokemon index is equal to the bit index
 			uint16_t pokemonIndex = i + 1;
 			// map the version 7 pokemon to the version 8 pokemon
@@ -957,21 +943,15 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				if (pokemonIndex != pokemonIndexV8 + 1){
 					js_info <<  "Mon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
 				}
-				// seek to the byte containing the bit
-				it8.seek(sym8.getPokemonDataAddress("wPokedexCaught") + pokemonIndexV8 / 8);
 				// set the bit
-				it8.setBit(pokemonIndexV8 % 8);
+				setFlagBit(it8, sym8.getPokemonDataAddress("wPokedexCaught"), pokemonIndexV8);
 			}
-		}
-		if (i % 8 == 7) {
-			it7.next();
 		}
 	}
 	// for each caught mon in vector caught_mons, set the corresponding bit in it8
 	for (uint16_t mon : caught_mons){
 		uint16_t monIndexV8 = mon - 1;
-		it8.seek(sym8.getPokemonDataAddress("wPokedexCaught") + monIndexV8 / 8);
-		it8.setByte(it8.getByte() | (1 << (monIndexV8 % 8)));
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPokedexCaught"), monIndexV8);
 		js_info <<  "Found caught mon " << std::hex << static_cast<int>(mon) << std::endl;
 	}
 
@@ -981,7 +961,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	it8.seek(sym8.getPokemonDataAddress("wPokedexSeen"));
 	for (int i = 0; i < NUM_POKEMON_V7; i++) {
 		// check if the bit is set
-		if (it7.getBit(i % 8)) {
+		if (isFlagBitSet(it7, sym7.getPokemonDataAddress("wPokedexSeen"), i)) {
 			// get the pokemon index is equal to the bit index
 			uint16_t pokemonIndex = i + 1;
 			// map the version 7 pokemon to the version 8 pokemon
@@ -992,21 +972,15 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 				if (pokemonIndex != pokemonIndexV8 + 1){
 					js_info <<  "Mon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
 				}
-				// seek to the byte containing the bit
-				it8.seek(sym8.getPokemonDataAddress("wPokedexSeen") + pokemonIndexV8 / 8);
 				// set the bit
-				it8.setBit(pokemonIndexV8 % 8);
+				setFlagBit(it8, sym8.getPokemonDataAddress("wPokedexSeen"), pokemonIndexV8);
 			}
-		}
-		if (i % 8 == 7) {
-			it7.next();
 		}
 	}
 	// for each seen mon in vector seen_mons, set the corresponding bit in it8
 	for (uint16_t mon : seen_mons){
 		uint16_t monIndexV8 = mon - 1;
-		it8.seek(sym8.getPokemonDataAddress("wPokedexSeen") + monIndexV8 / 8);
-		it8.setBit(monIndexV8 % 8);
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPokedexSeen"), monIndexV8);
 		js_info <<  "Found seen mon " << std::hex << static_cast<int>(mon) << std::endl;
 	}
 

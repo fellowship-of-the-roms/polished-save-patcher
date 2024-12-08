@@ -34,4 +34,14 @@ bool assertAddress(const SaveBinary::Iterator &it, uint32_t address);
 // calculate the number of bytes needed to store index_size bits
 int flag_array(uint32_t index_size);
 
+// set the specified bit based on bit index in the flag array from the base address
+void setFlagBit(SaveBinary::Iterator &it, uint32_t baseAddress, int bitIndex);
+
+// clear the specified bit based on bit index in the flag array from the base address
+void clearFlagBit(SaveBinary::Iterator &it, uint32_t baseAddress, int bitIndex);
+
+// check if the specified bit based on bit index in the flag array from the base address is set
+bool isFlagBitSet(SaveBinary::Iterator &it, uint32_t baseAddress, int bitIndex);
+
+
 #endif

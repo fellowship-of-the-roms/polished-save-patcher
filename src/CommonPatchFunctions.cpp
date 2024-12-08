@@ -54,3 +54,30 @@ bool assertAddress(const SaveBinary::Iterator &it, uint32_t address) {
 int flag_array(uint32_t index_size) {
 	return (index_size + 7) / 8;
 }
+
+// set the specified bit based on bit index in the flag array from the base address
+void setFlagBit(SaveBinary::Iterator &it, uint32_t baseAddress, int bitIndex) {
+	uint32_t byteAddress = baseAddress + (bitIndex / 8);
+	uint8_t mask = 1 << (bitIndex % 8);
+	uint8_t byte = it.getByte(byteAddress);
+	byte |= mask;
+	it.setByte(byteAddress, byte);
+}
+
+
+// clear the specified bit based on bit index in the flag array from the base address
+void clearFlagBit(SaveBinary::Iterator &it, uint32_t baseAddress, int bitIndex) {
+	uint32_t byteAddress = baseAddress + (bitIndex / 8);
+	uint8_t mask = ~(1 << (bitIndex % 8));
+	uint8_t byte = it.getByte(byteAddress);
+	byte &= mask;
+	it.setByte(byteAddress, byte);
+}
+
+
+// check if the specified bit based on bit index in the flag array from the base address is set
+bool isFlagBitSet(SaveBinary::Iterator &it, uint32_t baseAddress, int bitIndex) {
+	uint32_t byteAddress = baseAddress + (bitIndex / 8);
+	uint8_t mask = 1 << (bitIndex % 8);
+	return (it.getByte(byteAddress) & mask) != 0;
+}
