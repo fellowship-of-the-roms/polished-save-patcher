@@ -329,9 +329,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Copy wFruitTreeFlags..." << std::endl;
 	copyDataBlock(sd, sym7.getPlayerDataAddress("wFruitTreeFlags"), sym8.getPlayerDataAddress("wFruitTreeFlags"), flag_array(NUM_FRUIT_TREES_V7));
 
+	it8.seek(sym8.getPlayerDataAddress("wHiddenGrottoContents") - flag_array(NUM_LANDMARKS_V8));
+
 	// Clear wNuzlockeLandmarkFlags
 	js_info <<  "Clear wNuzlockeLandmarkFlags..." << std::endl;
-	clearDataBlock(sd, sym8.getPlayerDataAddress("wNuzlockeLandmarkFlags"), flag_array(NUM_LANDMARKS_V8));
+	clearDataBlock(sd, it8.getAddress(), flag_array(NUM_LANDMARKS_V8));
 
 	// clear wHiddenGrottoContents to wCurHiddenGrotto
 	js_info <<  "Clear wHiddenGrottoContents to wCurHiddenGrotto..." << std::endl;
