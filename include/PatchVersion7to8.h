@@ -75,6 +75,7 @@ namespace {
 	constexpr uint8_t SURF_V7 = 0x39;
 	constexpr uint8_t FLY_V7 = 0x13;
 	constexpr int AFFECTION_OPT = 5;
+	constexpr int EVS_OPT_CLASSIC = 1;
 	constexpr int RESET_INIT_OPTS = 7;
 }
 

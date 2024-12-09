@@ -152,9 +152,20 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// Reset NUZLOCKE bit to off; this becomes the affection option.
 	js_info <<  "Resetting NUZLOCKE bit..." << std::endl;
 	it8.resetBit(sym8.getOptionsAddress("wInitialOptions"), AFFECTION_OPT); // previously NUZLOCKE_OPT
+	// Make sure wInitialOptions2 is clear in v8
+	js_info <<  "Clearing wInitialOptions2..." << std::endl;
+	it8.next();
+	it8.setByte(0);
+	// Set EVS_OPT_CLASSIC in wInitialOptions2 that is the lower two bits of wInitialOptions2 is 0b01
+	js_info <<  "Setting EVS_OPT_CLASSIC..." << std::endl;
+	it8.setBit(EVS_OPT_CLASSIC);
+	// assert only bit 0 is set in the integer EVS_OPT_CLASSIC
+	if (EVS_OPT_CLASSIC != 0b1) {
+		js_error <<  "EVS_OPT_CLASSIC is not 0b01. Adjust logic in PatchVersion7to8." << std::endl;
+	}
 	// Reset Initial Options so the game asks the player to set them again.
 	js_info <<  "Resetting Initial Options..." << std::endl;
-	it8.resetBit(sym8.getOptionsAddress("wInitialOptions2"), RESET_INIT_OPTS);
+	it8.setBit(RESET_INIT_OPTS);
 
 	// copy bytes from wPlayerData to wObjectStructs - 1 from version 7 to version 8
 	js_info <<  "Copying from wPlayerData to wObjectStructs..." << std::endl;
