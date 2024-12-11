@@ -10,13 +10,18 @@ def clone_repo(repo_url, branch, temp_dir):
 def parse_event_flags(file_path):
 	"""Parse the file to extract events starting with '\tconst'."""
 	event_pattern = re.compile(r'^\tconst\s+(\w+)')
+	skip_pattern = re.compile(r'^\tconst_skip')
 	events = []
 
+	current_index = 0  # Initialize index at 0
 	with open(file_path, 'r') as file:
-		for index, line in enumerate(file):
-			if event_pattern.match(line) and not line.startswith('\tconst_def'):
+		for line in file:
+			if skip_pattern.match(line):
+				current_index += 1  # Increment index but skip recording an event
+			elif event_pattern.match(line) and not line.startswith('\tconst_def'):
 				event_name = event_pattern.match(line).group(1)
-				events.append((index, event_name))
+				events.append((current_index, event_name))
+				current_index += 1  # Increment index for the next event
 
 	return events
 
@@ -26,6 +31,16 @@ def list_events_difference(events1, events2):
 	events2_set = {event for _, event in events2}
 	diff = events1_set - events2_set
 	return [(index, event) for index, event in events1 if event in diff]
+
+def map_matching_events(events1, events2):
+	"""Map events from branch1 to branch2 where names match."""
+	events2_dict = {event: index for index, event in events2}
+	mapping = []
+	for index1, event1 in events1:
+		if event1 in events2_dict:
+			index2 = events2_dict[event1]
+			mapping.append((index1, index2, event1))
+	return mapping
 
 def main(branch1, branch2, repo_url='https://github.com/Rangi42/polishedcrystal.git', file_path='constants/event_flags.asm', list_diff=False):
 	with tempfile.TemporaryDirectory() as temp_dir1, tempfile.TemporaryDirectory() as temp_dir2:
@@ -45,12 +60,13 @@ def main(branch1, branch2, repo_url='https://github.com/Rangi42/polishedcrystal.
 			for index, event in sorted(diff, key=lambda x: x[0]):
 				print(f"{index}: {event}")
 		else:
-			# Print unordered map of events
+			# Print unordered map of matching events
+			mapping = map_matching_events(events1, events2)
 			print("// Converts a version 7 event flag to a version 8 event flag")
 			print("uint16_t mapV7EventFlagToV8(uint16_t v7) {")
 			print("\tstd::unordered_map<uint16_t, uint16_t> indexMap = {")
-			for index, event in events1:
-				print(f"\t\t{{{index}, {index}}},  // {event}")
+			for index1, index2, event_name in mapping:
+				print(f"\t\t{{{index1}, {index2}}},  // {event_name}")
 			print("\t};\n")
 			print("\t// Return the corresponding version 8 event flag or INVALID_EVENT_FLAG if not found")
 			print("\treturn indexMap.find(v7) != indexMap.end() ? indexMap[v7] : INVALID_EVENT_FLAG;")
