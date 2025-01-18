@@ -43,5 +43,35 @@ void clearFlagBit(SaveBinary::Iterator &it, uint32_t baseAddress, int bitIndex);
 // check if the specified bit based on bit index in the flag array from the base address is set
 bool isFlagBitSet(SaveBinary::Iterator &it, uint32_t baseAddress, int bitIndex);
 
+template <typename T>
+T loadStruct(SaveBinary::Iterator& it, uint32_t address) {
+	T data;
+	it.seek(address);
+
+	// Access the raw memory of the struct
+	uint8_t* structPtr = reinterpret_cast<uint8_t*>(&data);
+
+	// Copy data byte-by-byte into the struct
+	for (int i = 0; i < sizeof(T); i++) {
+		structPtr[i] = it.getByte();
+		it.next();
+	}
+
+	return data;
+}
+
+template <typename T>
+void writeStruct(SaveBinary::Iterator& it, uint32_t address, const T& data) {
+	it.seek(address);
+
+	// Access the raw memory of the struct
+	const uint8_t* structPtr = reinterpret_cast<const uint8_t*>(&data);
+
+	// Write data byte-by-byte
+	for (size_t i = 0; i < sizeof(T); i++) {
+		it.setByte(structPtr[i]);
+		it.next();
+	}
+}
 
 #endif
