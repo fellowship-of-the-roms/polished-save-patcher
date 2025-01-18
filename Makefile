@@ -1,8 +1,9 @@
 # Makefile for polished_save_patcher with WebAssembly
 
 # Detect the operating system
-OS := $(shell uname -s)
-
+ifeq ($(OS),)
+    OS := $(shell uname -s 2>/dev/null || echo Windows_NT)
+endif
 # Compiler and flags
 CXX := emcc
 CXXFLAGS := -Iinclude -std=c++17
@@ -11,7 +12,7 @@ CXXFLAGS := -Iinclude -std=c++17
 SRC_DIR := src
 INCLUDE_DIR := include
 RESOURCES_DIR := resources
-VERSION_DIRS := $(wildcard $(RESOURCES_DIR)/version*)
+VERSION_DIRS := resources/version7 resources/version8 resources/version9
 BUILD_DIR := build
 
 # Source files
@@ -43,17 +44,23 @@ LDFLAGS := -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=33554432 # 32MB initial me
 ifeq ($(OS), Windows_NT)
 	CXX := emcc
 	RM := del
-	GZIP := gzip.exe
+	GZIP := powershell -ExecutionPolicy Bypass -file tools/gzip.ps1 -k -f
 else
 	RM := rm -f
-	GZIP := gzip
+	GZIP := gzip -kf
 endif
 
 # Find all .sym files in version* directories
-SYM_FILES := $(shell find $(VERSION_DIRS) -name '*.sym')
+SYM_FILES := $(foreach DIR, $(VERSION_DIRS), $(wildcard $(DIR)/*.sym))
 
-# Compressed symbol files
+# Find all .sym.gz files in version* directories
 COMPRESSED_SYM_FILES := $(SYM_FILES:.sym=.sym.gz)
+
+$(info VERSION_DIRS: $(VERSION_DIRS))
+$(info SYM_FILES: $(SYM_FILES))
+$(info COMPRESSED_SYM_FILES: $(COMPRESSED_SYM_FILES))
+
+
 
 # Build target
 all: $(BUILD_DIR) compress-symbols $(TARGET) copy-index
@@ -65,17 +72,22 @@ release: all
 
 # Create build directory
 $(BUILD_DIR):
+ifeq ($(OS), Windows_NT)
+	if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+else
 	mkdir -p $(BUILD_DIR)
+endif
+
 
 # Compress .sym files
 compress-symbols: $(COMPRESSED_SYM_FILES)
 
 # Rule to compress .sym files
 %.sym.gz: %.sym
-	$(GZIP) -kf $<
+	$(GZIP) $<
 
 # Linking
-$(TARGET): $(OBJECTS)
+$(TARGET): $(OBJECTS) $(COMPRESSED_SYM_FILES)
 	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s FORCE_FILESYSTEM=1 --embed-file resources --exclude-file *.sym --bind -sUSE_ZLIB=1
 
 # Compilation
@@ -84,11 +96,28 @@ $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 # Copy index.html to build directory
 copy-index:
+ifeq ($(OS), Windows_NT)
+	copy index.html $(BUILD_DIR)\index.html
+else
 	cp index.html $(BUILD_DIR)/index.html
+endif
 
-# Clean
+
 clean:
+ifeq ($(OS), Windows_NT)
+	powershell -Command "& { \
+		$(foreach FILE, $(OBJECTS), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
+		$(foreach FILE, $(TARGET), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
+		$(foreach FILE, $(ADDITIONAL_FILES), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
+		$(foreach FILE, $(COMPRESSED_SYM_FILES), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
+	}"
+	if exist "$(BUILD_DIR)" rmdir /S /Q "$(BUILD_DIR)"
+else
 	$(RM) $(OBJECTS) $(TARGET) $(ADDITIONAL_FILES) $(COMPRESSED_SYM_FILES)
+	rm -rf $(BUILD_DIR)
+endif
+
+
 
 # Phony targets
 .PHONY: all clean copy-index release compress-symbols
