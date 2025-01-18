@@ -1,4 +1,4 @@
-#include "Logging.h"
+#include "core/Logging.h"
 
 // Declare an external JavaScript function to log messages
 EM_JS(void, js_log_message, (const char* str, const char* level), {

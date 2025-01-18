@@ -1,7 +1,7 @@
-#include "PatchVersion7to8.h"
-#include "CommonPatchFunctions.h"
-#include "SymbolDatabase.h"
-#include "Logging.h"
+#include "patching/PatchVersion7to8.h"
+#include "core/CommonPatchFunctions.h"
+#include "core/SymbolDatabase.h"
+#include "core/Logging.h"
 
 bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// copy the old save file to the new save file

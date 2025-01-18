@@ -1,10 +1,10 @@
 #ifndef PATCHVERSION7TO8_H
 #define PATCHVERSION7TO8_H
 
-#include "SaveBinary.h"
-#include "SymbolDatabase.h"
-#include "PatcherConstants.h"
-#include "CommonPatchFunctions.h"
+#include "core/SaveBinary.h"
+#include "core/SymbolDatabase.h"
+#include "core/PatcherConstants.h"
+#include "core/CommonPatchFunctions.h"
 #include <iostream>
 
 namespace {

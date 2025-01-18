@@ -1,7 +1,7 @@
 // include "SymbolDatabase.h"
-#include "SymbolDatabase.h"
-#include "PatcherConstants.h"
-#include "Logging.h"
+#include "core/SymbolDatabase.h"
+#include "core/PatcherConstants.h"
+#include "core/Logging.h"
 #include <fstream>
 #include <iostream>
 #include <regex>

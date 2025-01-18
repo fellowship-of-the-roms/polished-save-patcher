@@ -15,13 +15,13 @@ VERSION_DIRS := $(wildcard $(RESOURCES_DIR)/version*)
 BUILD_DIR := build
 
 # Source files
-SOURCES := $(SRC_DIR)/CommonPatchFunctions.cpp \
-           $(SRC_DIR)/PatchVersion7to8.cpp \
-           $(SRC_DIR)/PatchVersion7to8_unorderedmaps.cpp \
-           $(SRC_DIR)/PatchVersion8to9.cpp \
-           $(SRC_DIR)/SaveBinary.cpp \
-           $(SRC_DIR)/SymbolDatabase.cpp \
-           $(SRC_DIR)/Logging.cpp \
+SOURCES := $(SRC_DIR)/core/CommonPatchFunctions.cpp \
+           $(SRC_DIR)/core/SaveBinary.cpp \
+           $(SRC_DIR)/core/SymbolDatabase.cpp \
+           $(SRC_DIR)/core/Logging.cpp \
+           $(SRC_DIR)/patching/PatchVersion7to8.cpp \
+           $(SRC_DIR)/patching/PatchVersion7to8_unorderedmaps.cpp \
+           $(SRC_DIR)/patching/PatchVersion8to9.cpp \
            $(SRC_DIR)/main.cpp
 
 # Object files

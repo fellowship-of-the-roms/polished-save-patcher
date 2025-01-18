@@ -1,4 +1,4 @@
-#include "PatchVersion7to8.h"
+#include "patching/PatchVersion7to8.h"
 
 // converts a version 7 key item to a version 8 key item
 uint8_t mapV7KeyItemToV8(uint8_t v7) {

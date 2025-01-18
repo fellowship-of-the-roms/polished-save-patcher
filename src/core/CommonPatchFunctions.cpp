@@ -1,4 +1,4 @@
-#include "CommonPatchFunctions.h"
+#include "core/CommonPatchFunctions.h"
 
 // calculate save checksum
 uint16_t calculateSaveChecksum(SaveBinary save, uint32_t start, uint32_t end) {

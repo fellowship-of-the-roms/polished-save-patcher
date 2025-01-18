@@ -1,9 +1,9 @@
-#include "SaveBinary.h"
-#include "SymbolDatabase.h"
-#include "PatchVersion7to8.h"
-#include "PatchVersion8to9.h"
-#include "PatcherConstants.h"
-#include "Logging.h"
+#include "core/SaveBinary.h"
+#include "core/SymbolDatabase.h"
+#include "patching/PatchVersion7to8.h"
+#include "patching/PatchVersion8to9.h"
+#include "core/PatcherConstants.h"
+#include "core/Logging.h"
 #include <iostream>
 #include <fstream>
 #include <streambuf>

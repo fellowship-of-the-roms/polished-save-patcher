@@ -1,9 +1,9 @@
 // Include necessary headers
 #include <iostream>
 #include <fstream>
-#include "PatcherConstants.h"
-#include "SaveBinary.h"
-#include "Logging.h"
+#include "core/PatcherConstants.h"
+#include "core/SaveBinary.h"
+#include "core/Logging.h"
 
 // Constructor
 SaveBinary::SaveBinary(const std::string& saveFilePath) : m_locked(false) {
