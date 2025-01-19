@@ -53,7 +53,8 @@ endif
 # Find all .sym files in version* directories
 SYM_FILES := $(foreach DIR, $(VERSION_DIRS), $(wildcard $(DIR)/*.sym))
 
-# Find all .sym.gz files in version* directories
+# We'll produce .sym.filtered files, then compress those
+FILTERED_SYM_FILES := $(SYM_FILES:.sym=.sym.filtered)
 COMPRESSED_SYM_FILES := $(SYM_FILES:.sym=.sym.gz)
 
 $(info VERSION_DIRS: $(VERSION_DIRS))
@@ -78,17 +79,19 @@ else
 	mkdir -p $(BUILD_DIR)
 endif
 
+%.sym.filtered: %.sym
+	python tools/filter_sym.py $< $@
 
 # Compress .sym files
 compress-symbols: $(COMPRESSED_SYM_FILES)
 
 # Rule to compress .sym files
-%.sym.gz: %.sym
-	$(GZIP) $<
+%.sym.gz: %.sym.filtered
+	$(GZIP) -c $< > $@
 
 # Linking
 $(TARGET): $(OBJECTS) $(COMPRESSED_SYM_FILES)
-	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s FORCE_FILESYSTEM=1 --embed-file resources --exclude-file *.sym --bind -sUSE_ZLIB=1
+	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s FORCE_FILESYSTEM=1 --embed-file resources --exclude-file *.sym --exclude-file *.sym.filtered --bind -sUSE_ZLIB=1
 
 # Compilation
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -109,11 +112,12 @@ ifeq ($(OS), Windows_NT)
 		$(foreach FILE, $(OBJECTS), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
 		$(foreach FILE, $(TARGET), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
 		$(foreach FILE, $(ADDITIONAL_FILES), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
+		$(foreach FILE, $(FILTERED_SYM_FILES), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
 		$(foreach FILE, $(COMPRESSED_SYM_FILES), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
 	}"
 	if exist "$(BUILD_DIR)" rmdir /S /Q "$(BUILD_DIR)"
 else
-	$(RM) $(OBJECTS) $(TARGET) $(ADDITIONAL_FILES) $(COMPRESSED_SYM_FILES)
+	$(RM) $(OBJECTS) $(TARGET) $(ADDITIONAL_FILES) $(FILTERED_SYM_FILES) $(COMPRESSED_SYM_FILES)
 	rm -rf $(BUILD_DIR)
 endif
 

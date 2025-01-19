@@ -24,6 +24,8 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// calculate the checksum from lookup symbol name "sGameData" to "sGameDataEnd"
 	uint16_t calculated_checksum = calculateSaveChecksum(save7, sym7.getSRAMAddress("sGameData"), sym7.getSRAMAddress("sGameDataEnd"));
 	if (save_checksum != calculated_checksum) {
+		js_error << "sGameData: " << std::hex << sym7.getSRAMAddress("sGameData") << std::endl;
+		js_error << "sGameDataEnd: " << std::hex << sym7.getSRAMAddress("sGameDataEnd") << std::endl;
 		js_error <<  "Checksum mismatch! Expected: " << std::hex << calculated_checksum << ", got: " << save_checksum << std::endl;
 		return false;
 	}

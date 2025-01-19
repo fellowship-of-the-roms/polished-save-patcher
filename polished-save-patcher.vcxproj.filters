@@ -106,5 +106,8 @@
       <Filter>tools</Filter>
     </None>
     <None Include="run.py" />
+    <None Include="tools\filter_sym.py">
+      <Filter>tools</Filter>
+    </None>
   </ItemGroup>
 </Project>

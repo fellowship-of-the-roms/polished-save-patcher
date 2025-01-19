@@ -72,6 +72,9 @@ SymbolDatabase::SymbolDatabase(const std::string& symbolFilePath) {
 	std::smatch match;
 
 	while (std::getline(decompressedStream, line)) {
+		if (!line.empty() && line.back() == '\r') {
+			line.pop_back();
+		}
 		if (!std::regex_match(line, match, symbolRegex)) {
 			continue;
 		}
@@ -93,6 +96,7 @@ SymbolDatabase::~SymbolDatabase() {
 const SymbolDatabase::Symbol* SymbolDatabase::getSymbol(const std::string& name) const {
 	auto it = m_symbols.find(name);
 	if (it == m_symbols.end()) {
+		js_error << "Symbol " << name << " not found" << std::endl;
 		return nullptr;
 	}
 	return &it->second;
