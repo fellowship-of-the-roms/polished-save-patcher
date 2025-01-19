@@ -105,8 +105,8 @@ namespace {
 			personality[1] = (personality[1] & 0b11011111) | ((extspecies & 0b100000000) >> 3);
 			species = extspecies & 0b11111111;
 		}
-		uint8_t getForm() const { return species & FORM_MASK; }
-		void setForm(uint8_t form) { species = (species & 0b11100000) | form; }
+		uint8_t getForm() const { return personality[1] & FORM_MASK; }
+		void setForm(uint8_t form) { personality[1] = (personality[1] & 0b11100000) | form; }
 
 		uint8_t pp[NUM_MOVES];
 		uint8_t happiness;
@@ -144,15 +144,15 @@ namespace {
 		uint8_t dvs[3];
 		uint8_t personality[2];
 
-		bool isShiny() const { return (personality[0] & 0b10000000 >> 7); }
+		bool isShiny() const { return ((personality[0] & 0b10000000) >> 7); }
 		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | 0b10000000) : (personality[0] & 0b01111111); }
-		uint8_t getAbility() const { return personality[0] & 0b01100000 >> 5; }
+		uint8_t getAbility() const { return (personality[0] & 0b01100000) >> 5; }
 		void setAbility(uint8_t ability) { personality[0] = (personality[0] & 0b10011111) | (ability << 5); }
 		uint8_t getNature() const { return personality[0] & 0b00011111; }
 		void setNature(uint8_t nature) { personality[0] = (personality[0] & 0b11100000) | nature; }
-		bool getGender() const { return personality[1] & 0b10000000 >> 7; }
+		bool getGender() const { return (personality[1] & 0b10000000) >> 7; }
 		void setGender(bool gender) { personality[1] = gender ? (personality[1] | 0b10000000) : (personality[1] & 0b01111111); }
-		bool isEgg() const { return personality[1] & 0b01000000 >> 6; }
+		bool isEgg() const { return (personality[1] & 0b01000000) >> 6; }
 		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | 0b01000000) : (personality[1] & 0b10111111); }
 		// ext species consists of 9 bits, 1 from personality[1] 0b00100000 which is the MSB, and 8 from species
 		uint16_t getExtSpecies() const { return ((personality[1] & 0b00100000) << 3) | species; }
@@ -160,17 +160,17 @@ namespace {
 			personality[1] = (personality[1] & 0b11011111) | ((extspecies & 0b100000000) >> 3);
 			species = extspecies & 0b11111111;
 		}
-		uint8_t getForm() const { return species & FORM_MASK; }
-		void setForm(uint8_t form) { species = (species & 0b11100000) | form; }
+		uint8_t getForm() const { return personality[1] & FORM_MASK; }
+		void setForm(uint8_t form) { personality[1] = (personality[1] & 0b11100000) | form; }
 
 		uint8_t ppups;
 		uint8_t happiness;
 		uint8_t pkrus;
 		uint8_t caughtdata;
 
-		bool getCaughtGender() const { return caughtdata & 0b10000000 >> 7; }
+		bool getCaughtGender() const { return (caughtdata & 0b10000000) >> 7; }
 		void setCaughtGender(bool gender) { caughtdata = gender ? (caughtdata | 0b10000000) : (caughtdata & 0b01111111); }
-		uint8_t getCaughtTime() const { return caughtdata & 0b01100000 >> 5; }
+		uint8_t getCaughtTime() const { return (caughtdata & 0b01100000) >> 5; }
 		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & 0b10011111) | (time << 5); }
 		uint8_t getCaughtBall() const { return caughtdata & 0b00011111; }
 		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & 0b11100000) | ball; }
@@ -195,15 +195,16 @@ namespace {
 		uint8_t dvs[3];
 		uint8_t personality[2];
 
-		bool isShiny() const { return (personality[0] & 0b10000000 >> 7); };
+		bool isShiny() const { return ((personality[0] & 0b10000000) >> 7); };
 		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | 0b10000000) : (personality[0] & 0b01111111); };
-		uint8_t getAbility() const { return personality[0] & 0b01100000 >> 5; };
+		uint8_t getAbility() const { return (personality[0] & 0b01100000) >> 5; };
 		void setAbility(uint8_t ability) { personality[0] = (personality[0] & 0b10011111) | (ability << 5); };
 		uint8_t getNature() const { return personality[0] & 0b00011111; };
 		void setNature(uint8_t nature) { personality[0] = (personality[0] & 0b11100000) | nature; };
-		bool getGender() const { return personality[1] & 0b10000000 >> 7; };
+
+		bool getGender() const { return (personality[1] & 0b10000000) >> 7; };
 		void setGender(bool gender) { personality[1] = gender ? (personality[1] | 0b10000000) : (personality[1] & 0b01111111); };
-		bool isEgg() const { return personality[1] & 0b01000000 >> 6; };
+		bool isEgg() const { return (personality[1] & 0b01000000) >> 6; };
 		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | 0b01000000) : (personality[1] & 0b10111111); };
 		// ext species consists of 9 bits, 1 from personality[1] 0b00100000 which is the MSB, and 8 from species
 		uint16_t getExtSpecies() const { return ((personality[1] & 0b00100000) << 3) | species; };
@@ -211,15 +212,15 @@ namespace {
 			personality[1] = (personality[1] & 0b11011111) | ((extspecies & 0b100000000) >> 3);
 			species = extspecies & 0b11111111;
 		};
-		uint8_t getForm() const { return species & FORM_MASK; };
-		void setForm(uint8_t form) { species = (species & 0b11100000) | form; };
+		uint8_t getForm() const { return personality[1] & FORM_MASK; }
+		void setForm(uint8_t form) { personality[1] = (personality[1] & 0b11100000) | form; }
 
 		uint8_t pp[NUM_MOVES];
 		uint8_t happiness;
 		uint8_t pkrus;
 		uint8_t caughtdata;
 
-		uint8_t getCaughtTime() const { return caughtdata & 0b01100000 >> 5; };
+		uint8_t getCaughtTime() const { return (caughtdata & 0b01100000) >> 5; };
 		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & 0b10011111) | (time << 5); };
 		uint8_t getCaughtBall() const { return caughtdata & 0b00011111; };
 		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & 0b11100000) | ball; };
@@ -248,15 +249,15 @@ namespace {
 		uint8_t dvs[3];
 		uint8_t personality[2];
 
-		bool isShiny() const { return (personality[0] & 0b10000000 >> 7); };
+		bool isShiny() const { return ((personality[0] & 0b10000000) >> 7); };
 		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | 0b10000000) : (personality[0] & 0b01111111); };
-		uint8_t getAbility() const { return personality[0] & 0b01100000 >> 5; };
+		uint8_t getAbility() const { return (personality[0] & 0b01100000) >> 5; };
 		void setAbility(uint8_t ability) { personality[0] = (personality[0] & 0b10011111) | (ability << 5); };
 		uint8_t getNature() const { return personality[0] & 0b00011111; };
 		void setNature(uint8_t nature) { personality[0] = (personality[0] & 0b11100000) | nature; };
-		bool getGender() const { return personality[1] & 0b10000000 >> 7; };
+		bool getGender() const { return (personality[1] & 0b10000000) >> 7; };
 		void setGender(bool gender) { personality[1] = gender ? (personality[1] | 0b10000000) : (personality[1] & 0b01111111); };
-		bool isEgg() const { return personality[1] & 0b01000000 >> 6; };
+		bool isEgg() const { return (personality[1] & 0b01000000) >> 6; };
 		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | 0b01000000) : (personality[1] & 0b10111111); };
 		// ext species consists of 9 bits, 1 from personality[1] 0b00100000 which is the MSB, and 8 from species
 		uint16_t getExtSpecies() const { return ((personality[1] & 0b00100000) << 3) | species; };
@@ -264,15 +265,15 @@ namespace {
 			personality[1] = (personality[1] & 0b11011111) | ((extspecies & 0b100000000) >> 3);
 			species = extspecies & 0b11111111;
 		};
-		uint8_t getForm() const { return species & FORM_MASK; };
-		void setForm(uint8_t form) { species = (species & 0b11100000) | form; };
+		uint8_t getForm() const { return personality[1] & FORM_MASK; }
+		void setForm(uint8_t form) { personality[1] = (personality[1] & 0b11100000) | form; }
 
 		uint8_t ppups;
 		uint8_t happiness;
 		uint8_t pkrus;
 		uint8_t caughtdata;
 
-		uint8_t getCaughtTime() const { return caughtdata & 0b01100000 >> 5; };
+		uint8_t getCaughtTime() const { return (caughtdata & 0b01100000) >> 5; };
 		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & 0b10011111) | (time << 5); };
 		uint8_t getCaughtBall() const { return caughtdata & 0b00011111; };
 		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & 0b11100000) | ball; };
@@ -283,6 +284,34 @@ namespace {
 		uint8_t extra[3];
 		uint8_t nickname[MON_NAME_LENGTH - 1];
 		uint8_t ot[PLAYER_NAME_LENGTH - 1];
+	};
+
+	struct hofmon_struct_v8 {
+		uint8_t species;
+		uint16_t id;
+		uint8_t personality[2];
+
+		bool isShiny() const { return ((personality[0] & 0b10000000) >> 7); };
+		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | 0b10000000) : (personality[0] & 0b01111111); };
+		uint8_t getAbility() const { return (personality[0] & 0b01100000) >> 5; };
+		void setAbility(uint8_t ability) { personality[0] = (personality[0] & 0b10011111) | (ability << 5); };
+		uint8_t getNature() const { return personality[0] & 0b00011111; };
+		void setNature(uint8_t nature) { personality[0] = (personality[0] & 0b11100000) | nature; };
+		bool getGender() const { return (personality[1] & 0b10000000) >> 7; };
+		void setGender(bool gender) { personality[1] = gender ? (personality[1] | 0b10000000) : (personality[1] & 0b01111111); };
+		bool isEgg() const { return (personality[1] & 0b01000000) >> 6; };
+		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | 0b01000000) : (personality[1] & 0b10111111); };
+		// ext species consists of 9 bits, 1 from personality[1] 0b00100000 which is the MSB, and 8 from species
+		uint16_t getExtSpecies() const { return ((personality[1] & 0b00100000) << 3) | species; };
+		void setExtSpecies(uint16_t extspecies) {
+			personality[1] = (personality[1] & 0b11011111) | ((extspecies & 0b100000000) >> 3);
+			species = extspecies & 0b11111111;
+		};
+		uint8_t getForm() const { return personality[1] & FORM_MASK; }
+		void setForm(uint8_t form) { personality[1] = (personality[1] & 0b11100000) | form; }
+
+		uint8_t level;
+		uint8_t nickname[MON_NAME_LENGTH - 1];
 	};
 
 #pragma pack(pop)
@@ -343,28 +372,21 @@ void writeDefaultBoxName(SaveBinary::Iterator& it, int boxNum);
 // Migrate the newbox box data from version 7 to version 8
 void migrateBoxData(SourceDest &sd, const std::string &prefix);
 
-// converts the species and form for a given mon; check moves for pikachu surf and fly
-void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int struct_length, int extspecies_offset, int moves_offset, uint16_t species, std::vector<uint16_t> &seen_mons, std::vector<uint16_t> &caught_mons);
-
-// converts the species and form for a given mon
-void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int struct_length, int extspecies_offset, uint16_t species, std::vector<uint16_t> &seen_mons, std::vector<uint16_t> &caught_mons);
-
-// converts the item for a given mon
-void convertItem(SourceDest &sd, uint32_t base_address, int i, int struct_length, int item_offset, uint8_t item);
-
 // a helper function to convert item lists
 void convertItemList(SourceDest &sd, uint32_t numItemsAddr7, uint32_t itemsAddr7, uint32_t numItemsAddr8, uint32_t itemsAddr8, const std::string &itemListName);
-
-// converts the caught location for a given mon
-void convertCaughtLocation(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_location_offset, uint8_t caught_location);
-
-// converts the caught ball for a given mon
-void convertCaughtBall(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_ball_offset, uint8_t caught_ball);
 
 // Helper to map a map group/number pair
 void mapAndWriteMapGroupNumber(SourceDest &sd, uint32_t mapGroupAddr7, uint32_t mapGroupAddr8, uint32_t mapNumberAddr7, uint32_t mapNumberAddr8, const std::string &mapName);
 
 // bool patchVersion7to8 takes in arguments SaveBinary save7 and SaveBinary save8
 bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8);
+
+savemon_struct_v8 convertSavemonV7toV8(const savemon_struct_v8& savemon, std::vector<uint16_t> &seen_mons, std::vector<uint16_t> &caught_mons);
+
+breedmon_struct_v8 convertBreedmonV7toV8(const breedmon_struct_v8& breedmon, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons);
+
+party_struct_v8 convertPartyV7toV8(const party_struct_v8& party, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons);
+
+hofmon_struct_v8 convertHofmonV7toV8(const hofmon_struct_v8& hofmon, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons);
 
 #endif

@@ -73,6 +73,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info << "Clearing " << "sBoxMons2C" << "..." << std::endl;
 	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons2C"), MONDB_ENTRIES_C_V8 * SAVEMON_STRUCT_LENGTH);
 
+	savemon_struct_v8 savemon;
 	// Patching sBoxMons1A if checksums match
 	js_info <<  "Checking sBoxMons1A checksums..." << std::endl;
 	for (int i = 0; i < MONDB_ENTRIES_A_V8; i++) {
@@ -80,20 +81,8 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		uint16_t calc_checksum = calculateNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH);
 		uint16_t cur_checksum = extractStoredNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH);
 		if (calc_checksum == cur_checksum) {
-			// Get values from version 7 save file
-			uint16_t species = it8.getByte();
-			it8.next();
-			uint8_t item = it8.getByte();
-			uint8_t caught_location = it8.getByte(sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_CAUGHTLOCATION);
-			uint8_t caught_ball = it8.getByte(sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_CAUGHTBALL) & CAUGHT_BALL_MASK;
-			// convert species & form
-			convertSpeciesAndForm(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_EXTSPECIES, SAVEMON_MOVES, species, seen_mons, caught_mons);
-			// convert item
-			convertItem(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_ITEM, item);
-			// convert caught location
-			convertCaughtLocation(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_CAUGHTLOCATION, caught_location);
-			// convert caught ball
-			convertCaughtBall(sd, sym8.getSRAMAddress("sBoxMons1A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_CAUGHTBALL, caught_ball);
+			savemon = convertSavemonV7toV8(loadStruct<savemon_struct_v8>(it8, sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH), seen_mons, caught_mons);
+			writeStruct<savemon_struct_v8>(it8, sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH, savemon);
 			// write the new checksum
 			writeNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH);
 		}
@@ -106,20 +95,8 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		uint16_t calc_checksum = calculateNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH);
 		uint16_t cur_checksum = extractStoredNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH);
 		if (calc_checksum == cur_checksum) {
-			// Get values from version 7 save file
-			uint16_t species = it8.getByte();
-			it8.next();
-			uint8_t item = it8.getByte();
-			uint8_t caught_location = it8.getByte(sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_CAUGHTLOCATION);
-			uint8_t caught_ball = it8.getByte(sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH + SAVEMON_CAUGHTBALL) & CAUGHT_BALL_MASK;
-			// convert species and form
-			convertSpeciesAndForm(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_EXTSPECIES, SAVEMON_MOVES, species, seen_mons, caught_mons);
-			// convert item
-			convertItem(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_ITEM, item);
-			// convert caught location
-			convertCaughtLocation(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_CAUGHTLOCATION, caught_location);
-			// convert caught ball
-			convertCaughtBall(sd, sym8.getSRAMAddress("sBoxMons2A"), i, SAVEMON_STRUCT_LENGTH, SAVEMON_CAUGHTBALL, caught_ball);
+			savemon = convertSavemonV7toV8(loadStruct<savemon_struct_v8>(it8, sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH), seen_mons, caught_mons);
+			writeStruct<savemon_struct_v8>(it8, sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH, savemon);
 			// write the new checksum
 			writeNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH);
 		}
@@ -429,35 +406,16 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Copy wPartyMons..." << std::endl;
 	copyDataBlock(sd, sym7.getPokemonDataAddress("wPartyMons"), sym8.getPokemonDataAddress("wPartyMons"), PARTYMON_STRUCT_LENGTH * PARTY_LENGTH);
 
-	// fix the party mon species
-	js_info <<  "Fix party mon species..." << std::endl;
+	party_struct_v8 partymon;
+	// fix the party mons
+	js_info <<  "Fix party mons..." << std::endl;
 	for (int i = 0; i < PARTY_LENGTH; i++) {
 		uint16_t species = it8.getByte(sym8.getPokemonDataAddress("wPartyMons") + i * PARTYMON_STRUCT_LENGTH);
 		if (species == 0x00) {
 			continue;
 		}
-		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wPartyMons"), i, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, MON_MOVES, species, seen_mons, caught_mons);
-	}
-
-	// fix the party mon items
-	js_info <<  "Fix party mon items..." << std::endl;
-	for (int i = 0; i < PARTY_LENGTH; i++) {
-		uint8_t item = it8.getByte(sym8.getPokemonDataAddress("wPartyMons") + i * PARTYMON_STRUCT_LENGTH + MON_ITEM);
-		convertItem(sd, sym8.getPokemonDataAddress("wPartyMons"), i, PARTYMON_STRUCT_LENGTH, MON_ITEM, item);
-	}
-
-	// fix party mon caught ball
-	js_info <<  "Fix party mon caught ball..." << std::endl;
-	for (int i = 0; i < PARTY_LENGTH; i++) {
-		uint8_t caughtBall = it8.getByte(sym8.getPokemonDataAddress("wPartyMons") + i * PARTYMON_STRUCT_LENGTH + MON_CAUGHTBALL) & CAUGHT_BALL_MASK;
-		convertCaughtBall(sd, sym8.getPokemonDataAddress("wPartyMons"), i, PARTYMON_STRUCT_LENGTH, MON_CAUGHTBALL, caughtBall);
-	}
-
-	// fix party mon caught locations
-	js_info <<  "Fix party mon caught locations..." << std::endl;
-	for (int i = 0; i < PARTY_LENGTH; i++) {
-		uint8_t caughtLoc = it8.getByte(sym8.getPokemonDataAddress("wPartyMons") + i * PARTYMON_STRUCT_LENGTH + MON_CAUGHTLOCATION);
-		convertCaughtLocation(sd, sym8.getPokemonDataAddress("wPartyMons"), i, PARTYMON_STRUCT_LENGTH, MON_CAUGHTLOCATION, caughtLoc);
+		partymon = convertPartyV7toV8(loadStruct<party_struct_v8>(it8, sym8.getPokemonDataAddress("wPartyMons") + i * PARTYMON_STRUCT_LENGTH), seen_mons, caught_mons);
+		writeStruct<party_struct_v8>(it8, sym8.getPokemonDataAddress("wPartyMons") + i * PARTYMON_STRUCT_LENGTH, partymon);
 	}
 
 	// copy wPartyMonOTs
@@ -478,53 +436,22 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Copy wDayCareMan to wBugContestSecondPartySpecies - 54..." << std::endl;
 	copyDataBlock(sd, sym7.getPokemonDataAddress("wDayCareMan"), sym8.getPokemonDataAddress("wDayCareMan"), sym7.getPokemonDataAddress("wBugContestSecondPartySpecies") - 54 - sym7.getPokemonDataAddress("wDayCareMan"));
 
-	// fix wBreedMon1Species and wBreedMon1ExtSpecies
-	js_info <<  "Fix wBreedMon1Species..." << std::endl;
+	breedmon_struct_v8 breedmon;
+	// fix wBreedmons...
+	js_info <<  "Fix wBreedMon1..." << std::endl;
 	uint16_t species = it8.getByte(sym8.getPokemonDataAddress("wBreedMon1Species"));
 	if (species != 0x00) {
-		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wBreedMon1"), 0, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, MON_MOVES, species, seen_mons, caught_mons);
+		breedmon = convertBreedmonV7toV8(loadStruct<breedmon_struct_v8>(it8, sym8.getPokemonDataAddress("wBreedMon1")), seen_mons, caught_mons);
+		writeStruct<breedmon_struct_v8>(it8, sym8.getPokemonDataAddress("wBreedMon1"), breedmon);
 	}
 
-	// fix wBreedMon1Item
-	js_info <<  "Fix wBreedMon1Item..." << std::endl;
-	uint8_t item = it8.getByte(sym8.getPokemonDataAddress("wBreedMon1Item"));
-	if (item != 0x00) {
-		convertItem(sd, sym8.getPokemonDataAddress("wBreedMon1"), 0, PARTYMON_STRUCT_LENGTH, MON_ITEM, item);
-	}
-
-	// fix wBreedMon1CaughtBall
-	js_info <<  "Fix wBreedMon1CaughtBall..." << std::endl;
-	uint8_t caughtBall = it8.getByte(sym8.getPokemonDataAddress("wBreedMon1CaughtBall")) & CAUGHT_BALL_MASK;
-	convertCaughtBall(sd, sym8.getPokemonDataAddress("wBreedMon1"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTBALL, caughtBall);
-
-	// fix wBreedMon1CaughtLocation
-	js_info <<  "Fix wBreedMon1CaughtLocation..." << std::endl;
-	uint8_t caughtLoc = it8.getByte(sym8.getPokemonDataAddress("wBreedMon1CaughtLocation"));
-	convertCaughtLocation(sd, sym8.getPokemonDataAddress("wBreedMon1"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTLOCATION, caughtLoc);
-
-	// fix wBreedMon2Species and wBreedMon2ExtSpecies
+	// fix wBreedMon2...
 	js_info <<  "Fix wBreedMon2Species..." << std::endl;
 	species = it8.getByte(sym8.getPokemonDataAddress("wBreedMon2Species"));
 	if (species != 0x00) {
-		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wBreedMon2Species"), 0, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, MON_MOVES, species, seen_mons, caught_mons);
+		breedmon = convertBreedmonV7toV8(loadStruct<breedmon_struct_v8>(it8, sym8.getPokemonDataAddress("wBreedMon2")), seen_mons, caught_mons);
+		writeStruct<breedmon_struct_v8>(it8, sym8.getPokemonDataAddress("wBreedMon2"), breedmon);
 	}
-
-	// fix wBreedMon2Item
-	js_info <<  "Fix wBreedMon2Item..." << std::endl;
-	item = it8.getByte(sym8.getPlayerDataAddress("wBreedMon2Item"));
-	if (item != 0x00) {
-		convertItem(sd, sym8.getPokemonDataAddress("wBreedMon2"), 0, PARTYMON_STRUCT_LENGTH, MON_ITEM, item);
-	}
-
-	// fix wBreedMon2CaughtBall
-	js_info <<  "Fix wBreedMon2CaughtBall..." << std::endl;
-	caughtBall = it8.getByte(sym8.getPokemonDataAddress("wBreedMon2CaughtBall")) & CAUGHT_BALL_MASK;
-	convertCaughtBall(sd, sym8.getPokemonDataAddress("wBreedMon2"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTBALL, caughtBall);
-
-	// fix wBreedMon2CaughtLocation
-	js_info <<  "Fix wBreedMon2CaughtLocation..." << std::endl;
-	caughtLoc = it8.getByte(sym8.getPokemonDataAddress("wBreedMon2CaughtLocation"));
-	convertCaughtLocation(sd, sym8.getPokemonDataAddress("wBreedMon2"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTLOCATION, caughtLoc);
 
 	// Clear space from wLevelUpMonNickname to wBugContestBackupPartyCount in it8
 	js_info <<  "Clear space from wLevelUpMonNickname to wBugContestBackupPartyCount..." << std::endl;
@@ -539,28 +466,12 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	copyDataBlock(sd, sym7.getPokemonDataAddress("wContestMon"), sym8.getPokemonDataAddress("wContestMon"), sym7.getPokemonDataAddress("wPokemonDataEnd") - sym7.getPokemonDataAddress("wContestMon"));
 
 	// fix wContestMonSpecies and wContestMonExtSpecies
-	js_info <<  "Fix wContestMonSpecies..." << std::endl;
+	js_info <<  "Fix wContestMon..." << std::endl;
 	species = it8.getByte(sym8.getPokemonDataAddress("wContestMonSpecies"));
 	if (species != 0x00) {
-		convertSpeciesAndForm(sd, sym8.getPokemonDataAddress("wContestMonSpecies"), 0, PARTYMON_STRUCT_LENGTH, MON_EXTSPECIES, MON_MOVES, species, seen_mons, caught_mons);
+		partymon = convertPartyV7toV8(loadStruct<party_struct_v8>(it8, sym8.getPokemonDataAddress("wContestMon")), seen_mons, caught_mons);
+		writeStruct<party_struct_v8>(it8, sym8.getPokemonDataAddress("wContestMon"), partymon);
 	}
-
-	// fix wContestMonItem
-	js_info <<  "Fix wContestMonItem..." << std::endl;
-	item = it8.getByte(sym8.getPokemonDataAddress("wContestMonItem"));
-	if (item != 0x00) {
-		convertItem(sd, sym8.getPokemonDataAddress("wContestMon"), 0, PARTYMON_STRUCT_LENGTH, MON_ITEM, item);
-	}
-
-	// fix wContestMonCaughtBall
-	js_info <<  "Fix wContestMonCaughtBall..." << std::endl;
-	caughtBall = it8.getByte(sym8.getPokemonDataAddress("wContestMonCaughtBall")) & CAUGHT_BALL_MASK;
-	convertCaughtBall(sd, sym8.getPokemonDataAddress("wContestMon"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTBALL, caughtBall);
-
-	// fix wContestMonCaughtLocation
-	js_info <<  "Fix wContestMonCaughtLocation..." << std::endl;
-	caughtLoc = it8.getByte(sym8.getPokemonDataAddress("wContestMonCaughtLocation"));
-	convertCaughtLocation(sd, sym8.getPokemonDataAddress("wContestMon"), 0, PARTYMON_STRUCT_LENGTH, MON_CAUGHTLOCATION, caughtLoc);
 
 	mapAndWriteMapGroupNumber(sd, sym7.getPokemonDataAddress("wDunsparceMapGroup"), sym8.getPokemonDataAddress("wDunsparceMapGroup"), sym7.getPokemonDataAddress("wDunsparceMapNumber"), sym8.getPokemonDataAddress("wDunsparceMapNumber"), "wDunsp****");
 
@@ -586,8 +497,9 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Copy from sHallOfFame to sHallOfFameEnd..." << std::endl;
 	copyDataBlock(sd, sym7.getSRAMAddress("sHallOfFame"), sym8.getSRAMAddress("sHallOfFame"), sym8.getSRAMAddress("sHallOfFameEnd") - sym8.getSRAMAddress("sHallOfFame"));
 
+	hofmon_struct_v8 hofmon;
 	// fix the hall of fame mon species
-	js_info <<  "Fix hall of fame mon species..." << std::endl;
+	js_info <<  "Fix hall of fame mon..." << std::endl;
 	for (int i = 0; i < NUM_HOF_TEAMS_V8; i++) {
 		for (int j = 0; j < PARTY_LENGTH; j++){
 			it8.seek(sym8.getSRAMAddress("sHallOfFame01Mon1") + i * HOF_LENGTH);
@@ -595,7 +507,8 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			if (species == 0x00) {
 				continue;
 			}
-			convertSpeciesAndForm(sd, sym8.getSRAMAddress("sHallOfFame01Mon1") + i * HOF_LENGTH, j, HOF_MON_LENGTH, HOF_MON_EXTSPECIES, species, seen_mons, caught_mons);
+			hofmon = convertHofmonV7toV8(loadStruct<hofmon_struct_v8>(it8, sym8.getSRAMAddress("sHallOfFame01Mon1") + i * HOF_LENGTH + j * HOF_MON_LENGTH), seen_mons, caught_mons);
+			writeStruct<hofmon_struct_v8>(it8, sym8.getSRAMAddress("sHallOfFame01Mon1") + i * HOF_LENGTH + j * HOF_MON_LENGTH, hofmon);
 		}
 	}
 
@@ -781,83 +694,6 @@ void migrateBoxData(SourceDest &sd, const std::string &prefix) {
 	}
 }
 
-// converts the species and form for a given mon; check moves for pikachu surf and fly
-void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int struct_length, int extspecies_offset, int moves_offset, uint16_t species, std::vector<uint16_t> &seen_mons, std::vector<uint16_t> &caught_mons) {
-	uint16_t species_v8 = mapV7PkmnToV8(species);
-	if (species_v8 == PIKACHU_V8){
-		// for NUM_MOVES, scan for SURF_V7 and FLY_V7
-		// if found, set form to PIKACHU_SURF_FORM_V7 or PIKACHU_FLY_FORM_V7 respectively
-		uint8_t personality = sd.destSave.getByte(base_address + i * struct_length + extspecies_offset);
-		uint8_t form = personality & FORM_MASK;
-		for (int j = 0; j < NUM_MOVES; j++) {
-			uint8_t move = sd.destSave.getByte(base_address + i * struct_length + moves_offset + j);
-			if (move == SURF_V7) {
-				form = PIKACHU_SURF_FORM_V7; // we use v7 cause we will let the convertSpeciesAndForm function handle the conversion
-				break;
-			} else if (move == FLY_V7) {
-				form = PIKACHU_FLY_FORM_V7;
-				break;
-			}
-		}
-		personality &= ~FORM_MASK;
-		personality |= form;
-		sd.destSave.setByte(base_address + i * struct_length + extspecies_offset, personality);
-	}
-	convertSpeciesAndForm(sd, base_address, i, struct_length, extspecies_offset, species, seen_mons, caught_mons);
-}
-
-// converts the species and form for a given mon
-void convertSpeciesAndForm(SourceDest &sd, uint32_t base_address, int i, int struct_length, int extspecies_offset, uint16_t species, std::vector<uint16_t> &seen_mons, std::vector<uint16_t> &caught_mons) {
-	// convert species & form
-	uint16_t species_v8 = mapV7PkmnToV8(species);
-	if (species_v8 == INVALID_SPECIES) {
-		js_error <<  "Species " << std::hex << species << " not found in version 8 mon list." << std::endl;
-		return;
-	} else {
-		if (species != species_v8) {
-			js_info <<  "Species " << std::hex << species << " converted to " << std::hex << species_v8 << std::endl;
-		}
-		sd.destSave.setByte(base_address + i * struct_length, species_v8 & 0xFF);
-		uint8_t personality = sd.destSave.getByte(base_address + i * struct_length + extspecies_offset);
-		personality &= ~EXTSPECIES_MASK;
-		personality |= (species_v8 >> 8) << MON_EXTSPECIES_F;
-		uint8_t form = personality & FORM_MASK;
-		uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(species, form);
-		form = personality & FORM_MASK;
-		js_info << "Species " << std::hex << species << " Form " << std::hex << static_cast<int>(form) << " ExtSpecies " << std::hex << extspecies_v8 << std::endl;
-		if (extspecies_v8 != INVALID_SPECIES) {
-			seen_mons.push_back(extspecies_v8);
-			caught_mons.push_back(extspecies_v8);
-		}
-		if (species_v8 == MAGIKARP_V8) {
-			form = mapV7MagikarpFormToV8(form);
-			personality &= ~FORM_MASK;
-			personality |= form;
-		}
-		if (species_v8 == GYARADOS_V8) {
-			if (form == GYARADOS_RED_FORM_V7){
-				form = GYARADOS_RED_FORM_V8;
-				personality &= ~FORM_MASK;
-				personality |= form;
-			}
-		}
-		sd.destSave.setByte(personality);
-	}
-}
-
-// converts the item for a given mon
-void convertItem(SourceDest &sd, uint32_t base_address, int i, int struct_length, int item_offset, uint8_t item) {
-	uint8_t item_v8 = mapV7ItemToV8(item);
-	if (item_v8 == 0xFF) {
-		js_error <<  "Item " << std::hex << static_cast<int>(item) << " not found in version 8 item list." << std::endl;
-	} else {
-		if (item != item_v8) {
-			js_info <<  "Item " << std::hex << static_cast<int>(item) << " converted to " << std::hex << static_cast<int>(item_v8) << std::endl;
-		}
-		sd.destSave.setByte(base_address + i * struct_length + item_offset, item_v8);
-	}
-}
-
 // a helper function to convert item lists
 void convertItemList(SourceDest &sd, uint32_t numItemsAddr7, uint32_t itemsAddr7, uint32_t numItemsAddr8, uint32_t itemsAddr8, const std::string &itemListName){
 	js_info << "Copy " << itemListName << "..." << std::endl;
@@ -902,40 +738,12 @@ void convertItemList(SourceDest &sd, uint32_t numItemsAddr7, uint32_t itemsAddr7
 	sd.destSave.setByte(numItemsAddr8, numItemsV8);
 }
 
-// converts the caught location for a given mon
-void convertCaughtLocation(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_location_offset, uint8_t caught_location) {
-	uint8_t caught_location_v8 = mapV7LandmarkToV8(caught_location);
-	if (caught_location_v8 == 0xFF) {
-		js_error <<  "Landmark " << std::hex << static_cast<int>(caught_location) << " not found in version 8 landmark list." << std::endl;
-	} else {
-		if (caught_location != caught_location_v8) {
-			js_info <<  "Landmark " << std::hex << static_cast<int>(caught_location) << " converted to " << std::hex << static_cast<int>(caught_location_v8) << std::endl;
-		}
-		sd.destSave.setByte(base_address + i * struct_length + caught_location_offset, caught_location_v8);
-	}
-}
-
-// converts the caught ball for a given mon
-void convertCaughtBall(SourceDest &sd, uint32_t base_address, int i, int struct_length, int caught_ball_offset, uint8_t caught_ball) {
-	uint8_t caught_ball_v8 = mapV7ItemToV8(caught_ball);
-	if (caught_ball_v8 == 0xFF) {
-		js_error <<  "Ball " << std::hex << static_cast<int>(caught_ball) << " not found in version 8 item list." << std::endl;
-	} else {
-		if (caught_ball != caught_ball_v8) {
-			js_info <<  "Ball " << std::hex << static_cast<int>(caught_ball) << " converted to " << std::hex << static_cast<int>(caught_ball_v8) << std::endl;
-		}
-		uint8_t caught_ball_byte = sd.destSave.getByte(base_address + i * struct_length + caught_ball_offset);
-		caught_ball_byte &= ~CAUGHT_BALL_MASK;
-		caught_ball_byte |= caught_ball_v8 & CAUGHT_BALL_MASK;
-		sd.destSave.setByte(caught_ball_v8);
-	}
-}
-
 // Helper to map a map group/number pair
 void mapAndWriteMapGroupNumber(SourceDest &sd, uint32_t mapGroupAddr7, uint32_t mapGroupAddr8, uint32_t mapNumberAddr7, uint32_t mapNumberAddr8, const std::string &mapName) {
 	uint8_t groupV7 = sd.sourceSave.getByte(mapGroupAddr7);
 	uint8_t numberV7 = sd.sourceSave.getByte(mapNumberAddr7);
-
+	js_info << "Patching " << mapName << "..." << std::endl;
+	js_info << "V7 Group " << std::hex << static_cast<int>(groupV7) << " V7 Number " << std::hex << static_cast<int>(numberV7) << std::endl;
 	auto v8Map = mapv7toV8(groupV7, numberV7);
 	if (groupV7 != std::get<0>(v8Map) || numberV7 != std::get<1>(v8Map)) {
 		js_info << mapName << " Group " << std::hex << static_cast<int>(groupV7)
@@ -945,4 +753,248 @@ void mapAndWriteMapGroupNumber(SourceDest &sd, uint32_t mapGroupAddr7, uint32_t 
 	}
 	sd.destSave.setByte(mapGroupAddr8, std::get<0>(v8Map));
 	sd.destSave.setByte(mapNumberAddr8, std::get<1>(v8Map));
+}
+
+savemon_struct_v8 convertSavemonV7toV8(const savemon_struct_v8& savemon, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons) {
+	// input is a savemon_struct_v8 because we convert in place
+	savemon_struct_v8 new_savemon;
+	uint16_t species_v8 = mapV7PkmnToV8(savemon.species);
+	if (species_v8 == INVALID_SPECIES) {
+		js_error << "Savemon species " << std::hex << static_cast<int>(savemon.species) << " not found in version 8 mon list." << std::endl;
+		return savemon;
+	}
+	if (savemon.species != species_v8) {
+		js_info << "Savemon species " << std::hex << static_cast<int>(savemon.species) << " converted to " << std::hex << static_cast<int>(species_v8) << std::endl;
+	}
+	new_savemon.setExtSpecies(species_v8);
+	uint8_t item = mapV7ItemToV8(savemon.item);
+	if (item == 0xFF) {
+		js_error << "Savemon item " << std::hex << static_cast<int>(savemon.item) << " not found in version 8 item list." << std::endl;
+		new_savemon.item = 0; // NO_ITEM
+	}
+	else {
+		if (savemon.item != item) {
+			js_info << "Savemon item " << std::hex << static_cast<int>(savemon.item) << " converted to " << std::hex << static_cast<int>(item) << std::endl;
+		}
+		new_savemon.item = item;
+	}
+	std::memcpy(new_savemon.moves, savemon.moves, sizeof(savemon.moves));
+	new_savemon.id = savemon.id;
+	std::memcpy(new_savemon.exp, savemon.exp, sizeof(savemon.exp));
+	std::memcpy(new_savemon.evs, savemon.evs, sizeof(savemon.evs));
+	std::memcpy(new_savemon.dvs, savemon.dvs, sizeof(savemon.dvs));
+	new_savemon.setShiny(savemon.isShiny());
+	new_savemon.setAbility(savemon.getAbility());
+	new_savemon.setNature(savemon.getNature());
+	new_savemon.setGender(savemon.getGender());
+	new_savemon.setEgg(savemon.isEgg());
+	new_savemon.setForm(savemon.getForm());
+	uint16_t extspecies_v8;
+	if (species_v8 == PIKACHU_V8) {
+		// for NUM_MOVES, scan for SURF_V7 and FLY_V7
+		for (int j = 0; j < NUM_MOVES; j++) {
+			uint8_t move = savemon.moves[j];
+			if (move == SURF_V7) {
+				new_savemon.setForm(PIKACHU_SURF_FORM_V7);
+				extspecies_v8 = mapV7SpeciesFormToV8Extspecies(savemon.species, PIKACHU_SURF_FORM_V7);
+				break;
+			}
+			else if (move == FLY_V7) {
+				new_savemon.setForm(PIKACHU_FLY_FORM_V7);
+				extspecies_v8 = mapV7SpeciesFormToV8Extspecies(savemon.species, PIKACHU_FLY_FORM_V7);
+				break;
+			}
+		}
+	}
+	else {
+		extspecies_v8 = mapV7SpeciesFormToV8Extspecies(savemon.species, savemon.getForm());
+	}
+	if (extspecies_v8 != INVALID_SPECIES) {
+		seen_mons.push_back(extspecies_v8);
+		caught_mons.push_back(extspecies_v8);
+	}
+	if (species_v8 == MAGIKARP_V8) {
+		new_savemon.setForm(mapV7MagikarpFormToV8(savemon.getForm()));
+	}
+	if (species_v8 == GYARADOS_V8) {
+		if (savemon.getForm() == GYARADOS_RED_FORM_V7) {
+			new_savemon.setForm(GYARADOS_RED_FORM_V8);
+		}
+	}
+	new_savemon.ppups = savemon.ppups;
+	new_savemon.happiness = savemon.happiness;
+	new_savemon.pkrus = savemon.pkrus;
+	new_savemon.setCaughtTime(savemon.getCaughtTime());
+	uint8_t caught_ball_v8 = mapV7ItemToV8(savemon.getCaughtBall());
+	if (caught_ball_v8 == 0xFF) {
+		js_error << "Savemon ball " << std::hex << static_cast<int>(savemon.getCaughtBall()) << " not found in version 8 item list." << std::endl;
+		new_savemon.setCaughtBall(0); // NO_ITEM
+	} else {
+		if (savemon.getCaughtBall() != caught_ball_v8) {
+			js_info << "Savemon ball " << std::hex << static_cast<int>(savemon.getCaughtBall()) << " converted to " << std::hex << static_cast<int>(caught_ball_v8) << std::endl;
+		}
+		new_savemon.setCaughtBall(caught_ball_v8);
+	}
+	new_savemon.caughtlevel = savemon.caughtlevel;
+	uint8_t caught_location_v8 = mapV7LandmarkToV8(savemon.caughtlocation);
+	if (caught_location_v8 == 0xFF) {
+		js_error << "Savemon landmark " << std::hex << static_cast<int>(savemon.caughtlocation) << " not found in version 8 landmark list." << std::endl;
+		new_savemon.caughtlocation = 0; // SPECIAL_MAP
+	} else {
+		if (savemon.caughtlocation != caught_location_v8) {
+			js_info << "Savemon landmark " << std::hex << static_cast<int>(savemon.caughtlocation) << " converted to " << std::hex << static_cast<int>(caught_location_v8) << std::endl;
+		}
+		new_savemon.caughtlocation = caught_location_v8;
+	}
+	new_savemon.level = savemon.level;
+	std::memcpy(new_savemon.extra, savemon.extra, sizeof(savemon.extra));
+	std::memcpy(new_savemon.nickname, savemon.nickname, sizeof(savemon.nickname));
+	std::memcpy(new_savemon.ot, savemon.ot, sizeof(savemon.ot));
+	return new_savemon;
+}
+
+breedmon_struct_v8 convertBreedmonV7toV8(const breedmon_struct_v8& breedmon, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons) {
+	breedmon_struct_v8 new_breedmon;
+	uint16_t species_v8 = mapV7PkmnToV8(breedmon.species);
+	if (species_v8 == INVALID_SPECIES) {
+		js_error << "Breedmon species " << std::hex << static_cast<int>(breedmon.species) << " not found in version 8 mon list." << std::endl;
+		return breedmon;
+	}
+	if (breedmon.species != species_v8) {
+		js_info << "Breedmon species " << std::hex << static_cast<int>(breedmon.species) << " converted to " << std::hex << static_cast<int>(species_v8) << std::endl;
+	}
+	new_breedmon.setExtSpecies(species_v8);
+	uint8_t item = mapV7ItemToV8(breedmon.item);
+	if (item == 0xFF) {
+		js_error << "Breedmon item " << std::hex << static_cast<int>(breedmon.item) << " not found in version 8 item list." << std::endl;
+		new_breedmon.item = 0; // NO_ITEM
+	}
+	else {
+		if (breedmon.item != item) {
+			js_info << "Breedmon item " << std::hex << static_cast<int>(breedmon.item) << " converted to " << std::hex << static_cast<int>(item) << std::endl;
+		}
+		new_breedmon.item = item;
+	}
+	std::memcpy(new_breedmon.moves, breedmon.moves, sizeof(breedmon.moves));
+	new_breedmon.id = breedmon.id;
+	std::memcpy(new_breedmon.exp, breedmon.exp, sizeof(breedmon.exp));
+	std::memcpy(new_breedmon.evs, breedmon.evs, sizeof(breedmon.evs));
+	std::memcpy(new_breedmon.dvs, breedmon.dvs, sizeof(breedmon.dvs));
+	new_breedmon.setShiny(breedmon.isShiny());
+	new_breedmon.setAbility(breedmon.getAbility());
+	new_breedmon.setNature(breedmon.getNature());
+	new_breedmon.setGender(breedmon.getGender());
+	new_breedmon.setEgg(breedmon.isEgg());
+	new_breedmon.setForm(breedmon.getForm());
+	uint16_t extspecies_v8;
+	if (species_v8 == PIKACHU_V8) {
+		// for NUM_MOVES, scan for SURF_V7 and FLY_V7
+		for (int j = 0; j < NUM_MOVES; j++) {
+			uint8_t move = breedmon.moves[j];
+			if (move == SURF_V7) {
+				new_breedmon.setForm(PIKACHU_SURF_FORM_V7);
+				extspecies_v8 = mapV7SpeciesFormToV8Extspecies(breedmon.species, PIKACHU_SURF_FORM_V7);
+				break;
+			}
+			else if (move == FLY_V7) {
+				new_breedmon.setForm(PIKACHU_FLY_FORM_V7);
+				extspecies_v8 = mapV7SpeciesFormToV8Extspecies(breedmon.species, PIKACHU_FLY_FORM_V7);
+				break;
+			}
+		}
+	}
+	else {
+		extspecies_v8 = mapV7SpeciesFormToV8Extspecies(breedmon.species, breedmon.getForm());
+	}
+	if (extspecies_v8 != INVALID_SPECIES) {
+		seen_mons.push_back(extspecies_v8);
+		caught_mons.push_back(extspecies_v8);
+	}
+	if (species_v8 == MAGIKARP_V8) {
+		new_breedmon.setForm(mapV7MagikarpFormToV8(breedmon.getForm()));
+	}
+	if (species_v8 == GYARADOS_V8) {
+		if (breedmon.getForm() == GYARADOS_RED_FORM_V7) {
+			new_breedmon.setForm(GYARADOS_RED_FORM_V8);
+		}
+	}
+	memcpy(new_breedmon.pp, breedmon.pp, sizeof(breedmon.pp));
+	new_breedmon.happiness = breedmon.happiness;
+	new_breedmon.pkrus = breedmon.pkrus;
+	new_breedmon.setCaughtTime(breedmon.getCaughtTime());
+	uint8_t caught_ball_v8 = mapV7ItemToV8(breedmon.getCaughtBall());
+	if (caught_ball_v8 == 0xFF) {
+		js_error << "Breedmon ball " << std::hex << static_cast<int>(breedmon.getCaughtBall()) << " not found in version 8 item list." << std::endl;
+		new_breedmon.setCaughtBall(0); // NO_ITEM
+	}
+	else {
+		if (breedmon.getCaughtBall() != caught_ball_v8) {
+			js_info << "Breedmon ball " << std::hex << static_cast<int>(breedmon.getCaughtBall()) << " converted to " << std::hex << static_cast<int>(caught_ball_v8) << std::endl;
+		}
+		new_breedmon.setCaughtBall(caught_ball_v8);
+	}
+	new_breedmon.caughtlevel = breedmon.caughtlevel;
+	uint8_t caught_location_v8 = mapV7LandmarkToV8(breedmon.caughtlocation);
+	if (caught_location_v8 == 0xFF) {
+		js_error << "Breedmon landmark " << std::hex << static_cast<int>(breedmon.caughtlocation) << " not found in version 8 landmark list." << std::endl;
+		new_breedmon.caughtlocation = 0; // SPECIAL_MAP
+	}
+	else {
+		if (breedmon.caughtlocation != caught_location_v8) {
+			js_info << "Breedmon landmark " << std::hex << static_cast<int>(breedmon.caughtlocation) << " converted to " << std::hex << static_cast<int>(caught_location_v8) << std::endl;
+		}
+		new_breedmon.caughtlocation = caught_location_v8;
+	}
+	new_breedmon.level = breedmon.level;
+	return new_breedmon;
+}
+
+party_struct_v8 convertPartyV7toV8(const party_struct_v8& party, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons) {
+	party_struct_v8 new_party;
+	new_party.breedmon = convertBreedmonV7toV8(party.breedmon, seen_mons, caught_mons);
+	new_party.status = party.status;
+	new_party.unused = party.unused;
+	new_party.hp = party.hp;
+	new_party.maxhp = party.maxhp;
+	memcpy(new_party.stats, party.stats, sizeof(party.stats));
+	return new_party;
+}
+
+hofmon_struct_v8 convertHofmonV7toV8(const hofmon_struct_v8& hofmon, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons) {
+	hofmon_struct_v8 new_hofmon;
+	uint16_t species_v8 = mapV7PkmnToV8(hofmon.species);
+	if (species_v8 == INVALID_SPECIES) {
+		js_error << "Hofmon species " << std::hex << static_cast<int>(hofmon.species) << " not found in version 8 mon list." << std::endl;
+		return hofmon;
+	}
+	if (hofmon.species != species_v8) {
+		js_info << "Hofmon species " << std::hex << static_cast<int>(hofmon.species) << " converted to " << std::hex << static_cast<int>(species_v8) << std::endl;
+	}
+	new_hofmon.setExtSpecies(species_v8);
+	new_hofmon.id = hofmon.id;
+	new_hofmon.setShiny(hofmon.isShiny());
+	new_hofmon.setAbility(hofmon.getAbility());
+	new_hofmon.setNature(hofmon.getNature());
+	new_hofmon.setGender(hofmon.getGender());
+	new_hofmon.setEgg(hofmon.isEgg());
+	new_hofmon.setForm(hofmon.getForm());
+	// Can't do pikachu surf/fly here because we don't have the moves
+	uint16_t extspecies_v8 = mapV7SpeciesFormToV8Extspecies(hofmon.species, hofmon.getForm());
+	if (extspecies_v8 != INVALID_SPECIES) {
+		seen_mons.push_back(extspecies_v8);
+		caught_mons.push_back(extspecies_v8);
+	}
+	if (species_v8 == MAGIKARP_V8) {
+		new_hofmon.setForm(mapV7MagikarpFormToV8(hofmon.getForm()));
+	}
+	if (species_v8 == GYARADOS_V8) {
+		if (hofmon.getForm() == GYARADOS_RED_FORM_V7) {
+			new_hofmon.setForm(GYARADOS_RED_FORM_V8);
+		}
+	}
+
+
+	new_hofmon.level = hofmon.level;
+	memcpy(new_hofmon.nickname, hofmon.nickname, sizeof(hofmon.nickname));
+	return new_hofmon;
 }
