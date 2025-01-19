@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Linux Build and Deploy Pages
 
 on:
   push:
