@@ -1,0 +1,43 @@
+name: Windows Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache emsdk
+        uses: actions/cache@v4
+        with:
+          path: emsdk
+          key: windows-emsdk-${{ hashFiles('emsdk/emsdk_manifest.json') }}
+          restore-keys: |
+            windows-emsdk-
+
+      - name: Setup Emscripten on Windows
+        run: |
+          if (-not (Test-Path "emsdk")) {
+            git clone https://github.com/emscripten-core/emsdk.git
+          }
+          cd emsdk
+          .\emsdk install latest
+          .\emsdk activate latest
+          . .\emsdk_env.bat
+        shell: pwsh
+
+      - name: Build the project
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          echo "Building project for commit: $COMMIT_MESSAGE"
+          .\emsdk\emsdk_env.bat
+          make release
+        shell: cmd
