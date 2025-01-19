@@ -3125,12 +3125,12 @@ std::tuple<uint8_t, uint8_t> mapv7toV8(uint8_t v7_group, uint8_t v7_map) {
 		{{8, 5}, {8, 5}},  // AZALEA_GYM
 		{{8, 6}, {8, 6}},  // ROUTE_33
 		{{8, 7}, {8, 7}},  // AZALEA_TOWN
-		{{9, 1}, {9, 1}},  // LAKE_OF_RAGE_HIDDEN_POWER_HOUSE
-		{{9, 2}, {9, 2}},  // LAKE_OF_RAGE_MAGIKARP_HOUSE
-		{{9, 3}, {9, 3}},  // ROUTE_43_MAHOGANY_GATE
-		{{9, 4}, {9, 4}},  // ROUTE_43_GATE
-		{{9, 5}, {9, 5}},  // ROUTE_43
-		{{9, 6}, {9, 6}},  // LAKE_OF_RAGE
+		{{9, 1}, {2, 8}},  // LAKE_OF_RAGE_HIDDEN_POWER_HOUSE
+		{{9, 2}, {2, 9}},  // LAKE_OF_RAGE_MAGIKARP_HOUSE
+		{{9, 3}, {2, 10}},  // ROUTE_43_MAHOGANY_GATE
+		{{9, 4}, {2, 11}},  // ROUTE_43_GATE
+		{{9, 5}, {2, 12}},  // ROUTE_43
+		{{9, 6}, {2, 13}},  // LAKE_OF_RAGE
 		{{10, 1}, {10, 1}},  // ROUTE_32
 		{{10, 2}, {10, 2}},  // ROUTE_32_COAST
 		{{10, 3}, {10, 3}},  // VIOLET_CITY
@@ -3364,23 +3364,23 @@ std::tuple<uint8_t, uint8_t> mapv7toV8(uint8_t v7_group, uint8_t v7_map) {
 		{{21, 59}, {21, 60}},  // CELADON_UNIVERSITY_CLASSROOM_4
 		{{21, 60}, {21, 61}},  // CELADON_OLD_MAN_SPEECH_HOUSE
 		{{21, 61}, {21, 62}},  // CELADON_DEVELOPMENT_SPEECH_HOUSE
-		{{22, 1}, {22, 1}},  // ROUTE_40
-		{{22, 2}, {22, 2}},  // ROUTE_41
-		{{22, 3}, {22, 3}},  // CIANWOOD_CITY
-		{{22, 4}, {22, 4}},  // MANIAS_HOUSE
-		{{22, 5}, {22, 5}},  // CIANWOOD_GYM
-		{{22, 6}, {22, 6}},  // CIANWOOD_POKECENTER_1F
-		{{22, 7}, {22, 7}},  // CIANWOOD_PHARMACY
-		{{22, 8}, {22, 8}},  // CIANWOOD_CITY_PHOTO_STUDIO
-		{{22, 9}, {22, 9}},  // CIANWOOD_LUGIA_SPEECH_HOUSE
-		{{22, 10}, {22, 10}},  // MOVE_MANIACS_HOUSE
-		{{22, 11}, {22, 11}},  // BATTLE_TOWER_1F
-		{{22, 12}, {22, 12}},  // BATTLE_TOWER_2F
-		{{22, 13}, {22, 13}},  // BATTLE_TOWER_BATTLE_ROOM
-		{{22, 14}, {22, 14}},  // BATTLE_TOWER_ELEVATOR
-		{{22, 15}, {22, 15}},  // BATTLE_TOWER_HALLWAY
-		{{22, 16}, {22, 16}},  // ROUTE_40_BATTLE_TOWER_GATE
-		{{22, 17}, {22, 17}},  // BATTLE_TOWER_OUTSIDE
+		{{22, 1}, {9, 8}},  // ROUTE_40
+		{{22, 2}, {22, 1}},  // ROUTE_41
+		{{22, 3}, {22, 2}},  // CIANWOOD_CITY
+		{{22, 4}, {22, 3}},  // MANIAS_HOUSE
+		{{22, 5}, {22, 4}},  // CIANWOOD_GYM
+		{{22, 6}, {22, 5}},  // CIANWOOD_POKECENTER_1F
+		{{22, 7}, {22, 6}},  // CIANWOOD_PHARMACY
+		{{22, 8}, {22, 7}},  // CIANWOOD_CITY_PHOTO_STUDIO
+		{{22, 9}, {22, 8}},  // CIANWOOD_LUGIA_SPEECH_HOUSE
+		{{22, 10}, {22, 9}},  // MOVE_MANIACS_HOUSE
+		{{22, 11}, {9, 1}},  // BATTLE_TOWER_1F
+		{{22, 12}, {9, 2}},  // BATTLE_TOWER_2F
+		{{22, 13}, {9, 3}},  // BATTLE_TOWER_BATTLE_ROOM
+		{{22, 14}, {9, 4}},  // BATTLE_TOWER_ELEVATOR
+		{{22, 15}, {9, 5}},  // BATTLE_TOWER_HALLWAY
+		{{22, 16}, {9, 6}},  // ROUTE_40_BATTLE_TOWER_GATE
+		{{22, 17}, {9, 7}},  // BATTLE_TOWER_OUTSIDE
 		{{23, 1}, {23, 1}},  // ROUTE_2_SOUTH
 		{{23, 2}, {23, 2}},  // ROUTE_22
 		{{23, 3}, {23, 3}},  // VIRIDIAN_CITY
