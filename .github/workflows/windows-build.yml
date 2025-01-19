@@ -30,14 +30,14 @@ jobs:
           cd emsdk
           .\emsdk install latest
           .\emsdk activate latest
-          . .\emsdk_env.ps1
-        shell: pwsh
+          . .\emsdk_env.bat
+        shell: cmd
 
       - name: Build the project
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           echo "Building project for commit: $COMMIT_MESSAGE"
-          .\emsdk\emsdk_env.ps1
+          .\emsdk\emsdk_env.bat
           make release
-        shell: pwsh
+        shell: cmd

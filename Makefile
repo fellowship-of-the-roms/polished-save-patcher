@@ -6,7 +6,7 @@ ifeq ($(OS),)
 endif
 
 ifeq ($(OS), Windows_NT)
-	SHELL := pwsh
+	SHELL := cmd
 else
 	SHELL := /usr/bin/bash
 endif
