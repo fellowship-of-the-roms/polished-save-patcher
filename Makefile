@@ -4,6 +4,13 @@
 ifeq ($(OS),)
     OS := $(shell uname -s 2>/dev/null || echo Windows_NT)
 endif
+
+ifeq ($(OS), Windows_NT)
+	SHELL := pwsh
+else
+	SHELL := /usr/bin/bash
+endif
+
 # Compiler and flags
 CXX := emcc
 CXXFLAGS := -Iinclude -std=c++17
