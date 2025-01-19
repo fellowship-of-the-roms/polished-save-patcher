@@ -24,9 +24,9 @@ jobs:
 
       - name: Setup Emscripten on Windows
         run: |
-          if (-not (Test-Path "emsdk")) {
+          if not exist emsdk (
             git clone https://github.com/emscripten-core/emsdk.git
-          }
+          )
           cd emsdk
           .\emsdk install latest
           .\emsdk activate latest
