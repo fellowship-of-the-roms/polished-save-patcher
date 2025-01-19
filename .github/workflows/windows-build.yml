@@ -40,4 +40,4 @@ jobs:
           echo "Building project for commit: $COMMIT_MESSAGE"
           call .\emsdk\emsdk_env.bat
           make release
-        shell: cmd
+        shell: pwsh
