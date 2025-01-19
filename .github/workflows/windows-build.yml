@@ -30,7 +30,7 @@ jobs:
           cd emsdk
           .\emsdk install latest
           .\emsdk activate latest
-          . .\emsdk_env.bat
+          . .\emsdk_env.ps1
         shell: pwsh
 
       - name: Build the project
@@ -38,6 +38,6 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           echo "Building project for commit: $COMMIT_MESSAGE"
-          call .\emsdk\emsdk_env.bat
+          call .\emsdk\emsdk_env.ps1
           make release
         shell: pwsh
