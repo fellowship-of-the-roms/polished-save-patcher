@@ -38,6 +38,6 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           echo "Building project for commit: $COMMIT_MESSAGE"
-          .\emsdk\emsdk_env.bat
+          call .\emsdk\emsdk_env.bat
           make release
         shell: cmd
