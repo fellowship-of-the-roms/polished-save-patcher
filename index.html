@@ -311,10 +311,21 @@
 					logMessage('Checking save file version...');
 					updateIndicator('Checking save file version...', 'info');
 					const saveVersion = Module.get_save_version('/old_save.sav');
+					const versionMap = {
+						7: '3.0.0-beta',
+						8: '3.0.0',
+						9: '3.1.0'
+					}; 
+
 					if (saveVersion) {
-						document.getElementById('currentVersion').textContent = 'Current Save Version: ' + saveVersion.toString(16);
+						const canonicalName = versionMap[saveVersion];
+						const versionDisplay = canonicalName
+							? `${saveVersion.toString(16)} (${canonicalName})`
+							: saveVersion.toString(16);
+
+						document.getElementById('currentVersion').textContent = 'Current Save Version: ' + versionDisplay;
 						document.getElementById('patchButton').disabled = false; // Enable the Patch Save button
-						logMessage('Save file uploaded successfully. Version: ' + saveVersion.toString(16));
+						logMessage('Save file uploaded successfully. Version: ' + versionDisplay);
 						updateIndicator('Save file uploaded successfully.', 'success');
 					} else {
 						document.getElementById('currentVersion').textContent = 'Invalid save file.';
