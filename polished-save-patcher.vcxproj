@@ -110,6 +110,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
+    <None Include=".github\workflows\linux-build-deploy.yml" />
+    <None Include=".github\workflows\windows-build.yml" />
     <None Include=".gitignore" />
     <None Include="index.html" />
     <None Include="Makefile" />

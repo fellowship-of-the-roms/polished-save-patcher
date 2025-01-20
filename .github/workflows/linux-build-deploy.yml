@@ -1,9 +1,10 @@
-name: Linux Build and Deploy Pages
+name: Linux Build, Analyze, and Deploy
 
 on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
   build:
@@ -41,6 +42,7 @@ jobs:
           make release
 
       - name: Deploy to GitHub Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -92,4 +94,5 @@ jobs:
           make
 
       - name: Perform CodeQL Analysis
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: github/codeql-action/analyze@v2

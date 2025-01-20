@@ -28,6 +28,12 @@
     <Filter Include="tools">
       <UniqueIdentifier>{e1e1fd49-b070-48ae-a685-c4b8bd5815a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include=".github">
+      <UniqueIdentifier>{51f176d7-b70d-4cc7-b241-4581036fd262}</UniqueIdentifier>
+    </Filter>
+    <Filter Include=".github\workflows">
+      <UniqueIdentifier>{f86273b3-cd8e-4f67-be3e-548464815ddf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -108,6 +114,12 @@
     <None Include="run.py" />
     <None Include="tools\filter_sym.py">
       <Filter>tools</Filter>
+    </None>
+    <None Include=".github\workflows\linux-build-deploy.yml">
+      <Filter>.github\workflows</Filter>
+    </None>
+    <None Include=".github\workflows\windows-build.yml">
+      <Filter>.github\workflows</Filter>
     </None>
   </ItemGroup>
 </Project>
