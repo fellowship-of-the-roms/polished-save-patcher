@@ -6,23 +6,17 @@ on:
       - main
   pull_request:
 
+# One place to change version/tag info
+env:
+  PRE_RELEASE_TAG: "0.1.0-alpha"
+  PRE_RELEASE_NAME: "0.1.0-alpha"
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # Zip and upload entire source code as an artifact
-      - name: Zip entire source code
-        run: zip -r source-code.zip .
-        shell: bash
-
-      - name: Upload source code artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: source-code
-          path: source-code.zip
 
       - name: Cache emsdk
         uses: actions/cache@v4
@@ -104,7 +98,7 @@ jobs:
           exclude: |
             emsdk/
 
-      - name: Build project manually
+      - name: Build project for CodeQL
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
@@ -130,25 +124,16 @@ jobs:
         id: delete_release
         uses: cb80/delrel@latest
         with:
-          tag: "0.1.0-alpha"
+          tag: ${{ env.PRE_RELEASE_TAG }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Force push the 0.1.0-alpha tag to current commit
+      - name: Force push the tag to current commit
         run: |
-          # Tag the current HEAD commit
-          git tag -f 0.1.0-alpha
-          # Force-push the new tag to remote
-          git push origin -f 0.1.0-alpha
+          git tag -f ${{ env.PRE_RELEASE_TAG }}
+          git push origin -f ${{ env.PRE_RELEASE_TAG }}
         env:
-          # needed so that we can git push
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download source code artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: source-code
-          path: .
 
       - name: Download build artifact
         uses: actions/download-artifact@v3
@@ -160,28 +145,21 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          # This automatically uses GITHUB_TOKEN from env
-          tag_name: 0.1.0-alpha
-          name: "0.1.0-alpha"
-          body: |
-            ## Rolling Prerelease (0.1.0-alpha)
-            - **Commit:** ${{ github.sha }}
-            - **Date:** ${{ github.event.head_commit.timestamp }}
-            - **Artifacts:**
-               • **source-code.zip** — entire source at build time
-               • **build.zip** — pre-compiled WASM & site contents
+          tag_name: ${{ env.PRE_RELEASE_TAG }}
+          name: ${{ env.PRE_RELEASE_NAME }}
           prerelease: true
+          body: |
+            ## Rolling Prerelease (${{ env.PRE_RELEASE_NAME }})
+            **Commit:** ${{ github.sha }}  
+            **Date:** ${{ github.event.head_commit.timestamp }}
 
-      - name: Upload source-code.zip
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: 0.1.0-alpha
-          files: |
-            source-code.zip
+            **Artifacts:**
+            - **build.zip** — compiled project for running locally with `python -m http.server`
+            - **Souce Code** (zip/tar.gz) - source code for the project
 
       - name: Upload build.zip
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: 0.1.0-alpha
+          tag_name: ${{ env.PRE_RELEASE_TAG }}
           files: |
             build.zip
