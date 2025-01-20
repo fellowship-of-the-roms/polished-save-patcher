@@ -70,7 +70,7 @@ You can either build natively on Linux/macOS or use Windows with Emscripten. If 
 
 ## Running From a Release
 If you prefer to use a pre-built release instead of compiling from source:
-   1. Download the release package from the [Releases]() page.
+   1. Download the build package from the [Releases](https://github.com/fellowship-of-the-roms/polished-save-patcher/releases) page.
    2. Extract it into a folder of your choice.
    3. Star a local server from inside that folder:
       ```sh
