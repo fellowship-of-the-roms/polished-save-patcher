@@ -1,10 +1,15 @@
 # Polished Crystal Save Patcher
 
-This project is a WebAssembly-based tool that patches Polished Crystal save files from Version 7 (3.0.0-beta) to Version 8 (9bit). It allows you to update your save files to ensure compatibility with the latest version of the game.
+This project is a WebAssembly-based tool that patches Polished Crystal save files between the following verions:
+
+| Version | Description     |
+|---------|-----------------|
+| 7       | 3.0.0-beta      |
+| 8       | 3.0.0           |
+| 9       | 3.1.0           |
 
 ## Features
 
-- Patches save files from Version 7 (3.0.0-beta) to Version 8 (9bit).
 - Provides a user-friendly web interface for patching save files.
 - Outputs detailed logs for troubleshooting.
 
