@@ -67,6 +67,7 @@ EMSCRIPTEN_BINDINGS(patch_save_module) {
 }
 
 int main(int argc, char* argv[]) {
+	js_info << "Emscripten Save Patcher Version: " << EMSCRIPTEN_PATCHER_VERSION << std::endl;
 	js_error << "This program is intended to be run in a browser using Emscripten." << std::endl;
 	return 1;
 }

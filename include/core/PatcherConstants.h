@@ -3,6 +3,8 @@
 
 #include <cstdint> // Add this include directive
 
+#define EMSCRIPTEN_PATCHER_VERSION "0.1.0-alpha"
+
 // SRAM constants
 constexpr uint16_t SRAM_BANK_SIZE = 0x2000;
 constexpr uint16_t SRAM_START_ADDRESS = 0xA000;

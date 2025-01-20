@@ -2,8 +2,12 @@
 <html>
 <head>
 	<title>Polished Crystal Save Patcher</title>
+	<script>
+		const toolVersion = "0.1.0-alpha";
+	</script>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="tool-version" content="">
 	<style>
 		/* Updated CSS with drag-and-drop functionality and other improvements */
 		body {
@@ -12,11 +16,13 @@
 			background-color: #121212;
 			color: #e0e0e0;
 		}
+
 		h1 {
 			color: #b39ddb;
 			text-align: center;
 			padding-top: 20px;
 		}
+
 		.container {
 			max-width: 800px;
 			margin: 20px auto;
@@ -25,10 +31,12 @@
 			border: 1px solid #333;
 			box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 		}
+
 		.instructions {
 			margin-bottom: 20px;
 			line-height: 1.6;
 		}
+
 		.drop-zone {
 			border: 2px dashed #555;
 			border-radius: 5px;
@@ -38,21 +46,26 @@
 			margin-bottom: 20px;
 			transition: background-color 0.3s ease;
 		}
-		.drop-zone:hover {
-			background-color: #2e2e2e;
-		}
-		.drop-zone.dragover {
-			background-color: #2e2e2e;
-			border-color: #b39ddb;
-		}
-		.drop-zone p {
-			margin: 0;
-			font-size: 16px;
-			color: #e0e0e0;
-		}
+
+			.drop-zone:hover {
+				background-color: #2e2e2e;
+			}
+
+			.drop-zone.dragover {
+				background-color: #2e2e2e;
+				border-color: #b39ddb;
+			}
+
+			.drop-zone p {
+				margin: 0;
+				font-size: 16px;
+				color: #e0e0e0;
+			}
+
 		input[type="file"] {
 			display: none;
 		}
+
 		button, select {
 			background-color: #673ab7;
 			color: #ffffff;
@@ -66,13 +79,16 @@
 			border-radius: 4px;
 			transition: background-color 0.3s ease;
 		}
-		button:hover, select:hover {
-			background-color: #5e35b1;
-		}
-		button:disabled {
-			background-color: #555;
-			cursor: not-allowed;
-		}
+
+			button:hover, select:hover {
+				background-color: #5e35b1;
+			}
+
+			button:disabled {
+				background-color: #555;
+				cursor: not-allowed;
+			}
+
 		select {
 			background-color: #2e2e2e;
 			color: #e0e0e0;
@@ -82,6 +98,7 @@
 			border-radius: 4px;
 			margin-bottom: 20px;
 		}
+
 		pre {
 			background-color: #1e1e1e;
 			border: 1px solid #333;
@@ -96,15 +113,19 @@
 			font-size: 14px;
 			color: #e0e0e0;
 		}
+
 		.warning {
 			color: #ffcc00;
 		}
+
 		.error {
 			color: #ff6e6e;
 		}
+
 		#indicator.error {
 			color: #ff6e6e;
 		}
+
 		#indicator {
 			color: #b39ddb;
 			font-weight: bold;
@@ -114,9 +135,11 @@
 			align-items: center;
 			justify-content: center;
 		}
+
 		#indicatorIcon {
 			margin-right: 8px;
 		}
+
 		.tooltip {
 			position: relative;
 			display: inline-block;
@@ -124,53 +147,62 @@
 			padding: 2px 4px;
 			border-radius: 3px;
 		}
-		.tooltip .tooltiptext {
-			visibility: hidden;
-			width: 200px;
-			background-color: #555;
-			color: #fff;
-			text-align: center;
-			border-radius: 6px;
-			padding: 5px;
-			position: absolute;
-			z-index: 1;
-			bottom: 125%;
-			left: 50%;
-			margin-left: -100px;
-			opacity: 0;
-			transition: opacity 0.3s;
-		}
-		.tooltip .tooltiptext img {
-			max-width: 100%;
-			height: auto;
-		}
-		.tooltip .tooltiptext::after {
-			content: "";
-			position: absolute;
-			top: 100%;
-			left: 50%;
-			margin-left: -5px;
-			border-width: 5px;
-			border-style: solid;
-			border-color: #555 transparent transparent transparent;
-		}
-		.tooltip:hover .tooltiptext {
-			visibility: visible;
-			opacity: 1;
-		}
+
+			.tooltip .tooltiptext {
+				visibility: hidden;
+				width: 200px;
+				background-color: #555;
+				color: #fff;
+				text-align: center;
+				border-radius: 6px;
+				padding: 5px;
+				position: absolute;
+				z-index: 1;
+				bottom: 125%;
+				left: 50%;
+				margin-left: -100px;
+				opacity: 0;
+				transition: opacity 0.3s;
+			}
+
+				.tooltip .tooltiptext img {
+					max-width: 100%;
+					height: auto;
+				}
+
+				.tooltip .tooltiptext::after {
+					content: "";
+					position: absolute;
+					top: 100%;
+					left: 50%;
+					margin-left: -5px;
+					border-width: 5px;
+					border-style: solid;
+					border-color: #555 transparent transparent transparent;
+				}
+
+			.tooltip:hover .tooltiptext {
+				visibility: visible;
+				opacity: 1;
+			}
+
 		@media (max-width: 600px) {
 			h1 {
 				font-size: 24px;
 			}
+
 			.container {
 				padding: 15px;
 			}
+
 			button, select {
 				font-size: 14px;
 			}
+
 			.instructions {
 				font-size: 14px;
 			}
+
 			.drop-zone p {
 				font-size: 14px;
 			}
@@ -181,15 +213,19 @@
 <body>
 	<div class="container">
 		<h1>Polished Crystal Save Patcher</h1>
+		<p id="toolVersionDisplay" style="text-align: center; font-size: 14px; color: #b39ddb;"></p>
 		<div class="instructions">
 			<p>
 				This tool allows you to patch your Polished Crystal save files between various versions.
 				Follow the steps below to patch your save file:
 			</p>
 			<ol>
-				<li>Save your game on the second floor of the <span class="tooltip">PKMN Center
-					<span class="tooltiptext"><img src="https://tcrf.net/images/7/76/PokemonCrystal_PokeCenter_2F_International.png" alt="PKMN Center" width="200"></span>
-				</span> (Where you normally do link battles/trades).</li>
+				<li>
+					Save your game on the second floor of the <span class="tooltip">
+						PKMN Center
+						<span class="tooltiptext"><img src="https://tcrf.net/images/7/76/PokemonCrystal_PokeCenter_2F_International.png" alt="PKMN Center" width="200"></span>
+					</span> (Where you normally do link battles/trades).
+				</li>
 				<li>Back up your original save file somewhere safe.</li>
 				<li>Drag and drop your save file into the area below, or click to select your old save file.</li>
 				<li>Click the "Upload Save" button to upload your save file and display the current save version.</li>
@@ -246,6 +282,9 @@
 	</div>
 
 	<script>
+		document.querySelector('meta[name="tool-version"]').setAttribute('content', toolVersion);
+		document.getElementById('toolVersionDisplay').textContent = `Version ${toolVersion}`;
+
 		// Disable buttons until the module is initialized
 		document.getElementById('uploadButton').disabled = true;
 		document.getElementById('patchButton').disabled = true;
