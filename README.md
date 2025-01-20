@@ -2,11 +2,11 @@
 
 This project is a WebAssembly-based tool that patches Polished Crystal save files between the following verions:
 
-| Version | Description     |
-|---------|-----------------|
-| 7       | 3.0.0-beta      |
-| 8       | 3.0.0           |
-| 9       | 3.1.0           |
+| Save Version | Canonical Name |
+|--------------|----------------|
+| 7            | 3.0.0-beta     |
+| 8            | 3.0.0          |
+| 9            | 3.1.0          |
 
 ## Features
 
