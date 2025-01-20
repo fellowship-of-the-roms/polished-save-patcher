@@ -73,7 +73,7 @@
     <NMakeCleanCommandLine>make clean</NMakeCleanCommandLine>
     <NMakeReBuildCommandLine>make release</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <IncludePath>C:\Users\Matthew\Documents\GitHub\emsdk\upstream\emscripten\system\include;C:\Users\Matthew\Documents\GitHub\polished-save-patcher\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(EMSDK)\upstream\emscripten\system\include;$(ProjectDir)include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)build\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
