@@ -69,11 +69,12 @@
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <NMakeBuildCommandLine>make -j6 release</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>make release</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>make clean</NMakeCleanCommandLine>
-    <NMakeReBuildCommandLine>make -j6 release</NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>make release</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <IncludePath>C:\Users\Matthew\Documents\GitHub\emsdk\upstream\emscripten\system\include;C:\Users\Matthew\Documents\GitHub\polished-save-patcher\include;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)build\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <NMakeBuildCommandLine>make -j6 release</NMakeBuildCommandLine>
