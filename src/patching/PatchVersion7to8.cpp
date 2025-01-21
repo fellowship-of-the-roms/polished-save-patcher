@@ -116,6 +116,35 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info << "Copying from [sPartyMail, sSaveVersion)" << std::endl;
 	copyDataBlock(sd, sym7.getSRAMAddress("sPartyMail"), sym8.getSRAMAddress("sPartyMail"), sym7.getSRAMAddress("sSaveVersion") - sym7.getSRAMAddress("sPartyMail"));
 
+	// Fix sPartyMail
+	mailmsg_struct_v8 mailmsg;
+	js_info << "Fixing sPartyMail..." << std::endl;
+	for (int i = 0; i < PARTY_LENGTH; i++) {
+		mailmsg = convertMailmsgV7toV8(loadStruct<mailmsg_struct_v8>(it8, sym8.getSRAMAddress("sPartyMail") + i * sizeof(mailmsg_struct_v8)));
+		writeStruct<mailmsg_struct_v8>(it8, sym8.getSRAMAddress("sPartyMail") + i * sizeof(mailmsg_struct_v8), mailmsg);
+	}
+
+	// Fix sPartyMailBackup
+	js_info << "Fixing sPartyMailBackup..." << std::endl;
+	for (int i = 0; i < PARTY_LENGTH; i++) {
+		mailmsg = convertMailmsgV7toV8(loadStruct<mailmsg_struct_v8>(it8, sym8.getSRAMAddress("sPartyMailBackup") + i * sizeof(mailmsg_struct_v8)));
+		writeStruct<mailmsg_struct_v8>(it8, sym8.getSRAMAddress("sPartyMailBackup") + i * sizeof(mailmsg_struct_v8), mailmsg);
+	}
+
+	// Fix sMailbox
+	js_info << "Fixing sMailbox..." << std::endl;
+	for (int i = 0; i < MAILBOX_CAPACITY; i++) {
+		mailmsg = convertMailmsgV7toV8(loadStruct<mailmsg_struct_v8>(it8, sym8.getSRAMAddress("sMailbox") + i * sizeof(mailmsg_struct_v8)));
+		writeStruct<mailmsg_struct_v8>(it8, sym8.getSRAMAddress("sMailbox") + i * sizeof(mailmsg_struct_v8), mailmsg);
+	}
+
+	// Fix sMailboxBackup
+	js_info << "Fixing sMailboxBackup..." << std::endl;
+	for (int i = 0; i < MAILBOX_CAPACITY; i++) {
+		mailmsg = convertMailmsgV7toV8(loadStruct<mailmsg_struct_v8>(it8, sym8.getSRAMAddress("sMailboxBackup") + i * sizeof(mailmsg_struct_v8)));
+		writeStruct<mailmsg_struct_v8>(it8, sym8.getSRAMAddress("sMailboxBackup") + i * sizeof(mailmsg_struct_v8), mailmsg);
+	}
+
 	// copy from [sUpgradeStep, sWritingBackup]
 	js_info << "Copying from [sUpgradeStep, sWritingBackup + 1]" << std::endl;
 	copyDataBlock(sd, sym7.getSRAMAddress("sUpgradeStep"), sym8.getSRAMAddress("sUpgradeStep"), sym7.getSRAMAddress("sWritingBackup") + 1 - sym7.getSRAMAddress("sUpgradeStep"));
@@ -1166,4 +1195,19 @@ roam_struct_v8 convertRoamV7toV8(const roam_struct_v8& roam) {
 	new_roam.setForm(roam.getForm());
 
 	return new_roam;
+}
+
+mailmsg_struct_v8 convertMailmsgV7toV8(const mailmsg_struct_v8& mailmsg) {
+	mailmsg_struct_v8 new_mailmsg;
+	for (int i = 0; i < sizeof(mailmsg.message); i++) {
+		new_mailmsg.message[i] = mapV7CharToV8(mailmsg.message[i]);
+	}
+	new_mailmsg.message_end = mailmsg.message_end;
+	memcpy(new_mailmsg.author, mailmsg.author, sizeof(mailmsg.author));
+	new_mailmsg.nationality = mailmsg.nationality;
+	new_mailmsg.author_id = mailmsg.author_id;
+	new_mailmsg.species = mailmsg.species;
+	new_mailmsg.type = mailmsg.type;
+
+	return new_mailmsg;
 }

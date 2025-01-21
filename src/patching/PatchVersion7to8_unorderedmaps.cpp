@@ -3701,3 +3701,44 @@ uint8_t mapV7ThemeToV8(uint8_t v7) {
 	// return the corresponding version 8 theme or 0xFF if not found
 	return indexMap.find(v7) != indexMap.end() ? indexMap[v7] : 0xFF;
 }
+
+// converts a version 7 charmap to a version 8 charmap
+uint8_t mapV7CharToV8(uint8_t v7) {
+	std::unordered_map<uint8_t, uint8_t> charMap = {
+		{0x54, 0x5e},  // "¯"
+		{0x5a, 0x52},  // "<DONE>"
+		{0x5b, 0x54},  // "<PROMPT>"
+		{0x5c, 0x5a},  // "<TARGET>"
+		{0x5d, 0x5b},  // "<USER>"
+		{0x5e, 0x5c},  // "<ENEMY>"
+		{0x5f, 0x62},  // "<BALL>"
+		{0x60, 0x5f},  // "<MALE>"
+		{0x61, 0x60},  // "<FEMALE>"
+		{0x62, 0x61},  // "<STAR>"
+		// don't care about the rest of the battle characters.
+		{0xeb, 0xee},  // "▲"
+		{0xec, 0xed},  // "▼"
+		{0xed, 0xef},  // "◀"
+		{0xee, 0xf0},  // "▶"
+		{0xef, 0xf1},  // "▷"
+		{0xf0, 0xeb},  // "…"
+		{0xf1, 0xf6},  // "<PHONE>"
+		{0xf2, 0xf7},  // "<BLACK>"
+		{0xf6, 0xec},  // "★"
+		{0xf7, 0xf2},  // "↑"
+		{0xf8, 0xf3},  // "↓"
+		{0xfa, 0xf8},  // "┌"
+		{0xfb, 0xf9},  // "─"
+		{0xfc, 0xfa},  // "┐"
+		{0xfd, 0xfc},  // "┃"
+		{0xfe, 0xfd},  // "└"
+		// don't care about most of the ngrams
+		{0x4e, 0x4d},  // "#"
+		{0x4f, 0x4e},  // "#mon"
+		{0x50, 0x4f},  // "<PLAYER>"
+		{0x51, 0x50},  // "<RIVAL>"
+		{0x52, 0x51},  // "<TRENDY>"
+	};
+	// return the corresponding version 8 char or original char if not found
+	return charMap.find(v7) != charMap.end() ? charMap[v7] : v7;
+}

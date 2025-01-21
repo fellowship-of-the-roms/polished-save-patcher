@@ -89,6 +89,8 @@ namespace {
 	uint8_t MEWTWO_V8 = 0x96;
 	uint8_t CELEBI_V8 = 0xfb;
 	uint8_t SUDOWOODO_V8 = 0xb9;
+	constexpr int MAIL_MSG_LENGTH = 0x20;
+	constexpr int MAILBOX_CAPACITY = 10;
 
 #pragma pack(push, 1)
 	struct breedmon_struct_v7 {
@@ -363,6 +365,16 @@ namespace {
 
 	using roam_struct_v8 = roam_struct_v7;
 
+	struct mailmsg_struct_v8 {
+		uint8_t message[MAIL_MSG_LENGTH];
+		uint8_t message_end;
+		uint8_t author[PLAYER_NAME_LENGTH];
+		uint16_t nationality;
+		uint16_t author_id;
+		uint8_t species;
+		uint8_t type;
+	};
+
 #pragma pack(pop)
 
 }
@@ -406,6 +418,9 @@ uint8_t mapV7MagikarpFormToV8(uint8_t v7);
 // converts a version 7 theme to a version 8 theme
 uint8_t mapV7ThemeToV8(uint8_t v7);
 
+// converts a version 7 char to a version 8 char
+uint8_t mapV7CharToV8(uint8_t v7);
+
 // Calculate the newbox checksum for the given mon
 uint16_t calculateNewboxChecksum(const SaveBinary& save, uint32_t startAddress);
 
@@ -439,5 +454,7 @@ party_struct_v8 convertPartyV7toV8(const party_struct_v8& party, std::vector<uin
 hofmon_struct_v8 convertHofmonV7toV8(const hofmon_struct_v8& hofmon, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons);
 
 roam_struct_v8 convertRoamV7toV8(const roam_struct_v8& roam);
+
+mailmsg_struct_v8 convertMailmsgV7toV8(const mailmsg_struct_v8& mailmsg);
 
 #endif
