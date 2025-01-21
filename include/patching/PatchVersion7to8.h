@@ -19,6 +19,7 @@ namespace {
 	constexpr int NUM_APRICORNS = 0x07;
 	constexpr int NUM_EVENTS = 0x8ff;
 	constexpr int NUM_FRUIT_TREES_V7 = 0x23;
+	constexpr int NUM_FRUIT_TREES_V8 = 0x2e;
 	constexpr int NUM_LANDMARKS_V7 = 0x90;
 	constexpr int NUM_LANDMARKS_V8 = 0x91;
 	constexpr int CONTACT_LIST_SIZE_V7 = 30;
@@ -314,6 +315,43 @@ namespace {
 		uint8_t nickname[MON_NAME_LENGTH - 1];
 	};
 
+	struct roam_struct_v7 {
+		uint8_t species;
+		uint8_t level;
+		uint8_t map_group;
+		uint8_t map_number;
+
+		std::tuple<uint8_t, uint8_t> getMap() const { return std::make_tuple(map_group, map_number); };
+		void setMap(std::tuple<uint8_t, uint8_t> map) { std::tie(map_group, map_number) = map; };
+
+		uint8_t hp;
+		uint8_t dvs[3];
+		uint8_t personality[2];
+
+		bool isShiny() const { return ((personality[0] & 0b10000000) >> 7); };
+		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | 0b10000000) : (personality[0] & 0b01111111); };
+		uint8_t getAbility() const { return (personality[0] & 0b01100000) >> 5; };
+		void setAbility(uint8_t ability) { personality[0] = (personality[0] & 0b10011111) | (ability << 5); };
+		uint8_t getNature() const { return personality[0] & 0b00011111; };
+		void setNature(uint8_t nature) { personality[0] = (personality[0] & 0b11100000) | nature; };
+		bool getGender() const { return (personality[1] & 0b10000000) >> 7; };
+		void setGender(bool gender) { personality[1] = gender ? (personality[1] | 0b10000000) : (personality[1] & 0b01111111); };
+		bool isEgg() const { return (personality[1] & 0b01000000) >> 6; };
+		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | 0b01000000) : (personality[1] & 0b10111111); };
+		// ext species consists of 9 bits, 1 from personality[1] 0b00100000 which is the MSB, and 8 from species
+		uint16_t getExtSpecies() const { return ((personality[1] & 0b00100000) << 3) | species; };
+		void setExtSpecies(uint16_t extspecies) {
+			personality[1] = (personality[1] & 0b11011111) | ((extspecies & 0b100000000) >> 3);
+			species = extspecies & 0b11111111;
+		};
+		uint8_t getForm() const { return personality[1] & FORM_MASK; }
+		void setForm(uint8_t form) { personality[1] = (personality[1] & 0b11100000) | form; }
+
+		uint8_t status;
+	};
+
+	using roam_struct_v8 = roam_struct_v7;
+
 #pragma pack(pop)
 
 }
@@ -388,5 +426,7 @@ breedmon_struct_v8 convertBreedmonV7toV8(const breedmon_struct_v8& breedmon, std
 party_struct_v8 convertPartyV7toV8(const party_struct_v8& party, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons);
 
 hofmon_struct_v8 convertHofmonV7toV8(const hofmon_struct_v8& hofmon, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons);
+
+roam_struct_v8 convertRoamV7toV8(const roam_struct_v8& roam);
 
 #endif
