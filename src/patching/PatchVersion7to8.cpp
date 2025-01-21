@@ -616,6 +616,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		}
 	}
 
+	// clear wPokedexCaught in v8 before patching
+	js_info << "Clear w****dexCaught..." << std::endl;
+	clearDataBlock(sd, sym8.getPokemonDataAddress("wPokedexCaught"), flag_array(NUM_UNIQUE_POKEMON_V8));
+
+
 	// wPokedexCaught is a flag_array of NUM_POKEMON_V7 bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
 	js_info <<  "Patching w****dexCaught..." << std::endl;
 	it7.seek(sym7.getPokemonDataAddress("wPokedexCaught"));
@@ -631,7 +636,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			if (pokemonIndexV8 != INVALID_SPECIES) {
 				// print found pokemonv7 and converted pokemonv8
 				if (pokemonIndex != pokemonIndexV8 + 1){
-					js_info <<  "Mon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
+					js_info <<  "dex Caught Mon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
 				}
 				// set the bit
 				setFlagBit(it8, sym8.getPokemonDataAddress("wPokedexCaught"), pokemonIndexV8);
@@ -646,6 +651,10 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			js_info << "Found caught mon " << std::hex << static_cast<int>(mon) << std::endl;
 		}
 	}
+
+	// clear wPokedexSeen in v8 before patching
+	js_info << "Clear w****dexSeen..." << std::endl;
+	clearDataBlock(sd, sym8.getPokemonDataAddress("wPokedexSeen"), flag_array(NUM_UNIQUE_POKEMON_V8));
 
 	// wPokedexSeen is a flag_array of NUM_POKEMON_V7 bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
 	js_info <<  "Patching w****dexSeen..." << std::endl;
@@ -662,7 +671,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 			if (pokemonIndexV8 != INVALID_SPECIES) {
 				// print found pokemonv7 and converted pokemonv8
 				if (pokemonIndex != pokemonIndexV8 + 1){
-					js_info <<  "Mon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
+					js_info <<  "Dex Seen Mon " << std::hex << static_cast<int>(pokemonIndex) << " converted to " << std::hex << static_cast<int>(pokemonIndexV8) << std::endl;
 				}
 				// set the bit
 				setFlagBit(it8, sym8.getPokemonDataAddress("wPokedexSeen"), pokemonIndexV8);
@@ -985,6 +994,9 @@ savemon_struct_v8 convertSavemonV7toV8(const savemon_struct_v8& savemon, std::ve
 	if (extspecies_v8 != INVALID_SPECIES) {
 		seen_mons.push_back(extspecies_v8);
 		caught_mons.push_back(extspecies_v8);
+	} else {
+		seen_mons.push_back(new_savemon.getExtSpecies());
+		caught_mons.push_back(new_savemon.getExtSpecies());
 	}
 	if (species_v8 == MAGIKARP_V8) {
 		new_savemon.setForm(mapV7MagikarpFormToV8(savemon.getForm()));
