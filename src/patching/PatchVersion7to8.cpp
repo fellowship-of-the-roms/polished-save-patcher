@@ -584,7 +584,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// fix wRegsiteredItems...
 	js_info << "Fix wRegisteredItems..." << std::endl;
 	for (int i = 0; i < 4; i++) {
-		it8.setByte(sym8.getPokemonDataAddress("wRegisteredItems") + i, mapV7KeyItemToV8(it8.getByte(sym8.getPokemonDataAddress("wRegisteredItems") + i)));
+		it8.setByte(sym8.getPokemonDataAddress("wRegisteredItems") + i, mapV7KeyItemToV8(it8.getByte(sym8.getPokemonDataAddress("wRegisteredItems") + i) - 1));
 	}
 
 	// copy sCheckValue2
