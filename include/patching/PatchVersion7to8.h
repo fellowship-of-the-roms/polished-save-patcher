@@ -5,7 +5,6 @@
 #include "core/SymbolDatabase.h"
 #include "core/PatcherConstants.h"
 #include "core/CommonPatchFunctions.h"
-#include <iostream>
 
 namespace {
 	constexpr int NUM_OBJECT_STRUCTS = 13;

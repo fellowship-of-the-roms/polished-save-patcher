@@ -2,10 +2,6 @@
 #define PATCHVERSION8TO9_H
 
 #include "core/SaveBinary.h"
-#include "core/SymbolDatabase.h"
-#include "core/PatcherConstants.h"
-#include "core/CommonPatchFunctions.h"
-#include <iostream>
 
 namespace {
 	constexpr int NUM_KEY_ITEMS_V9 = 0x25;

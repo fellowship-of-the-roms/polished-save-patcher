@@ -1,15 +1,10 @@
 #include "core/SaveBinary.h"
-#include "core/SymbolDatabase.h"
 #include "patching/PatchVersion7to8.h"
 #include "patching/PatchVersion8to9.h"
 #include "core/PatcherConstants.h"
 #include "core/Logging.h"
 #include <iostream>
-#include <fstream>
-#include <streambuf>
 #include <emscripten/bind.h>
-#include <emscripten/emscripten.h>
-#include <vector>
 
 emscripten::val patch_save(const std::string &old_save_path, const std::string &new_save_path, int target_version) {
 	// Result object to return to JavaScript
