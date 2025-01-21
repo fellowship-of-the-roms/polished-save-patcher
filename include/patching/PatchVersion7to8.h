@@ -132,7 +132,7 @@ namespace {
 		uint8_t unused;
 		uint16_t hp;
 		uint16_t maxhp;
-		uint16_t stats[6];
+		uint16_t stats[5];
 	};
 
 	struct savemon_struct_v8 {
