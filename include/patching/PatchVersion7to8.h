@@ -77,6 +77,18 @@ namespace {
 	constexpr int AFFECTION_OPT = 5;
 	constexpr int EVS_OPT_CLASSIC = 1;
 	constexpr int RESET_INIT_OPTS = 7;
+	uint8_t HO_OH_V8 = 0xfa;
+	uint8_t LUGIA_V8 = 0xf9;
+	uint8_t RAIKOU_V8 = 0xf3;
+	uint8_t ENTEI_V8 = 0xf4;
+	uint8_t SUICUNE_V8 = 0xf5;
+	uint8_t ARTICUNO_V8 = 0x90;
+	uint8_t ZAPDOS_V8 = 0x91;
+	uint8_t MOLTRES_V8 = 0x92;
+	uint8_t MEW_V8 = 0x97;
+	uint8_t MEWTWO_V8 = 0x96;
+	uint8_t CELEBI_V8 = 0xfb;
+	uint8_t SUDOWOODO_V8 = 0xb9;
 
 #pragma pack(push, 1)
 	struct breedmon_struct_v7 {

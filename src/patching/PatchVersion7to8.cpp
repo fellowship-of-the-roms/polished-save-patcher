@@ -649,6 +649,71 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		}
 	}
 
+	// Clear wPlayerCaught and wPlayerCaught2
+	js_info << "Clear wPlayerCaught..." << std::endl;
+	it8.setByte(sym8.getPokemonDataAddress("wPlayerCaught"), 0x00);
+	it8.setByte(sym8.getPokemonDataAddress("wPlayerCaught2"), 0x00);
+	// check if HO_OH_V8 is in caught_mons, if so set bit 0 in wPlayerCaught
+	if (std::find(caught_mons.begin(), caught_mons.end(), HO_OH_V8) != caught_mons.end()) {
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPlayerCaught"), 0);
+		js_info << "Found caught mon " << std::hex << static_cast<int>(HO_OH_V8) << std::endl;
+	}
+	// check if LUGIA_V8 is in caught_mons, if so set bit 1 in wPlayerCaught
+	if (std::find(caught_mons.begin(), caught_mons.end(), LUGIA_V8) != caught_mons.end()) {
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPlayerCaught"), 1);
+		js_info << "Found caught mon " << std::hex << static_cast<int>(LUGIA_V8) << std::endl;
+	}
+	// check if RAIKOU_V8 is in caught_mons, if so set bit 2 in wPlayerCaught
+	if (std::find(caught_mons.begin(), caught_mons.end(), RAIKOU_V8) != caught_mons.end()) {
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPlayerCaught"), 2);
+		js_info << "Found caught mon " << std::hex << static_cast<int>(RAIKOU_V8) << std::endl;
+	}
+	// check if ENTEI_V8 is in caught_mons, if so set bit 3 in wPlayerCaught
+	if (std::find(caught_mons.begin(), caught_mons.end(), ENTEI_V8) != caught_mons.end()) {
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPlayerCaught"), 3);
+		js_info << "Found caught mon " << std::hex << static_cast<int>(ENTEI_V8) << std::endl;
+	}
+	// check if SUICUNE_V8 is in caught_mons, if so set bit 4 in wPlayerCaught
+	if (std::find(caught_mons.begin(), caught_mons.end(), SUICUNE_V8) != caught_mons.end()) {
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPlayerCaught"), 4);
+		js_info << "Found caught mon " << std::hex << static_cast<int>(SUICUNE_V8) << std::endl;
+	}
+	// check if ARTICUNO_V8 is in caught_mons, if so set bit 5 in wPlayerCaught
+	if (std::find(caught_mons.begin(), caught_mons.end(), ARTICUNO_V8) != caught_mons.end()) {
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPlayerCaught"), 5);
+		js_info << "Found caught mon " << std::hex << static_cast<int>(ARTICUNO_V8) << std::endl;
+	}
+	// check if ZAPDOS_V8 is in caught_mons, if so set bit 6 in wPlayerCaught
+	if (std::find(caught_mons.begin(), caught_mons.end(), ZAPDOS_V8) != caught_mons.end()) {
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPlayerCaught"), 6);
+		js_info << "Found caught mon " << std::hex << static_cast<int>(ZAPDOS_V8) << std::endl;
+	}
+	// check if MOLTRES_V8 is in caught_mons, if so set bit 7 in wPlayerCaught
+	if (std::find(caught_mons.begin(), caught_mons.end(), MOLTRES_V8) != caught_mons.end()) {
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPlayerCaught"), 7);
+		js_info << "Found caught mon " << std::hex << static_cast<int>(MOLTRES_V8) << std::endl;
+	}
+	// check if MEW_V8 is in caught_mons, if so set bit 0 in wPlayerCaught2
+	if (std::find(caught_mons.begin(), caught_mons.end(), MEW_V8) != caught_mons.end()) {
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPlayerCaught2"), 0);
+		js_info << "Found caught mon " << std::hex << static_cast<int>(MEW_V8) << std::endl;
+	}
+	// check if MEWTWO_V8 is in caught_mons, if so set bit 1 in wPlayerCaught2
+	if (std::find(caught_mons.begin(), caught_mons.end(), MEWTWO_V8) != caught_mons.end()) {
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPlayerCaught2"), 1);
+		js_info << "Found caught mon " << std::hex << static_cast<int>(MEWTWO_V8) << std::endl;
+	}
+	// check if CELEBI_V8 is in caught_mons, if so set bit 2 in wPlayerCaught2
+	if (std::find(caught_mons.begin(), caught_mons.end(), CELEBI_V8) != caught_mons.end()) {
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPlayerCaught2"), 2);
+		js_info << "Found caught mon " << std::hex << static_cast<int>(CELEBI_V8) << std::endl;
+	}
+	// check if SUDOWOODO_V8 is in caught_mons, if so set bit 3 in wPlayerCaught2
+	if (std::find(caught_mons.begin(), caught_mons.end(), SUDOWOODO_V8) != caught_mons.end()) {
+		setFlagBit(it8, sym8.getPokemonDataAddress("wPlayerCaught2"), 3);
+		js_info << "Found caught mon " << std::hex << static_cast<int>(SUDOWOODO_V8) << std::endl;
+	}
+
 	// set v8 wCurMapSceneScriptCount and wCurMapCallbackCount to 0
 	// set v8 wCurMapSceneScriptPointer word to 0
 	// this is done to prevent the game from running any map scripts on load
