@@ -221,14 +221,18 @@
 			</p>
 			<ol>
 				<li>
-					Save your game on the second floor of the <span class="tooltip">
+					Save your game on the second floor of the
+					<span class="tooltip">
 						PKMN Center
 						<span class="tooltiptext"><img src="https://tcrf.net/images/7/76/PokemonCrystal_PokeCenter_2F_International.png" alt="PKMN Center" width="200"></span>
-					</span> (Where you normally do link battles/trades).
+					</span>
+					(Where you normally do link battles/trades).
 				</li>
 				<li>Back up your original save file somewhere safe.</li>
 				<li>Drag and drop your save file into the area below, or click to select your old save file.</li>
-				<li>Click the "Upload Save" button to upload your save file and display the current save version.</li>
+				<li>
+					<b>As soon as you select/drop the file, the tool will read the current save version.</b>
+				</li>
 				<li>Select your target save version from the dropdown menu (default is the highest version).</li>
 				<li>Click the "Patch Save" button to start the patching process.</li>
 				<li>Once the patching is complete, a new save file will be downloaded automatically.</li>
@@ -266,12 +270,12 @@
 			<input type="file" id="oldSave" accept=".sav" />
 		</div>
 		<div id="fileDetails" style="margin-top: 10px;"></div>
-		<button onclick="uploadSave()" id="uploadButton" disabled>Upload Save</button>
 		<div id="currentVersion"></div>
-		<select id="targetVersion" title="Select the version to patch your save file to.">
+		<select id="targetVersion" title="Select the version to patch your save file to." disabled>
 			<option value="9" selected>Version 9 (3.1.0)</option>
 			<option value="8">Version 8 (3.0.0)</option>
 		</select>
+
 		<button onclick="patchSave()" id="patchButton" disabled>Patch Save</button>
 		<div id="indicator">
 			<span id="indicatorIcon"></span>
@@ -287,8 +291,8 @@
 		document.querySelector('meta[name="tool-version"]').setAttribute('content', toolVersion);
 		document.getElementById('toolVersionDisplay').textContent = `Version ${toolVersion}`;
 
-		// Disable buttons until the module is initialized
-		document.getElementById('uploadButton').disabled = true;
+		// Initially disable patch-related controls
+		document.getElementById('targetVersion').disabled = true;
 		document.getElementById('patchButton').disabled = true;
 		document.getElementById('manualDownloadButton').disabled = true;
 
@@ -339,13 +343,12 @@
 			Module.onRuntimeInitialized = onModuleInitialized;
 		} else {
 			// If Module is not yet defined, wait for it
-			window.addEventListener('load', function() {
+			window.addEventListener('load', function () {
 				Module.onRuntimeInitialized = onModuleInitialized;
 			});
 		}
 
 		function onModuleInitialized() {
-			document.getElementById('uploadButton').disabled = false;
 			logMessage('Module initialized successfully.');
 			updateIndicator('Ready to patch.', 'info');
 		}
@@ -360,7 +363,7 @@
 			const reader = new FileReader();
 			logMessage('Loading save file...');
 			updateIndicator('Loading save file...', 'info');
-			reader.onload = function(event) {
+			reader.onload = function (event) {
 				const data = new Uint8Array(event.target.result);
 
 				// Ensure FS is available
@@ -379,7 +382,7 @@
 						7: '3.0.0-beta',
 						8: '3.0.0',
 						9: '3.1.0'
-					}; 
+					};
 
 					if (saveVersion) {
 						const canonicalName = versionMap[saveVersion];
@@ -388,18 +391,21 @@
 							: saveVersion.toString(16);
 
 						document.getElementById('currentVersion').textContent = 'Current Save Version: ' + versionDisplay;
-						document.getElementById('patchButton').disabled = false; // Enable the Patch Save button
+						document.getElementById('targetVersion').disabled = false;
+						document.getElementById('patchButton').disabled = false;
 						logMessage('Save file uploaded successfully. Version: ' + versionDisplay);
 						updateIndicator('Save file uploaded successfully.', 'success');
 					} else {
 						document.getElementById('currentVersion').textContent = 'Invalid save file.';
-						document.getElementById('patchButton').disabled = true; // Disable the Patch Save button
+						document.getElementById('patchButton').disabled = true; // Disable patch
+						document.getElementById('targetVersion').disabled = true; // Disable dropdown
 						logMessage('Invalid save file.', 'error');
 						updateIndicator('Invalid save file.', 'error');
 					}
 				} catch (e) {
 					document.getElementById('currentVersion').textContent = 'Error reading save file.';
 					document.getElementById('patchButton').disabled = true;
+					document.getElementById('targetVersion').disabled = true;
 					logMessage('Error reading save file: ' + e.message, 'error');
 					updateIndicator('Error reading save file.', 'error');
 				}
@@ -435,7 +441,7 @@
 				FS.unlink(newSavePath);
 			}
 
-			setTimeout(function() {
+			setTimeout(function () {
 				try {
 					logMessage('Patching save file...');
 					const result = Module.patch_save(oldSavePath, newSavePath, targetVersion);
@@ -506,6 +512,7 @@
 			document.getElementById('currentVersion').textContent = '';
 			document.getElementById('patchButton').disabled = true;
 			document.getElementById('manualDownloadButton').disabled = true;
+			document.getElementById('targetVersion').disabled = true;
 			logMessages = [];
 			patchedBlobUrl = null;
 		});
@@ -555,16 +562,16 @@
 					.replace(/'/g, "&#039;");
 				dropZone.querySelector('p').textContent = 'Selected file: ' + file.name;
 				fileDetails.innerHTML = `
-					<p><strong>File Name:</strong> ${sanitizedFileName}</p>
-					<p><strong>File Size:</strong> ${(file.size / 1024).toFixed(2)} KB</p>
-					<p><strong>Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}</p>
-				`;
+						<p><strong>File Name:</strong> ${sanitizedFileName}</p>
+						<p><strong>File Size:</strong> ${(file.size / 1024).toFixed(2)} KB</p>
+						<p><strong>Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}</p>
+					`;
+				uploadSave();
 			} else {
 				dropZone.querySelector('p').textContent = 'Drag and drop your save file here, or click to select.';
 				fileDetails.innerHTML = '';
 			}
 		});
-
 	</script>
 </body>
 </html>
