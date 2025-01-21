@@ -59,48 +59,48 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// copy sBoxMons1 to sBoxMons1A
 	js_info <<  "Copying from sBoxMons1 to sBoxMons1A..." << std::endl;
-	copyDataBlock(sd, sym7.getSRAMAddress("sBoxMons1"), sym8.getSRAMAddress("sBoxMons1A"), MONDB_ENTRIES_A_V8 * SAVEMON_STRUCT_LENGTH);
+	copyDataBlock(sd, sym7.getSRAMAddress("sBoxMons1"), sym8.getSRAMAddress("sBoxMons1A"), MONDB_ENTRIES_A_V8 * sizeof(savemon_struct_v8));
 
 	js_info << "Clearing " << "sBoxMons1B" << "..." << std::endl;
-	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons1B"), MONDB_ENTRIES_B_V8 * SAVEMON_STRUCT_LENGTH);
+	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons1B"), MONDB_ENTRIES_B_V8 * sizeof(savemon_struct_v8));
 	js_info << "Clearing " << "sBoxMons1C" << "..." << std::endl;
-	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons1C"), MONDB_ENTRIES_C_V8 * SAVEMON_STRUCT_LENGTH);
+	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons1C"), MONDB_ENTRIES_C_V8 * sizeof(savemon_struct_v8));
 
 	// copy sBoxMons2 to SBoxMons2A
 	js_info <<  "Copying from sBoxMons2 to sBoxMons2A..." << std::endl;
-	copyDataBlock(sd, sym7.getSRAMAddress("sBoxMons2"), sym8.getSRAMAddress("sBoxMons2A"), MONDB_ENTRIES_A_V8 * SAVEMON_STRUCT_LENGTH);
+	copyDataBlock(sd, sym7.getSRAMAddress("sBoxMons2"), sym8.getSRAMAddress("sBoxMons2A"), MONDB_ENTRIES_A_V8 * sizeof(savemon_struct_v8));
 
 	js_info << "Clearing " << "sBoxMons2B" << "..." << std::endl;
-	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons2B"), MONDB_ENTRIES_B_V8 * SAVEMON_STRUCT_LENGTH);
+	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons2B"), MONDB_ENTRIES_B_V8 * sizeof(savemon_struct_v8));
 	js_info << "Clearing " << "sBoxMons2C" << "..." << std::endl;
-	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons2C"), MONDB_ENTRIES_C_V8 * SAVEMON_STRUCT_LENGTH);
+	clearDataBlock(sd, sym8.getSRAMAddress("sBoxMons2C"), MONDB_ENTRIES_C_V8 * sizeof(savemon_struct_v8));
 
 	savemon_struct_v8 savemon;
 	// Patching sBoxMons1A if checksums match
 	js_info <<  "Checking sBoxMons1A checksums..." << std::endl;
 	for (int i = 0; i < MONDB_ENTRIES_A_V8; i++) {
-		it8.seek(sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH);
-		uint16_t calc_checksum = calculateNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH);
-		uint16_t cur_checksum = extractStoredNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH);
+		it8.seek(sym8.getSRAMAddress("sBoxMons1A") + i * sizeof(savemon_struct_v8));
+		uint16_t calc_checksum = calculateNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons1A") + i * sizeof(savemon_struct_v8));
+		uint16_t cur_checksum = extractStoredNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons1A") + i * sizeof(savemon_struct_v8));
 		if (calc_checksum == cur_checksum) {
-			savemon = convertSavemonV7toV8(loadStruct<savemon_struct_v8>(it8, sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH), seen_mons, caught_mons);
-			writeStruct<savemon_struct_v8>(it8, sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH, savemon);
+			savemon = convertSavemonV7toV8(loadStruct<savemon_struct_v8>(it8, sym8.getSRAMAddress("sBoxMons1A") + i * sizeof(savemon_struct_v8)), seen_mons, caught_mons);
+			writeStruct<savemon_struct_v8>(it8, sym8.getSRAMAddress("sBoxMons1A") + i * sizeof(savemon_struct_v8), savemon);
 			// write the new checksum
-			writeNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons1A") + i * SAVEMON_STRUCT_LENGTH);
+			writeNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons1A") + i * sizeof(savemon_struct_v8));
 		}
 	}
 
 	// Patching sBoxMons2A if checksums match
 	js_info <<  "Checking sBoxMons2A checksums..." << std::endl;
 	for (int i = 0; i < MONDB_ENTRIES_A_V8; i++) {
-		it8.seek(sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH);
-		uint16_t calc_checksum = calculateNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH);
-		uint16_t cur_checksum = extractStoredNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH);
+		it8.seek(sym8.getSRAMAddress("sBoxMons2A") + i * sizeof(savemon_struct_v8));
+		uint16_t calc_checksum = calculateNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons2A") + i * sizeof(savemon_struct_v8));
+		uint16_t cur_checksum = extractStoredNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons2A") + i * sizeof(savemon_struct_v8));
 		if (calc_checksum == cur_checksum) {
-			savemon = convertSavemonV7toV8(loadStruct<savemon_struct_v8>(it8, sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH), seen_mons, caught_mons);
-			writeStruct<savemon_struct_v8>(it8, sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH, savemon);
+			savemon = convertSavemonV7toV8(loadStruct<savemon_struct_v8>(it8, sym8.getSRAMAddress("sBoxMons2A") + i * sizeof(savemon_struct_v8)), seen_mons, caught_mons);
+			writeStruct<savemon_struct_v8>(it8, sym8.getSRAMAddress("sBoxMons2A") + i * sizeof(savemon_struct_v8), savemon);
 			// write the new checksum
-			writeNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons2A") + i * SAVEMON_STRUCT_LENGTH);
+			writeNewboxChecksum(save8, sym8.getSRAMAddress("sBoxMons2A") + i * sizeof(savemon_struct_v8));
 		}
 	}
 
