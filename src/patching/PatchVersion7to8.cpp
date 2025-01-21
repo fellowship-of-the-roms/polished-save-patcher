@@ -466,18 +466,18 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// copy wPartyMons sizeof(party_struct_v7) * PARTY_LENGTH
 	js_info <<  "Copy wPartyMons..." << std::endl;
-	copyDataBlock(sd, sym7.getPokemonDataAddress("wPartyMons"), sym8.getPokemonDataAddress("wPartyMons"), sizeof(party_struct_v7) * PARTY_LENGTH);
+	copyDataBlock(sd, sym7.getPokemonDataAddress("wPartyMons"), sym8.getPokemonDataAddress("wPartyMons"), sizeof(party_struct_v8) * PARTY_LENGTH);
 
 	party_struct_v8 partymon;
 	// fix the party mons
 	js_info <<  "Fix party mons..." << std::endl;
 	for (int i = 0; i < PARTY_LENGTH; i++) {
-		uint16_t species = it8.getByte(sym8.getPokemonDataAddress("wPartyMons") + i * sizeof(party_struct_v7));
+		uint16_t species = it8.getByte(sym8.getPokemonDataAddress("wPartyMons") + i * sizeof(party_struct_v8));
 		if (species == 0x00) {
 			continue;
 		}
-		partymon = convertPartyV7toV8(loadStruct<party_struct_v8>(it8, sym8.getPokemonDataAddress("wPartyMons") + i * sizeof(party_struct_v7)), seen_mons, caught_mons);
-		writeStruct<party_struct_v8>(it8, sym8.getPokemonDataAddress("wPartyMons") + i * sizeof(party_struct_v7), partymon);
+		partymon = convertPartyV7toV8(loadStruct<party_struct_v8>(it8, sym8.getPokemonDataAddress("wPartyMons") + i * sizeof(party_struct_v8)), seen_mons, caught_mons);
+		writeStruct<party_struct_v8>(it8, sym8.getPokemonDataAddress("wPartyMons") + i * sizeof(party_struct_v8), partymon);
 	}
 
 	// copy wPartyMonOTs
@@ -514,7 +514,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// Copy from [wDayCareMan, wBreedMon2 + sizeof(breed_struct_mon)
 	js_info <<  "Copy [wDayCareMan, wBreedMon2 + sizeof(breed_struct_mon)" << std::endl;
-	copyDataBlock(sd, sym7.getPokemonDataAddress("wDayCareMan"), sym8.getPokemonDataAddress("wDayCareMan"), sym7.getPokemonDataAddress("wBreedMon2") + sizeof(breedmon_struct_v7) - sym7.getPokemonDataAddress("wDayCareMan"));
+	copyDataBlock(sd, sym7.getPokemonDataAddress("wDayCareMan"), sym8.getPokemonDataAddress("wDayCareMan"), sym7.getPokemonDataAddress("wBreedMon2") + sizeof(breedmon_struct_v8) - sym7.getPokemonDataAddress("wDayCareMan"));
 
 	breedmon_struct_v8 breedmon;
 	// fix and copy wBreedMon1

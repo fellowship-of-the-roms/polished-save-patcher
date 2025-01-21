@@ -9,17 +9,13 @@
 namespace {
 	constexpr int NUM_OBJECT_STRUCTS = 13;
 	constexpr int OBJECT_PALETTE_V7 = 0x06;
-	constexpr int OBJECT_PALETTE_V8 = 0x06;
-	constexpr int OBJECT_PAL_INDEX_V8 = 0x21;
 	constexpr int OBJECT_LENGTH_V7 = 0x21;
 	constexpr int OBJECT_LENGTH_V8 = 0x22;
 	constexpr int NUM_KEY_ITEMS_V7 = 0x1D;
-	constexpr int NUM_KEY_ITEMS_V8 = 0x24;
 	constexpr int NUM_APRICORNS = 0x07;
 	constexpr int NUM_EVENTS = 0x8ff;
 	constexpr int NUM_FRUIT_TREES_V7 = 0x23;
 	constexpr int NUM_FRUIT_TREES_V8 = 0x2e;
-	constexpr int NUM_LANDMARKS_V7 = 0x90;
 	constexpr int NUM_LANDMARKS_V8 = 0x91;
 	constexpr int CONTACT_LIST_SIZE_V7 = 30;
 	constexpr int NUM_PHONE_CONTACTS_V8 = 0x25;
@@ -29,40 +25,32 @@ namespace {
 	constexpr int PARTY_LENGTH = 6;
 	constexpr int PLAYER_NAME_LENGTH = 8;
 	constexpr int MON_NAME_LENGTH = 11;
+	constexpr uint8_t SHINY_MASK = 0b10000000;
+	constexpr uint8_t ABILITY_MASK = 0b01100000;
+	constexpr uint8_t NATURE_MASK = 0b00011111;
+	constexpr uint8_t GENDER_MASK = 0b10000000;
+	constexpr uint8_t EGG_MASK = 0b01000000;
 	constexpr uint8_t EXTSPECIES_MASK = 0b00100000;
 	constexpr uint8_t FORM_MASK = 0b00011111;
-	constexpr int MON_EXTSPECIES = 0x15;
-	constexpr int MON_EXTSPECIES_F = 5;
+	constexpr uint8_t CAUGHT_GENDER_MASK = 0b10000000;
+	constexpr uint8_t CAUGHT_TIME_MASK = 0b01100000;
 	constexpr uint8_t CAUGHT_BALL_MASK = 0b00011111;
-	constexpr int MON_ITEM = 0x01;
-	constexpr int MON_MOVES = 0x02;
-	constexpr int MON_FORM = 0x15;
-	constexpr int MON_CAUGHTBALL = 0x1c;
-	constexpr int MON_CAUGHTLOCATION = 0x1e;
 	constexpr int NUM_POKEMON_V7 = 0xfe;
 	constexpr int MONDB_ENTRIES_V7 = 167;
 	constexpr int MONDB_ENTRIES_A_V8 = 167;
 	constexpr int MONDB_ENTRIES_B_V8 = 28;
 	constexpr int MONDB_ENTRIES_C_V8 = 12;
 	constexpr int MONDB_ENTRIES_V8 = MONDB_ENTRIES_A_V8 + MONDB_ENTRIES_B_V8 + MONDB_ENTRIES_C_V8;
-	constexpr int SAVEMON_STRUCT_LENGTH = 0x31;
 	constexpr int MONS_PER_BOX = 20;
 	constexpr int MIN_MONDB_SLACK = 10;
 	constexpr int NUM_BOXES_V7 = (MONDB_ENTRIES_V7 * 2 - MIN_MONDB_SLACK) / MONS_PER_BOX;
 	constexpr int NUM_BOXES_V8 = (MONDB_ENTRIES_V8 * 2 - MIN_MONDB_SLACK) / MONS_PER_BOX;
 	constexpr int BOX_NAME_LENGTH = 9;
 	constexpr int NEWBOX_SIZE = MONS_PER_BOX + ((MONS_PER_BOX + 7) / 8) + BOX_NAME_LENGTH + 1;
-	constexpr int SAVEMON_EXTSPECIES = 0x15;
-	constexpr int SAVEMON_ITEM = 0x01;
-	constexpr int SAVEMON_MOVES = 0x02;
-	constexpr int SAVEMON_FORM = 0x15;
-	constexpr int SAVEMON_CAUGHTBALL = 0x19;
-	constexpr int SAVEMON_CAUGHTLOCATION = 0x1b;
 	constexpr int BATTLETOWER_PARTYDATA_SIZE = 6;
 	constexpr int NUM_HOF_TEAMS_V8 = 10;
 	constexpr int HOF_MON_LENGTH = 1 + 2 + 2 + 1 + (MON_NAME_LENGTH - 1); // species, id, personality, level, nick
 	constexpr int HOF_LENGTH = 1 + HOF_MON_LENGTH * PARTY_LENGTH + 1; // win count, party, terminator
-	constexpr int HOF_MON_EXTSPECIES = 0x04;
 	constexpr uint16_t INVALID_SPECIES = -1;
 	constexpr uint16_t INVALID_EVENT_FLAG = -1;
 	constexpr uint8_t MAGIKARP_V8 = 0x81;
@@ -93,112 +81,6 @@ namespace {
 	constexpr int MAILBOX_CAPACITY = 10;
 
 #pragma pack(push, 1)
-	struct breedmon_struct_v7 {
-		uint8_t species;
-		uint8_t item;
-		uint8_t moves[NUM_MOVES];
-		uint16_t id;
-		uint8_t exp[3];
-		uint8_t evs[6];
-		uint8_t dvs[3];
-		uint8_t personality[2];
-
-		bool isShiny() const { return (personality[0] & 0b10000000 >> 7); }
-		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | 0b10000000) : (personality[0] & 0b01111111); }
-		uint8_t getAbility() const { return personality[0] & 0b01100000 >> 5; }
-		void setAbility(uint8_t ability) { personality[0] = (personality[0] & 0b10011111) | (ability << 5); }
-		uint8_t getNature() const { return personality[0] & 0b00011111; }
-		void setNature(uint8_t nature) { personality[0] = (personality[0] & 0b11100000) | nature; }
-		bool getGender() const { return personality[1] & 0b10000000 >> 7; }
-		void setGender(bool gender) { personality[1] = gender ? (personality[1] | 0b10000000) : (personality[1] & 0b01111111); }
-		bool isEgg() const { return personality[1] & 0b01000000 >> 6; }
-		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | 0b01000000) : (personality[1] & 0b10111111); }
-		// ext species consists of 9 bits, 1 from personality[1] 0b00100000 which is the MSB, and 8 from species
-		uint16_t getExtSpecies() const { return ((personality[1] & 0b00100000) << 3) | species; }
-		void setExtSpecies(uint16_t extspecies) {
-			personality[1] = (personality[1] & 0b11011111) | ((extspecies & 0b100000000) >> 3);
-			species = extspecies & 0b11111111;
-		}
-		uint8_t getForm() const { return personality[1] & FORM_MASK; }
-		void setForm(uint8_t form) { personality[1] = (personality[1] & 0b11100000) | form; }
-
-		uint8_t pp[NUM_MOVES];
-		uint8_t happiness;
-		uint8_t pkrus;
-		uint8_t caughtdata;
-
-		bool getCaughtGender() const { return caughtdata & 0b10000000 >> 7; }
-		void setCaughtGender(bool gender) { caughtdata = gender ? (caughtdata | 0b10000000) : (caughtdata & 0b01111111); }
-		uint8_t getCaughtTime() const { return caughtdata & 0b01100000 >> 5; }
-		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & 0b10011111) | (time << 5); }
-		uint8_t getCaughtBall() const { return caughtdata & 0b00011111; }
-		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & 0b11100000) | ball; }
-
-		uint8_t caughtlevel;
-		uint8_t caughtlocation;
-		uint8_t level;
-	};
-
-	struct party_struct_v7 {
-		breedmon_struct_v7 breedmon;
-		uint8_t status;
-		uint8_t unused;
-		uint16_t hp;
-		uint16_t maxhp;
-		uint16_t stats[6];
-	};
-
-	struct savemon_struct_v7 {
-		uint8_t species;
-		uint8_t item;
-		uint8_t moves[NUM_MOVES];
-		uint16_t id;
-		uint8_t exp[3];
-		uint8_t evs[6];
-		uint8_t dvs[3];
-		uint8_t personality[2];
-
-		bool isShiny() const { return ((personality[0] & 0b10000000) >> 7); }
-		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | 0b10000000) : (personality[0] & 0b01111111); }
-		uint8_t getAbility() const { return (personality[0] & 0b01100000) >> 5; }
-		void setAbility(uint8_t ability) { personality[0] = (personality[0] & 0b10011111) | (ability << 5); }
-		uint8_t getNature() const { return personality[0] & 0b00011111; }
-		void setNature(uint8_t nature) { personality[0] = (personality[0] & 0b11100000) | nature; }
-		bool getGender() const { return (personality[1] & 0b10000000) >> 7; }
-		void setGender(bool gender) { personality[1] = gender ? (personality[1] | 0b10000000) : (personality[1] & 0b01111111); }
-		bool isEgg() const { return (personality[1] & 0b01000000) >> 6; }
-		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | 0b01000000) : (personality[1] & 0b10111111); }
-		// ext species consists of 9 bits, 1 from personality[1] 0b00100000 which is the MSB, and 8 from species
-		uint16_t getExtSpecies() const { return ((personality[1] & 0b00100000) << 3) | species; }
-		void setExtSpecies(uint16_t extspecies) {
-			personality[1] = (personality[1] & 0b11011111) | ((extspecies & 0b100000000) >> 3);
-			species = extspecies & 0b11111111;
-		}
-		uint8_t getForm() const { return personality[1] & FORM_MASK; }
-		void setForm(uint8_t form) { personality[1] = (personality[1] & 0b11100000) | form; }
-
-		uint8_t ppups;
-		uint8_t happiness;
-		uint8_t pkrus;
-		uint8_t caughtdata;
-
-		bool getCaughtGender() const { return (caughtdata & 0b10000000) >> 7; }
-		void setCaughtGender(bool gender) { caughtdata = gender ? (caughtdata | 0b10000000) : (caughtdata & 0b01111111); }
-		uint8_t getCaughtTime() const { return (caughtdata & 0b01100000) >> 5; }
-		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & 0b10011111) | (time << 5); }
-		uint8_t getCaughtBall() const { return caughtdata & 0b00011111; }
-		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & 0b11100000) | ball; }
-
-		uint8_t caughtlevel;
-		uint8_t caughtlocation;
-		uint8_t level;
-		uint8_t extra[3];
-		uint8_t nickname[MON_NAME_LENGTH - 1];
-		uint8_t ot[PLAYER_NAME_LENGTH - 1];
-
-	};
-
-
 	struct breedmon_struct_v8 {
 		uint8_t species;
 		uint8_t item;
@@ -209,35 +91,35 @@ namespace {
 		uint8_t dvs[3];
 		uint8_t personality[2];
 
-		bool isShiny() const { return ((personality[0] & 0b10000000) >> 7); };
-		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | 0b10000000) : (personality[0] & 0b01111111); };
-		uint8_t getAbility() const { return (personality[0] & 0b01100000) >> 5; };
-		void setAbility(uint8_t ability) { personality[0] = (personality[0] & 0b10011111) | (ability << 5); };
-		uint8_t getNature() const { return personality[0] & 0b00011111; };
-		void setNature(uint8_t nature) { personality[0] = (personality[0] & 0b11100000) | nature; };
+		bool isShiny() const { return ((personality[0] & SHINY_MASK) >> 7); };
+		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | SHINY_MASK) : (personality[0] & ~SHINY_MASK); };
+		uint8_t getAbility() const { return (personality[0] & ABILITY_MASK) >> 5; };
+		void setAbility(uint8_t ability) { personality[0] = (personality[0] & ~ABILITY_MASK) | (ability << 5); };
+		uint8_t getNature() const { return personality[0] & NATURE_MASK; };
+		void setNature(uint8_t nature) { personality[0] = (personality[0] & ~NATURE_MASK) | nature; };
 
-		bool getGender() const { return (personality[1] & 0b10000000) >> 7; };
-		void setGender(bool gender) { personality[1] = gender ? (personality[1] | 0b10000000) : (personality[1] & 0b01111111); };
-		bool isEgg() const { return (personality[1] & 0b01000000) >> 6; };
-		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | 0b01000000) : (personality[1] & 0b10111111); };
-		// ext species consists of 9 bits, 1 from personality[1] 0b00100000 which is the MSB, and 8 from species
-		uint16_t getExtSpecies() const { return ((personality[1] & 0b00100000) << 3) | species; };
+		bool getGender() const { return (personality[1] & GENDER_MASK) >> 7; };
+		void setGender(bool gender) { personality[1] = gender ? (personality[1] | GENDER_MASK) : (personality[1] & ~GENDER_MASK); };
+		bool isEgg() const { return (personality[1] & EGG_MASK) >> 6; };
+		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | EGG_MASK) : (personality[1] & ~EGG_MASK); };
+		// ext species consists of 9 bits, 1 from personality[1] EXTSPECIES_MASK which is the MSB, and 8 from species
+		uint16_t getExtSpecies() const { return ((personality[1] & EXTSPECIES_MASK) << 3) | species; };
 		void setExtSpecies(uint16_t extspecies) {
-			personality[1] = (personality[1] & 0b11011111) | ((extspecies & 0b100000000) >> 3);
-			species = extspecies & 0b11111111;
+			personality[1] = (personality[1] & ~EXTSPECIES_MASK) | ((extspecies & 0x100) >> 3);
+			species = extspecies & 0xFF;
 		};
 		uint8_t getForm() const { return personality[1] & FORM_MASK; }
-		void setForm(uint8_t form) { personality[1] = (personality[1] & 0b11100000) | form; }
+		void setForm(uint8_t form) { personality[1] = (personality[1] & ~FORM_MASK) | form; }
 
 		uint8_t pp[NUM_MOVES];
 		uint8_t happiness;
 		uint8_t pkrus;
 		uint8_t caughtdata;
 
-		uint8_t getCaughtTime() const { return (caughtdata & 0b01100000) >> 5; };
-		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & 0b10011111) | (time << 5); };
-		uint8_t getCaughtBall() const { return caughtdata & 0b00011111; };
-		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & 0b11100000) | ball; };
+		uint8_t getCaughtTime() const { return (caughtdata & CAUGHT_TIME_MASK) >> 5; };
+		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & ~CAUGHT_TIME_MASK) | (time << 5); };
+		uint8_t getCaughtBall() const { return caughtdata & CAUGHT_BALL_MASK; };
+		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & ~CAUGHT_BALL_MASK) | ball; };
 
 		uint8_t caughtlevel;
 		uint8_t caughtlocation;
@@ -263,34 +145,34 @@ namespace {
 		uint8_t dvs[3];
 		uint8_t personality[2];
 
-		bool isShiny() const { return ((personality[0] & 0b10000000) >> 7); };
-		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | 0b10000000) : (personality[0] & 0b01111111); };
-		uint8_t getAbility() const { return (personality[0] & 0b01100000) >> 5; };
-		void setAbility(uint8_t ability) { personality[0] = (personality[0] & 0b10011111) | (ability << 5); };
-		uint8_t getNature() const { return personality[0] & 0b00011111; };
-		void setNature(uint8_t nature) { personality[0] = (personality[0] & 0b11100000) | nature; };
-		bool getGender() const { return (personality[1] & 0b10000000) >> 7; };
-		void setGender(bool gender) { personality[1] = gender ? (personality[1] | 0b10000000) : (personality[1] & 0b01111111); };
-		bool isEgg() const { return (personality[1] & 0b01000000) >> 6; };
-		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | 0b01000000) : (personality[1] & 0b10111111); };
-		// ext species consists of 9 bits, 1 from personality[1] 0b00100000 which is the MSB, and 8 from species
-		uint16_t getExtSpecies() const { return ((personality[1] & 0b00100000) << 3) | species; };
+		bool isShiny() const { return ((personality[0] & SHINY_MASK) >> 7); };
+		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | SHINY_MASK) : (personality[0] & ~SHINY_MASK); };
+		uint8_t getAbility() const { return (personality[0] & ABILITY_MASK) >> 5; };
+		void setAbility(uint8_t ability) { personality[0] = (personality[0] & ~ABILITY_MASK) | (ability << 5); };
+		uint8_t getNature() const { return personality[0] & NATURE_MASK; };
+		void setNature(uint8_t nature) { personality[0] = (personality[0] & ~NATURE_MASK) | nature; };
+		bool getGender() const { return (personality[1] & GENDER_MASK) >> 7; };
+		void setGender(bool gender) { personality[1] = gender ? (personality[1] | GENDER_MASK) : (personality[1] & ~GENDER_MASK); };
+		bool isEgg() const { return (personality[1] & EGG_MASK) >> 6; };
+		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | EGG_MASK) : (personality[1] & ~EGG_MASK); };
+		// ext species consists of 9 bits, 1 from personality[1] EXTSPECIES_MASK which is the MSB, and 8 from species
+		uint16_t getExtSpecies() const { return ((personality[1] & EXTSPECIES_MASK) << 3) | species; };
 		void setExtSpecies(uint16_t extspecies) {
-			personality[1] = (personality[1] & 0b11011111) | ((extspecies & 0b100000000) >> 3);
-			species = extspecies & 0b11111111;
+			personality[1] = (personality[1] & ~EXTSPECIES_MASK) | ((extspecies & 0x100) >> 3);
+			species = extspecies & 0xFF;
 		};
 		uint8_t getForm() const { return personality[1] & FORM_MASK; }
-		void setForm(uint8_t form) { personality[1] = (personality[1] & 0b11100000) | form; }
+		void setForm(uint8_t form) { personality[1] = (personality[1] & ~FORM_MASK) | form; }
 
 		uint8_t ppups;
 		uint8_t happiness;
 		uint8_t pkrus;
 		uint8_t caughtdata;
 
-		uint8_t getCaughtTime() const { return (caughtdata & 0b01100000) >> 5; };
-		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & 0b10011111) | (time << 5); };
-		uint8_t getCaughtBall() const { return caughtdata & 0b00011111; };
-		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & 0b11100000) | ball; };
+		uint8_t getCaughtTime() const { return (caughtdata & CAUGHT_TIME_MASK) >> 5; };
+		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & ~CAUGHT_TIME_MASK) | (time << 5); };
+		uint8_t getCaughtBall() const { return caughtdata & CAUGHT_BALL_MASK; };
+		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & ~CAUGHT_BALL_MASK) | ball; };
 
 		uint8_t caughtlevel;
 		uint8_t caughtlocation;
@@ -305,30 +187,30 @@ namespace {
 		uint16_t id;
 		uint8_t personality[2];
 
-		bool isShiny() const { return ((personality[0] & 0b10000000) >> 7); };
-		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | 0b10000000) : (personality[0] & 0b01111111); };
-		uint8_t getAbility() const { return (personality[0] & 0b01100000) >> 5; };
-		void setAbility(uint8_t ability) { personality[0] = (personality[0] & 0b10011111) | (ability << 5); };
-		uint8_t getNature() const { return personality[0] & 0b00011111; };
-		void setNature(uint8_t nature) { personality[0] = (personality[0] & 0b11100000) | nature; };
-		bool getGender() const { return (personality[1] & 0b10000000) >> 7; };
-		void setGender(bool gender) { personality[1] = gender ? (personality[1] | 0b10000000) : (personality[1] & 0b01111111); };
-		bool isEgg() const { return (personality[1] & 0b01000000) >> 6; };
-		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | 0b01000000) : (personality[1] & 0b10111111); };
-		// ext species consists of 9 bits, 1 from personality[1] 0b00100000 which is the MSB, and 8 from species
-		uint16_t getExtSpecies() const { return ((personality[1] & 0b00100000) << 3) | species; };
+		bool isShiny() const { return ((personality[0] & SHINY_MASK) >> 7); };
+		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | SHINY_MASK) : (personality[0] & ~SHINY_MASK); };
+		uint8_t getAbility() const { return (personality[0] & ABILITY_MASK) >> 5; };
+		void setAbility(uint8_t ability) { personality[0] = (personality[0] & ~ABILITY_MASK) | (ability << 5); };
+		uint8_t getNature() const { return personality[0] & NATURE_MASK; };
+		void setNature(uint8_t nature) { personality[0] = (personality[0] & ~NATURE_MASK) | nature; };
+		bool getGender() const { return (personality[1] & GENDER_MASK) >> 7; };
+		void setGender(bool gender) { personality[1] = gender ? (personality[1] | GENDER_MASK) : (personality[1] & ~GENDER_MASK); };
+		bool isEgg() const { return (personality[1] & EGG_MASK) >> 6; };
+		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | EGG_MASK) : (personality[1] & ~EGG_MASK); };
+		// ext species consists of 9 bits, 1 from personality[1] EXTSPECIES_MASK which is the MSB, and 8 from species
+		uint16_t getExtSpecies() const { return ((personality[1] & EXTSPECIES_MASK) << 3) | species; };
 		void setExtSpecies(uint16_t extspecies) {
-			personality[1] = (personality[1] & 0b11011111) | ((extspecies & 0b100000000) >> 3);
-			species = extspecies & 0b11111111;
+			personality[1] = (personality[1] & ~EXTSPECIES_MASK) | ((extspecies & 0x100) >> 3);
+			species = extspecies & 0xFF;
 		};
 		uint8_t getForm() const { return personality[1] & FORM_MASK; }
-		void setForm(uint8_t form) { personality[1] = (personality[1] & 0b11100000) | form; }
+		void setForm(uint8_t form) { personality[1] = (personality[1] & ~FORM_MASK) | form; }
 
 		uint8_t level;
 		uint8_t nickname[MON_NAME_LENGTH - 1];
 	};
 
-	struct roam_struct_v7 {
+	struct roam_struct_v8 {
 		uint8_t species;
 		uint8_t level;
 		uint8_t map_group;
@@ -341,29 +223,27 @@ namespace {
 		uint8_t dvs[3];
 		uint8_t personality[2];
 
-		bool isShiny() const { return ((personality[0] & 0b10000000) >> 7); };
-		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | 0b10000000) : (personality[0] & 0b01111111); };
-		uint8_t getAbility() const { return (personality[0] & 0b01100000) >> 5; };
-		void setAbility(uint8_t ability) { personality[0] = (personality[0] & 0b10011111) | (ability << 5); };
-		uint8_t getNature() const { return personality[0] & 0b00011111; };
-		void setNature(uint8_t nature) { personality[0] = (personality[0] & 0b11100000) | nature; };
-		bool getGender() const { return (personality[1] & 0b10000000) >> 7; };
-		void setGender(bool gender) { personality[1] = gender ? (personality[1] | 0b10000000) : (personality[1] & 0b01111111); };
-		bool isEgg() const { return (personality[1] & 0b01000000) >> 6; };
-		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | 0b01000000) : (personality[1] & 0b10111111); };
-		// ext species consists of 9 bits, 1 from personality[1] 0b00100000 which is the MSB, and 8 from species
-		uint16_t getExtSpecies() const { return ((personality[1] & 0b00100000) << 3) | species; };
+		bool isShiny() const { return ((personality[0] & SHINY_MASK) >> 7); };
+		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | SHINY_MASK) : (personality[0] & ~SHINY_MASK); };
+		uint8_t getAbility() const { return (personality[0] & ABILITY_MASK) >> 5; };
+		void setAbility(uint8_t ability) { personality[0] = (personality[0] & ~ABILITY_MASK) | (ability << 5); };
+		uint8_t getNature() const { return personality[0] & NATURE_MASK; };
+		void setNature(uint8_t nature) { personality[0] = (personality[0] & ~NATURE_MASK) | nature; };
+		bool getGender() const { return (personality[1] & GENDER_MASK) >> 7; };
+		void setGender(bool gender) { personality[1] = gender ? (personality[1] | GENDER_MASK) : (personality[1] & ~GENDER_MASK); };
+		bool isEgg() const { return (personality[1] & EGG_MASK) >> 6; };
+		void setEgg(bool egg) { personality[1] = egg ? (personality[1] | EGG_MASK) : (personality[1] & ~EGG_MASK); };
+		// ext species consists of 9 bits, 1 from personality[1] EXTSPECIES_MASK which is the MSB, and 8 from species
+		uint16_t getExtSpecies() const { return ((personality[1] & EXTSPECIES_MASK) << 3) | species; };
 		void setExtSpecies(uint16_t extspecies) {
-			personality[1] = (personality[1] & 0b11011111) | ((extspecies & 0b100000000) >> 3);
-			species = extspecies & 0b11111111;
+			personality[1] = (personality[1] & ~EXTSPECIES_MASK) | ((extspecies & 0x100) >> 3);
+			species = extspecies & 0xFF;
 		};
 		uint8_t getForm() const { return personality[1] & FORM_MASK; }
-		void setForm(uint8_t form) { personality[1] = (personality[1] & 0b11100000) | form; }
+		void setForm(uint8_t form) { personality[1] = (personality[1] & ~FORM_MASK) | form; }
 
 		uint8_t status;
 	};
-
-	using roam_struct_v8 = roam_struct_v7;
 
 	struct mailmsg_struct_v8 {
 		uint8_t message[MAIL_MSG_LENGTH];
