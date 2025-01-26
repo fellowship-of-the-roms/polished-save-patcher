@@ -207,11 +207,71 @@
 				font-size: 14px;
 			}
 		}
+		#advancedDisclaimer {
+			color: #ff6e6e;
+			font-weight: bold;
+			display: none;
+			margin: 10px 0;
+		}
+
+		.switch {
+	position: relative;
+	display: inline-block;
+	width: 34px;
+	height: 20px;
+	}
+
+.switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #ccc;
+	transition: 0.4s;
+	border-radius: 34px;
+}
+
+.slider:before {
+	position: absolute;
+	content: "";
+	height: 14px;
+	width: 14px;
+	left: 3px;
+	bottom: 3px;
+	background-color: white;
+	transition: 0.4s;
+	border-radius: 50%;
+}
+
+input:checked + .slider {
+	background-color: #673ab7;
+}
+
+input:checked + .slider:before {
+	transform: translateX(14px);
+}
+
 	</style>
 	<script src="polished_save_patcher.js"></script>
 </head>
 <body>
 	<div class="container">
+		<div style="top: 20px; right: 20px;">
+			<label class="switch">
+				<input type="checkbox" id="advancedToggle" onclick="toggleAdvancedMode()">
+				<span class="slider"></span>
+			</label>
+			<span style="color: #ff6e6e; font-weight: bold; margin-left: 10px;">Advanced Mode</span>
+		</div>
+
 		<h1>Polished Crystal Save Patcher</h1>
 		<p id="toolVersionDisplay" style="text-align: center; font-size: 14px; color: #b39ddb;"></p>
 		<div class="instructions">
@@ -271,9 +331,17 @@
 		</div>
 		<div id="fileDetails" style="margin-top: 10px;"></div>
 		<div id="currentVersion"></div>
+
+		<div id="advancedDisclaimer">
+			⚠️ WARNING: You are in advanced mode. These special patches are only for one-off fixes
+			and <em>should not be used unless a developer instructs you to do so!</em>
+		</div>
 		<select id="targetVersion" title="Select the version to patch your save file to." disabled>
-			<option value="9" selected>Version 9 (3.1.0)</option>
-			<option value="8">Version 8 (3.0.0)</option>
+			<option value="9" data-devtype="0" selected>Version 9 (3.1.0)</option>
+			<option value="8" data-devtype="0">Version 8 (3.0.0)</option>
+
+			<!-- Advanced fixes here -->
+			<option value="8" data-devtype="1" style="display:none;"> fixVersion8NoForm (ADVANCED) </option>
 		</select>
 
 		<button onclick="patchSave()" id="patchButton" disabled>Patch Save</button>
@@ -298,6 +366,26 @@
 
 		let patchedBlobUrl = null;
 		let logMessages = [];
+
+		function toggleAdvancedMode() {
+		const advancedOn = document.getElementById('advancedToggle').checked;
+		const advancedOption = document.querySelector('option[data-devtype="1"]'); 
+		const disclaimer = document.getElementById('advancedDisclaimer');
+
+		// Show/hide advanced option in the dropdown
+		if (advancedOn) {
+			advancedOption.style.display = 'block';
+		} else {
+			advancedOption.style.display = 'none';
+			// If the advanced option was selected, revert to the first normal option
+			if (advancedOption.selected) {
+				document.getElementById('targetVersion').selectedIndex = 0;
+			}
+		}
+
+		// Show/hide the disclaimer
+		disclaimer.style.display = advancedOn ? 'block' : 'none';
+	}
 
 		function logMessage(message, type = 'info') {
 			const outputElement = document.getElementById('output');
@@ -413,72 +501,76 @@
 			reader.readAsArrayBuffer(oldSaveFile);
 		}
 
-		function patchSave() {
-			const oldSaveFile = document.getElementById('oldSave').files[0];
-			const targetVersion = parseInt(document.getElementById('targetVersion').value, 10);
-			if (!oldSaveFile) {
-				alert("Please select the save file you want to patch.");
-				return;
-			}
 
-			const patchButton = document.getElementById('patchButton');
-			const manualDownloadButton = document.getElementById('manualDownloadButton');
-
-			// Clear previous output and update indicator
-			document.getElementById('output').textContent = '';
-			logMessages = [];
-			updateIndicator('Patching in progress...', 'info');
-			patchButton.disabled = true;
-			manualDownloadButton.disabled = true;
-
-			// Change cursor to 'wait'
-			document.body.style.cursor = 'wait';
-
-			const oldSavePath = '/old_save.sav';
-			const newSavePath = '/new_save.sav';
-
-			if (FS.analyzePath(newSavePath).exists) {
-				FS.unlink(newSavePath);
-			}
-
-			setTimeout(function () {
-				try {
-					logMessage('Patching save file...');
-					const result = Module.patch_save(oldSavePath, newSavePath, targetVersion);
-					if (result.success) {
-						const patchedData = FS.readFile(newSavePath, { encoding: 'binary', flags: 'r' });
-						if (patchedData) {
-							if (patchedBlobUrl) {
-								URL.revokeObjectURL(patchedBlobUrl);
-							}
-							const blob = new Blob([patchedData], { type: 'application/octet-stream' });
-							patchedBlobUrl = URL.createObjectURL(blob);
-							const a = document.createElement('a');
-							a.href = patchedBlobUrl;
-							a.download = 'patched_save.sav';
-							a.click();
-
-							updateIndicator('Patching complete. Save file downloaded.', 'success');
-							manualDownloadButton.disabled = false;
-							logMessage('Patching completed successfully.');
-						} else {
-							updateIndicator('Failed to read the patched save file.', 'error');
-							logMessage('Failed to read the patched save file.', 'error');
-						}
-					} else {
-						updateIndicator('Patching failed. See errors in the output.', 'error');
-						logMessage('Patching failed.', 'error');
-					}
-				} catch (e) {
-					updateIndicator('An error occurred during patching.', 'error');
-					logMessage('Error during patching: ' + e.message, 'error');
-				} finally {
-					patchButton.disabled = false;
-					// Reset cursor
-					document.body.style.cursor = 'default';
-				}
-			}, 0);
+	function patchSave() {
+		const oldSaveFile = document.getElementById('oldSave').files[0];
+		if (!oldSaveFile) {
+			alert("Please select the save file you want to patch.");
+			return;
 		}
+
+		const patchButton = document.getElementById('patchButton');
+		const manualDownloadButton = document.getElementById('manualDownloadButton');
+
+		document.getElementById('output').textContent = '';
+		logMessages = [];
+		updateIndicator('Patching in progress...', 'info');
+		patchButton.disabled = true;
+		manualDownloadButton.disabled = true;
+		document.body.style.cursor = 'wait';
+
+		const oldSavePath = '/old_save.sav';
+		const newSavePath = '/new_save.sav';
+
+		if (FS.analyzePath(newSavePath).exists) {
+			FS.unlink(newSavePath);
+		}
+
+		// Determine normal vs advanced patch
+		const targetSelect = document.getElementById('targetVersion');
+		const selectedOption = targetSelect.options[targetSelect.selectedIndex];
+		const targetVersion = parseInt(selectedOption.value, 10) || 0;
+		const devType = parseInt(selectedOption.getAttribute('data-devtype'), 10) || 0;
+
+		setTimeout(function () {
+			try {
+				logMessage('Patching save file...');
+				// Now call the patch_save with the dev_type param
+				const result = Module.patch_save(oldSavePath, newSavePath, targetVersion, devType);
+
+				if (result.success) {
+					const patchedData = FS.readFile(newSavePath, { encoding: 'binary', flags: 'r' });
+					if (patchedData) {
+						if (patchedBlobUrl) {
+							URL.revokeObjectURL(patchedBlobUrl);
+						}
+						const blob = new Blob([patchedData], { type: 'application/octet-stream' });
+						patchedBlobUrl = URL.createObjectURL(blob);
+						const a = document.createElement('a');
+						a.href = patchedBlobUrl;
+						a.download = 'patched_save.sav';
+						a.click();
+
+						updateIndicator('Patching complete. Save file downloaded.', 'success');
+						manualDownloadButton.disabled = false;
+						logMessage('Patching completed successfully.');
+					} else {
+						updateIndicator('Failed to read the patched save file.', 'error');
+						logMessage('Failed to read the patched save file.', 'error');
+					}
+				} else {
+					updateIndicator('Patching failed. See errors in the output.', 'error');
+					logMessage('Patching failed.', 'error');
+				}
+			} catch (e) {
+				updateIndicator('An error occurred during patching.', 'error');
+				logMessage('Error during patching: ' + e.message, 'error');
+			} finally {
+				patchButton.disabled = false;
+				document.body.style.cursor = 'default';
+			}
+		}, 0);
+	}
 
 		function manualDownload() {
 			if (patchedBlobUrl) {
