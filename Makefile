@@ -30,6 +30,7 @@ SOURCES := $(SRC_DIR)/core/CommonPatchFunctions.cpp \
            $(SRC_DIR)/patching/PatchVersion7to8.cpp \
            $(SRC_DIR)/patching/PatchVersion7to8_unorderedmaps.cpp \
            $(SRC_DIR)/patching/PatchVersion8to9.cpp \
+           $(SRC_DIR)/patching/FixVersion8NoForm.cpp \
            $(SRC_DIR)/main.cpp
 
 # Object files

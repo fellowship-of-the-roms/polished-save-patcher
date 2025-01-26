@@ -3,7 +3,8 @@
 
 #include "core/SaveBinary.h"
 
-namespace {
+namespace patchVersion8to9Namespace {
+	using namespace patchVersion8to9Namespace;
 	constexpr int NUM_KEY_ITEMS_V9 = 0x25;
 	const std::vector<int> unusedEventIndexesV9 = {
 		127, 128, 265, 477, 479, 481, 760, 829, 960, 2200,
@@ -15,14 +16,13 @@ namespace {
 		2283, 2284, 2285, 2286, 2287, 2288, 2289, 2290, 2291, 2292,
 		2293, 2294, 2295, 2296, 2297, 2298, 2299, 2300, 2301, 2302
 	};
+
+	// converts a version 8 key item to a version 8 key item
+	uint8_t mapV8KeyItemToV9(uint8_t v8);
+
+	// bool patchVersion8to9 takes in arguments SaveBinary save7 and SaveBinary save8
+	bool patchVersion8to9(SaveBinary& save8, SaveBinary& save9);
 }
 
-// converts a version 8 key item to a version 8 key item
-uint8_t mapV8KeyItemToV9(uint8_t v8);
-
-
-
-// bool patchVersion8to9 takes in arguments SaveBinary save7 and SaveBinary save8
-bool patchVersion8to9(SaveBinary& save8, SaveBinary& save9);
 
 #endif

@@ -43,6 +43,15 @@ void clearFlagBit(SaveBinary::Iterator &it, uint32_t baseAddress, int bitIndex);
 // check if the specified bit based on bit index in the flag array from the base address is set
 bool isFlagBitSet(SaveBinary::Iterator &it, uint32_t baseAddress, int bitIndex);
 
+// Calculate the newbox checksum for the given mon
+uint16_t calculateNewboxChecksum(const SaveBinary& save, uint32_t startAddress);
+
+// Extract the stored newbox checksum for the given mon
+uint16_t extractStoredNewboxChecksum(const SaveBinary& save, uint32_t startAddress);
+
+// Write the newbox checksum for the given mon
+void writeNewboxChecksum(SaveBinary& save, uint32_t startAddress);
+
 template <typename T>
 T loadStruct(SaveBinary::Iterator& it, uint32_t address) {
 	T data;

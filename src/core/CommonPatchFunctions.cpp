@@ -113,3 +113,51 @@ bool isFlagBitSet(SaveBinary::Iterator &it, uint32_t baseAddress, int bitIndex) 
 	uint8_t mask = 1 << (bitIndex % 8);
 	return (it.getByte(byteAddress) & mask) != 0;
 }
+
+// Calculate the newbox checksum for the given mon
+// Reference: https://github.com/Rangi42/polishedcrystal/blob/9bit/docs/newbox_format.md#checksum
+uint16_t calculateNewboxChecksum(const SaveBinary& save, uint32_t startAddress) {
+	uint16_t checksum = 127;
+
+	// Process bytes 0x00 to 0x1F
+	for (int i = 0; i <= 0x1F; ++i) {
+		checksum += save.getByte(startAddress + i) * (i + 1);
+	}
+
+	// Process bytes 0x20 to 0x30
+	for (int i = 0x20; i <= 0x30; ++i) {
+		checksum += (save.getByte(startAddress + i) & 0x7F) * (i + 2);
+	}
+
+	// Clamp to 2 bytes
+	checksum &= 0xFFFF;
+
+	return checksum;
+}
+
+// Extract the stored newbox checksum for the given mon
+// Reference: https://github.com/Rangi42/polishedcrystal/blob/9bit/docs/newbox_format.md#checksum
+uint16_t extractStoredNewboxChecksum(const SaveBinary& save, uint32_t startAddress) {
+	uint16_t storedChecksum = 0;
+
+	// Read the most significant bits from 0x20 to 0x30
+	for (int i = 0; i <= 0xF; ++i) {
+		uint8_t msb = (save.getByte(startAddress + 0x20 + i) & 0x80) >> 7;
+		storedChecksum |= (msb << (0xF - i));
+	}
+	return storedChecksum;
+}
+
+// Write the newbox checksum for the given mon
+// Reference: https://github.com/Rangi42/polishedcrystal/blob/9bit/docs/newbox_format.md#checksum
+void writeNewboxChecksum(SaveBinary& save, uint32_t startAddress) {
+	uint16_t checksum = calculateNewboxChecksum(save, startAddress);
+
+	// write the most significant bits from 0x20 to 0x30
+	for (int i = 0; i <= 0xF; ++i) {
+		uint8_t byte = save.getByte(startAddress + 0x20 + i);
+		byte &= 0x7F; // clear the most significant bit
+		byte |= ((checksum >> (0xF - i)) & 0x1) << 7; // set the most significant bit
+		save.setByte(startAddress + 0x20 + i, byte);
+	}
+}

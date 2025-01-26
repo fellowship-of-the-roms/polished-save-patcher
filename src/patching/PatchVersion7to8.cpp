@@ -3,6 +3,8 @@
 #include "core/SymbolDatabase.h"
 #include "core/Logging.h"
 
+namespace patchVersion7to8Namespace {
+
 bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	// copy the old save file to the new save file
 	save8 = save7;
@@ -784,54 +786,6 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	return true;
 }
 
-// Calculate the newbox checksum for the given mon
-// Reference: https://github.com/Rangi42/polishedcrystal/blob/9bit/docs/newbox_format.md#checksum
-uint16_t calculateNewboxChecksum(const SaveBinary& save, uint32_t startAddress) {
-	uint16_t checksum = 127;
-
-	// Process bytes 0x00 to 0x1F
-	for (int i = 0; i <= 0x1F; ++i){
-		checksum += save.getByte(startAddress + i) * (i + 1);
-	}
-
-	// Process bytes 0x20 to 0x30
-	for (int i = 0x20; i <= 0x30; ++i){
-		checksum += (save.getByte(startAddress + i) & 0x7F) * (i + 2);
-	}
-
-	// Clamp to 2 bytes
-	checksum &= 0xFFFF;
-
-	return checksum;
-}
-
-// Extract the stored newbox checksum for the given mon
-// Reference: https://github.com/Rangi42/polishedcrystal/blob/9bit/docs/newbox_format.md#checksum
-uint16_t extractStoredNewboxChecksum(const SaveBinary& save, uint32_t startAddress) {
-	uint16_t storedChecksum = 0;
-
-	// Read the most significant bits from 0x20 to 0x30
-	for (int i = 0; i <= 0xF; ++i){
-		uint8_t msb = (save.getByte(startAddress + 0x20 + i) & 0x80) >> 7;
-		storedChecksum |= (msb << (0xF - i));
-	}
-	return storedChecksum;
-}
-
-// Write the newbox checksum for the given mon
-// Reference: https://github.com/Rangi42/polishedcrystal/blob/9bit/docs/newbox_format.md#checksum
-void writeNewboxChecksum(SaveBinary& save, uint32_t startAddress) {
-	uint16_t checksum = calculateNewboxChecksum(save, startAddress);
-
-	// write the most significant bits from 0x20 to 0x30
-	for (int i = 0; i <= 0xF; ++i) {
-		uint8_t byte = save.getByte(startAddress + 0x20 + i);
-		byte &= 0x7F; // clear the most significant bit
-		byte |= ((checksum >> (0xF - i)) & 0x1) << 7; // set the most significant bit
-		save.setByte(startAddress + 0x20 + i, byte);
-	}
-}
-
 // Writes the default box name for the given box number
 void writeDefaultBoxName(SaveBinary::Iterator& it, int boxNum) {
 	// '  BOX XX' where XX is the box number
@@ -970,7 +924,11 @@ savemon_struct_v8 convertSavemonV7toV8(const savemon_struct_v8& savemon, std::ve
 	new_savemon.setNature(savemon.getNature());
 	new_savemon.setGender(savemon.getGender());
 	new_savemon.setEgg(savemon.isEgg());
-	new_savemon.setForm(savemon.getForm());
+	if (savemon.getForm() == 0x00) {
+		new_savemon.setForm(0x01);
+	} else {
+		new_savemon.setForm(savemon.getForm());
+	}
 	uint16_t extspecies_v8;
 	if (species_v8 == PIKACHU_V8) {
 		// for NUM_MOVES, scan for SURF_V7 and FLY_V7
@@ -1070,7 +1028,11 @@ breedmon_struct_v8 convertBreedmonV7toV8(const breedmon_struct_v8& breedmon, std
 	new_breedmon.setNature(breedmon.getNature());
 	new_breedmon.setGender(breedmon.getGender());
 	new_breedmon.setEgg(breedmon.isEgg());
-	new_breedmon.setForm(breedmon.getForm());
+	if (breedmon.getForm() == 0x00) {
+		new_breedmon.setForm(0x01);
+	} else {
+		new_breedmon.setForm(breedmon.getForm());
+	}
 	uint16_t extspecies_v8;
 	if (species_v8 == PIKACHU_V8) {
 		// for NUM_MOVES, scan for SURF_V7 and FLY_V7
@@ -1205,6 +1167,11 @@ roam_struct_v8 convertRoamV7toV8(const roam_struct_v8& roam) {
 	new_roam.setGender(roam.getGender());
 	new_roam.setEgg(roam.isEgg());
 	new_roam.setForm(roam.getForm());
+	if (roam.getForm() == 0x00) {
+		new_roam.setForm(0x01);
+	} else {
+		new_roam.setForm(roam.getForm());
+	}
 
 	return new_roam;
 }
@@ -1222,4 +1189,6 @@ mailmsg_struct_v8 convertMailmsgV7toV8(const mailmsg_struct_v8& mailmsg) {
 	new_mailmsg.type = mailmsg.type;
 
 	return new_mailmsg;
+}
+
 }

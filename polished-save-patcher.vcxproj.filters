@@ -60,6 +60,9 @@
     <ClCompile Include="src\patching\PatchVersion8to9.cpp">
       <Filter>Source Files\patching</Filter>
     </ClCompile>
+    <ClCompile Include="src\patching\FixVersion8NoForm.cpp">
+      <Filter>Source Files\patching</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\core\CommonPatchFunctions.h">
@@ -81,6 +84,9 @@
       <Filter>Header Files\patching</Filter>
     </ClInclude>
     <ClInclude Include="include\patching\PatchVersion8to9.h">
+      <Filter>Header Files\patching</Filter>
+    </ClInclude>
+    <ClInclude Include="include\patching\FixVersion8NoForm.h">
       <Filter>Header Files\patching</Filter>
     </ClInclude>
   </ItemGroup>

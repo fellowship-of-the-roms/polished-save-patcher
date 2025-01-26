@@ -1,5 +1,7 @@
 #include "patching/PatchVersion7to8.h"
 
+namespace patchVersion7to8Namespace {
+
 // converts a version 7 key item to a version 8 key item
 uint8_t mapV7KeyItemToV8(uint8_t v7) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
@@ -3741,4 +3743,6 @@ uint8_t mapV7CharToV8(uint8_t v7) {
 	};
 	// return the corresponding version 8 char or original char if not found
 	return charMap.find(v7) != charMap.end() ? charMap[v7] : v7;
+}
+
 }

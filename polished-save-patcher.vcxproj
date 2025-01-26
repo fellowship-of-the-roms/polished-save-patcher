@@ -71,10 +71,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <NMakeBuildCommandLine>make release</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>make clean</NMakeCleanCommandLine>
-    <NMakeReBuildCommandLine>make release</NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>make clean &amp;&amp; make release</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <IncludePath>$(EMSDK)\upstream\emscripten\system\include;$(ProjectDir)include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)build\</OutDir>
+    <ExternalIncludePath>$(EMSDK)\upstream\emscripten\cache\sysroot\include</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <NMakeBuildCommandLine>make -j6 release</NMakeBuildCommandLine>
@@ -96,6 +97,7 @@
     <ClCompile Include="src\core\SaveBinary.cpp" />
     <ClCompile Include="src\core\SymbolDatabase.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\patching\FixVersion8NoForm.cpp" />
     <ClCompile Include="src\patching\PatchVersion7to8.cpp" />
     <ClCompile Include="src\patching\PatchVersion7to8_unorderedmaps.cpp" />
     <ClCompile Include="src\patching\PatchVersion8to9.cpp" />
@@ -106,6 +108,7 @@
     <ClInclude Include="include\core\PatcherConstants.h" />
     <ClInclude Include="include\core\SaveBinary.h" />
     <ClInclude Include="include\core\SymbolDatabase.h" />
+    <ClInclude Include="include\patching\FixVersion8NoForm.h" />
     <ClInclude Include="include\patching\PatchVersion7to8.h" />
     <ClInclude Include="include\patching\PatchVersion8to9.h" />
   </ItemGroup>
