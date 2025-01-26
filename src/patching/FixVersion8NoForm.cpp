@@ -17,6 +17,13 @@ namespace fixVersion8NoFormNamespace {
 		// get the checksum word from the save file
 		uint16_t save_checksum = patchedsave.getWord(SAVE_CHECKSUM_ABS_ADDRESS);
 
+		// verify the save version number
+		uint16_t saveVersion = oldsave.getWordBE(SAVE_VERSION_ABS_ADDRESS);
+		if (saveVersion != 0x08) {
+			js_error << "Unsupported save version: " << std::hex << saveVersion << std::endl;
+			return false;
+		}
+
 		// verify the checksum of the file matches the calculated checksum
 		// calculate the checksum from lookup symbol name "sGameData" to "sGameDataEnd"
 		uint16_t calculated_checksum = calculateSaveChecksum(patchedsave, sym8.getSRAMAddress("sGameData"), sym8.getSRAMAddress("sGameDataEnd"));
