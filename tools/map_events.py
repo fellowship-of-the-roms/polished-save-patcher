@@ -8,16 +8,26 @@ def clone_repo(repo_url, branch, temp_dir):
 	subprocess.run(['git', 'clone', '--branch', branch, '--single-branch', repo_url, temp_dir], check=True)
 
 def parse_event_flags(file_path):
-	"""Parse the file to extract events starting with '\tconst'."""
+	"""
+	Parse the file to extract events starting with '\tconst'.
+	Also handle '\tconst_skip [n]' lines, which skip 'n' indices (default: 1).
+	"""
 	event_pattern = re.compile(r'^\tconst\s+(\w+)')
-	skip_pattern = re.compile(r'^\tconst_skip')
+	# Updated to capture an optional integer after const_skip
+	skip_pattern = re.compile(r'^\tconst_skip\s*(\d+)?')
 	events = []
 
 	current_index = 0  # Initialize index at 0
 	with open(file_path, 'r') as file:
 		for line in file:
-			if skip_pattern.match(line):
-				current_index += 1  # Increment index but skip recording an event
+			# Check for a "skip" line
+			skip_match = skip_pattern.match(line)
+			if skip_match:
+				# If we have a numeric argument, use it; otherwise, skip 1
+				skip_count_str = skip_match.group(1)
+				skip_count = int(skip_count_str) if skip_count_str else 1
+				current_index += skip_count
+			# Check for a "const" line that isn't a const_def
 			elif event_pattern.match(line) and not line.startswith('\tconst_def'):
 				event_name = event_pattern.match(line).group(1)
 				events.append((current_index, event_name))
