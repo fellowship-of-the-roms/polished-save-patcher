@@ -121,7 +121,7 @@ namespace patchVersion8to9Namespace {
 					if (eventFlagIndex != eventFlagIndexV9) {
 						js_info << "Event Flag " << std::dec << eventFlagIndex << " converted to " << eventFlagIndexV9 << std::endl;
 					}
-					setFlagBit(it8, sym8.getPlayerDataAddress("wEventFlags"), eventFlagIndexV9);
+					setFlagBit(it9, sym9.getPlayerDataAddress("wEventFlags"), eventFlagIndexV9);
 				}
 				else {
 					// warn we couldn't find v7 event flag in v8
