@@ -144,7 +144,7 @@ jobs:
 
       - name: Create new rolling prerelease
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.PRE_RELEASE_TAG }}
           name: ${{ env.PRE_RELEASE_NAME }}
@@ -159,7 +159,7 @@ jobs:
             - **Souce Code** (zip/tar.gz) - source code for the project
 
       - name: Upload build.zip
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.PRE_RELEASE_TAG }}
           files: |
