@@ -5,6 +5,7 @@ on:
     branches:
       - main
   pull_request:
+  workflow_dispatch:
 
 # One place to change version/tag info
 env:
@@ -154,7 +155,7 @@ jobs:
             **Date:** ${{ github.event.head_commit.timestamp }}
 
             **Artifacts:**
-            - **build.zip** — compiled project for running locally with `python -m http.server`
+            - **build.zip** â€” compiled project for running locally with `python -m http.server`
             - **Souce Code** (zip/tar.gz) - source code for the project
 
       - name: Upload build.zip
