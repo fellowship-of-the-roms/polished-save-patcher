@@ -9,8 +9,8 @@ on:
 
 # One place to change version/tag info
 env:
-  PRE_RELEASE_TAG: "0.1.0-beta"
-  PRE_RELEASE_NAME: "0.1.0-beta"
+  PRE_RELEASE_TAG: "0.3.0-beta"
+  PRE_RELEASE_NAME: "0.3.0-beta"
 
 jobs:
   build:
