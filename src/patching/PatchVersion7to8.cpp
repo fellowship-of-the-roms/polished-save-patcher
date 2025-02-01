@@ -340,6 +340,10 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		}
 	}
 
+	// Initialize EVENT_CRYS_IN_NAVEL_ROCK
+	js_info << "Initialize EVENT_CRYS_IN_NAVEL_ROCK..." << std::endl;
+	setFlagBit(it8, sym8.getPlayerDataAddress("wEventFlags"), EVENT_CRYS_IN_NAVEL_ROCK);
+
 	// copy v7 wCurBox to v8 wCurBox
 	js_info <<  "Copy wCurBox" << std::endl;
 	copyDataByte(sd, sym7.getPlayerDataAddress("wCurBox"), sym8.getPlayerDataAddress("wCurBox"));

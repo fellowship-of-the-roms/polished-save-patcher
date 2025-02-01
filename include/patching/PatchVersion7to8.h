@@ -81,6 +81,7 @@ namespace patchVersion7to8Namespace {
 	constexpr uint16_t SUDOWOODO_V8 = 0xb9;
 	constexpr int MAIL_MSG_LENGTH = 0x20;
 	constexpr int MAILBOX_CAPACITY = 10;
+	constexpr int EVENT_CRYS_IN_NAVEL_ROCK = 0x108;
 
 #pragma pack(push, 1)
 	struct breedmon_struct_v8 {
