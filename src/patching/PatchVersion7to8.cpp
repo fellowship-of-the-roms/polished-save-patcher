@@ -587,10 +587,18 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info << "Clear 4 unused bytes after wRoamMon3..." << std::endl;
 	clearDataBlock(sd, sym8.getPokemonDataAddress("wRoamMon3") + 1, 4);
 
-	// fix wRegsiteredItems...
+	// fix wRegisteredItems...
 	js_info << "Fix wRegisteredItems..." << std::endl;
 	for (int i = 0; i < 4; i++) {
-		it8.setByte(sym8.getPokemonDataAddress("wRegisteredItems") + i, mapV7KeyItemToV8(it8.getByte(sym8.getPokemonDataAddress("wRegisteredItems") + i) - 1));
+		uint8_t item = it8.getByte(sym8.getPokemonDataAddress("wRegisteredItems") + i);
+		if (item == 0x00) { continue; }
+		item = mapV7KeyItemToV8(item - 1);
+		if (item != 0xFF) {
+			it8.setByte(sym8.getPokemonDataAddress("wRegisteredItems") + i, item);
+		} else {
+			js_warning << "Registered Item " << std::hex << static_cast<int>(it8.getByte(sym8.getPokemonDataAddress("wRegisteredItems") + i)) << " not found in version 8 key item list." << std::endl;
+			it8.setByte(sym8.getPokemonDataAddress("wRegisteredItems") + i, 0x00);
+		}
 	}
 
 	// copy sCheckValue2

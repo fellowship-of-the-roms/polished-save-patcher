@@ -2,6 +2,7 @@
 #include "patching/PatchVersion7to8.h"
 #include "patching/PatchVersion8to9.h"
 #include "patching/FixVersion8NoForm.h"
+#include "patching/FixVersion9RegisteredKeyItems.h"
 #include "core/PatcherConstants.h"
 #include "core/Logging.h"
 #include <iostream>
@@ -52,6 +53,12 @@ emscripten::val patch_save(const std::string &old_save_path, const std::string &
 		case 1:
 			if (!fixVersion8NoFormNamespace::fixVersion8NoForm(oldSave, newSave)) {
 				js_error << "fixVersion9NoForm failed." << std::endl;
+				success = false;
+			}
+			break;
+		case 2:
+			if (!fixVersion9RegisteredKeyItemsNamespace::fixVersion9RegisteredKeyItems(oldSave, newSave)) {
+				js_error << "fixVersion9RegisteredKeyItems failed." << std::endl;
 				success = false;
 			}
 			break;

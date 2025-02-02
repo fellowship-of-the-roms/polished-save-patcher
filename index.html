@@ -3,7 +3,7 @@
 <head>
 	<title>Polished Crystal Save Patcher</title>
 	<script>
-		const toolVersion = "0.2.0";
+		const toolVersion = "0.2.1";
 	</script>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -342,7 +342,8 @@ input:checked + .slider:before {
 
 			<!-- Advanced fixes here -->
 			<option value="8" data-devtype="1" style="display:none;"> fixVersion8NoForm (ADVANCED) </option>
-		</select>
+			<option value="9" data-devtype="2" style="display:none;"> fixVersion9RegisteredKeyItems (ADVANCED) </option>
+</select>
 
 		<button onclick="patchSave()" id="patchButton" disabled>Patch Save</button>
 		<div id="indicator">
@@ -366,27 +367,19 @@ input:checked + .slider:before {
 
 		let patchedBlobUrl = null;
 		let logMessages = [];
+		let currentSaveVersion = 0;
 
 		function toggleAdvancedMode() {
 			const advancedOn = document.getElementById('advancedToggle').checked;
-			// Find all advanced options (in case there’s more than one).
-			const advancedOptions = document.querySelectorAll('option[data-devtype="1"]');
-			advancedOptions.forEach(option => {
-				option.style.display = advancedOn ? 'block' : 'none';
-			});
 			const disclaimer = document.getElementById('advancedDisclaimer');
 			disclaimer.style.display = advancedOn ? 'block' : 'none';
 
-			// If an advanced option was selected and advanced mode is now off,
-			// revert the selection to the first option.
-			if (!advancedOn) {
-				const targetSelect = document.getElementById('targetVersion');
-				if (targetSelect.selectedOptions[0] &&
-					targetSelect.selectedOptions[0].getAttribute('data-devtype') === "1") {
-					targetSelect.selectedIndex = 0;
-				}
+			// If a save has already been uploaded, update the target version options.
+			if (currentSaveVersion !== 0) {
+				updateTargetVersionOptions(currentSaveVersion);
 			}
 		}
+
 
 		/**
 	 * Rebuilds the target version dropdown based on the current save version.
@@ -402,10 +395,10 @@ input:checked + .slider:before {
 			const targetSelect = document.getElementById('targetVersion');
 			// Clear existing options.
 			targetSelect.innerHTML = '';
+			targetSelect.disabled = false; // Reset disabled state
 
 			if (saveVersion === 7) {
-				// For version 7 saves, allow patching to version 9 (highest) and to version 8.
-				// (Note: When patching a v7 save to v9, the tool will first patch v7→v8, then v8→v9.)
+				// For version 7 saves, allow patching to v9 and v8.
 				let option9 = document.createElement('option');
 				option9.value = "9";
 				option9.setAttribute("data-devtype", "0");
@@ -417,34 +410,42 @@ input:checked + .slider:before {
 				option8.setAttribute("data-devtype", "0");
 				option8.textContent = "Version 8 (3.0.0)";
 				targetSelect.appendChild(option8);
-
-				// (No advanced option for v7 saves.)
 			} else if (saveVersion === 8) {
-				// For version 8 saves, the normal patch only supports going to version 9.
+				// For version 8 saves, the normal patch only supports going to v9.
 				let option9 = document.createElement('option');
 				option9.value = "9";
 				option9.setAttribute("data-devtype", "0");
 				option9.textContent = "Version 9 (3.1.0)";
 				targetSelect.appendChild(option9);
 
-				// Add the advanced option for a special one-off fix, if applicable.
-				let advancedOption = document.createElement('option');
-				advancedOption.value = "8";  // Value used by the advanced patch function.
-				advancedOption.setAttribute("data-devtype", "1");
-				advancedOption.textContent = "fixVersion8NoForm (ADVANCED)";
-				// Only show this option if advanced mode is toggled on.
-				advancedOption.style.display = document.getElementById('advancedToggle').checked ? 'block' : 'none';
-				targetSelect.appendChild(advancedOption);
+				// Add advanced option only if advanced mode is enabled.
+				if (document.getElementById('advancedToggle').checked) {
+					let advancedOption = document.createElement('option');
+					advancedOption.value = "8";  // Target value remains "8" for this fix.
+					advancedOption.setAttribute("data-devtype", "1");
+					advancedOption.textContent = "fixVersion8NoForm (ADVANCED)";
+					targetSelect.appendChild(advancedOption);
+				}
+			} else if (saveVersion === 9) {
+				// For version 9 saves, there is a valid patch only if advanced mode is enabled.
+				if (document.getElementById('advancedToggle').checked) {
+					let advancedOption = document.createElement('option');
+					advancedOption.value = "9";
+					advancedOption.setAttribute("data-devtype", "2");
+					advancedOption.textContent = "fixVersion9RegisteredKeyItems (ADVANCED)";
+					targetSelect.appendChild(advancedOption);
+				} else {
+					let noOption = document.createElement('option');
+					noOption.textContent = "No valid patch targets";
+					targetSelect.appendChild(noOption);
+					targetSelect.disabled = true;
+				}
 			} else {
-				// For unsupported versions (or if get_save_version returns 0/undefined), you might leave the dropdown empty.
-				// Alternatively, you can disable the dropdown and show a message.
 				let noOption = document.createElement('option');
 				noOption.textContent = "No valid patch targets";
 				targetSelect.appendChild(noOption);
 				targetSelect.disabled = true;
 			}
-
-			// Optionally, select the first option by default.
 			targetSelect.selectedIndex = 0;
 		}
 
@@ -539,6 +540,7 @@ input:checked + .slider:before {
 							: saveVersion.toString(16);
 
 						document.getElementById('currentVersion').textContent = 'Current Save Version: ' + versionDisplay;
+						currentSaveVersion = saveVersion;
 						updateTargetVersionOptions(saveVersion);
 						document.getElementById('targetVersion').disabled = false;
 						document.getElementById('patchButton').disabled = false;
