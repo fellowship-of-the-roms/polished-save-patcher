@@ -98,6 +98,7 @@
     <ClCompile Include="src\core\SymbolDatabase.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\patching\FixVersion8NoForm.cpp" />
+    <ClCompile Include="src\patching\FixVersion9PCWarpID.cpp" />
     <ClCompile Include="src\patching\FixVersion9RegisteredKeyItems.cpp" />
     <ClCompile Include="src\patching\PatchVersion7to8.cpp" />
     <ClCompile Include="src\patching\PatchVersion7to8_unorderedmaps.cpp" />
@@ -110,6 +111,7 @@
     <ClInclude Include="include\core\SaveBinary.h" />
     <ClInclude Include="include\core\SymbolDatabase.h" />
     <ClInclude Include="include\patching\FixVersion8NoForm.h" />
+    <ClInclude Include="include\patching\FixVersion9PCWarpID.h" />
     <ClInclude Include="include\patching\FixVersion9RegisteredKeyItems.h" />
     <ClInclude Include="include\patching\PatchVersion7to8.h" />
     <ClInclude Include="include\patching\PatchVersion8to9.h" />

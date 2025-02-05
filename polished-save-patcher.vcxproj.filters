@@ -66,6 +66,9 @@
     <ClCompile Include="src\patching\FixVersion9RegisteredKeyItems.cpp">
       <Filter>Source Files\patching</Filter>
     </ClCompile>
+    <ClCompile Include="src\patching\FixVersion9PCWarpID.cpp">
+      <Filter>Source Files\patching</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\core\CommonPatchFunctions.h">
@@ -93,6 +96,9 @@
       <Filter>Header Files\patching</Filter>
     </ClInclude>
     <ClInclude Include="include\patching\FixVersion9RegisteredKeyItems.h">
+      <Filter>Header Files\patching</Filter>
+    </ClInclude>
+    <ClInclude Include="include\patching\FixVersion9PCWarpID.h">
       <Filter>Header Files\patching</Filter>
     </ClInclude>
   </ItemGroup>

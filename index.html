@@ -343,7 +343,8 @@ input:checked + .slider:before {
 			<!-- Advanced fixes here -->
 			<option value="8" data-devtype="1" style="display:none;"> fixVersion8NoForm (ADVANCED) </option>
 			<option value="9" data-devtype="2" style="display:none;"> fixVersion9RegisteredKeyItems (ADVANCED) </option>
-</select>
+			<option value="9" data-devtype="3" style="display:none;"> fixVersion9PCWarpID (ADVANCED) </option>
+		</select>
 
 		<button onclick="patchSave()" id="patchButton" disabled>Patch Save</button>
 		<div id="indicator">
@@ -429,11 +430,19 @@ input:checked + .slider:before {
 			} else if (saveVersion === 9) {
 				// For version 9 saves, there is a valid patch only if advanced mode is enabled.
 				if (document.getElementById('advancedToggle').checked) {
-					let advancedOption = document.createElement('option');
-					advancedOption.value = "9";
-					advancedOption.setAttribute("data-devtype", "2");
-					advancedOption.textContent = "fixVersion9RegisteredKeyItems (ADVANCED)";
-					targetSelect.appendChild(advancedOption);
+					// fixVersion9RegisteredKeyItems (dev_type=2)
+					let advancedOption1 = document.createElement('option');
+					advancedOption1.value = "9";
+					advancedOption1.setAttribute("data-devtype", "2");
+					advancedOption1.textContent = "fixVersion9RegisteredKeyItems (ADVANCED)";
+					targetSelect.appendChild(advancedOption1);
+
+					// fixVersion9PCWarpID (dev_type=3)
+					let advancedOption2 = document.createElement('option');
+					advancedOption2.value = "9";
+					advancedOption2.setAttribute("data-devtype", "3");
+					advancedOption2.textContent = "fixVersion9PCWarpID (ADVANCED)";
+					targetSelect.appendChild(advancedOption2);
 				} else {
 					let noOption = document.createElement('option');
 					noOption.textContent = "No valid patch targets";

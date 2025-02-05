@@ -227,6 +227,34 @@ namespace patchVersion8to9Namespace {
 		it9.seek(sym9.getPlayerDataAddress("wCurMapSceneScriptPointer"));
 		it9.setWord(0);
 
+		uint8_t prev_map_group = it9.getByte(sym9.getMapDataAddress("wBackupMapGroup"));
+		uint8_t prev_map_num = it9.getByte(sym9.getMapDataAddress("wBackupMapNumber"));
+		// check if the previous map is a valid PC warp ID in the validPCWarpIDs array
+		bool valid_prev_map = false;
+		for (auto& validPCWarpID : validPCWarpIDs) {
+			if (prev_map_group == validPCWarpID.first && prev_map_num == validPCWarpID.second) {
+				valid_prev_map = true;
+				break;
+			}
+		}
+		if (!valid_prev_map) {
+			js_warning << "Player's previous map is not a valid PKMN Center Warp ID! We will reset it to one." << std::endl;
+			if (isFlagBitSet(it9, sym9.getPlayerDataAddress("wJohtoBadges"), PLAINBADGE)) {
+				js_warning << "Player has the PLAINBADGE, the stairs will now take you to Goldenrod PKMN Center." << std::endl;
+				it9.setByte(sym9.getMapDataAddress("wBackupWarpNumber"), 4);
+				it9.setByte(sym9.getMapDataAddress("wBackupMapGroup"), GOLDENROD_POKECOM_CENTER_1F.first);
+				it9.setByte(sym9.getMapDataAddress("wBackupMapNumber"), GOLDENROD_POKECOM_CENTER_1F.second);
+			}
+			else {
+				js_warning << "Player does not have the PLAINBADGE, the stairs will now warp you to your house." << std::endl;
+				it9.setByte(sym9.getMapDataAddress("wBackupWarpNumber"), 3);
+				it9.setByte(sym9.getMapDataAddress("wBackupMapGroup"), PLAYERS_HOUSE_1F.first);
+				it9.setByte(sym9.getMapDataAddress("wBackupMapNumber"), PLAYERS_HOUSE_1F.second);
+			}
+		} else {
+			js_info << "Player's previous map is a valid PKMN Center warp ID. No need to fix the warp ID." << std::endl;
+		}
+
 		// write the new save version number big endian
 		js_info << "Writing the new save version number" << std::endl;
 		uint16_t new_save_version = 0x09;
