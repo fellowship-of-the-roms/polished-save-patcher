@@ -82,6 +82,7 @@ namespace patchVersion7to8Namespace {
 	constexpr int MAIL_MSG_LENGTH = 0x20;
 	constexpr int MAILBOX_CAPACITY = 10;
 	constexpr int EVENT_CRYS_IN_NAVEL_ROCK = 0x108;
+	constexpr std::pair<uint8_t, uint8_t> SHAMOUTI_POKECENTER_1F = { 31, 8 };
 
 #pragma pack(push, 1)
 	struct breedmon_struct_v8 {

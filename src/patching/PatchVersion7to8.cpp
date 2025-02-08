@@ -51,6 +51,14 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		return false;
 	}
 
+	// Due to a change in map blocks for the SHAMOUTI_POKECENTER, we don't support saving here.
+	uint8_t prev_map_group = it7.getByte(sym7.getMapDataAddress("wBackupMapGroup"));
+	uint8_t prev_map_num = it7.getByte(sym7.getMapDataAddress("wBackupMapNumber"));
+	if (prev_map_group == SHAMOUTI_POKECENTER_1F.first && prev_map_num == SHAMOUTI_POKECENTER_1F.second) {
+		js_error << "Due to a change in map blocks, we cannot support saving in the Shamouti PKMN center!" << std::endl;
+		return false;
+	}
+
 	// Create vector to store seen mons
 	std::vector<uint16_t> seen_mons;
 	// Create vector to store caught mons
