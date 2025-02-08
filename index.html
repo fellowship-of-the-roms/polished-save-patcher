@@ -3,7 +3,7 @@
 <head>
 	<title>Polished Crystal Save Patcher</title>
 	<script>
-		const toolVersion = "0.2.2";
+		const toolVersion = "0.2.3";
 	</script>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -327,7 +327,7 @@ input:checked + .slider:before {
 		</div>
 		<div id="dropZone" class="drop-zone" tabindex="0" role="button">
 			<p>Drag and drop your save file here, or click to select.</p>
-			<input type="file" id="oldSave" accept=".sav" />
+			<input type="file" id="oldSave" accept=".sav,.srm" />
 		</div>
 		<div id="fileDetails" style="margin-top: 10px;"></div>
 		<div id="currentVersion"></div>
@@ -370,6 +370,7 @@ input:checked + .slider:before {
 		let patchedBlobUrl = null;
 		let logMessages = [];
 		let currentSaveVersion = 0;
+		let originalFileExtension = '.sav';  // default value in case extraction fails
 
 		function toggleAdvancedMode() {
 			const advancedOn = document.getElementById('advancedToggle').checked;
@@ -628,7 +629,7 @@ input:checked + .slider:before {
 						patchedBlobUrl = URL.createObjectURL(blob);
 						const a = document.createElement('a');
 						a.href = patchedBlobUrl;
-						a.download = 'patched_save.sav';
+						a.download = 'patched_save' + originalFileExtension;
 						a.click();
 
 						updateIndicator('Patching complete. Save file downloaded.', 'success');
@@ -656,7 +657,7 @@ input:checked + .slider:before {
 			if (patchedBlobUrl) {
 				const a = document.createElement('a');
 				a.href = patchedBlobUrl;
-				a.download = 'patched_save.sav';
+				a.download = 'patched_save' + originalFileExtension;
 				a.click();
 			}
 		}
@@ -734,10 +735,14 @@ input:checked + .slider:before {
 					.replace(/'/g, "&#039;");
 				dropZone.querySelector('p').textContent = 'Selected file: ' + file.name;
 				fileDetails.innerHTML = `
-						<p><strong>File Name:</strong> ${sanitizedFileName}</p>
-						<p><strong>File Size:</strong> ${(file.size / 1024).toFixed(2)} KB</p>
-						<p><strong>Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}</p>
-					`;
+					<p><strong>File Name:</strong> ${sanitizedFileName}</p>
+					<p><strong>File Size:</strong> ${(file.size / 1024).toFixed(2)} KB</p>
+					<p><strong>Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}</p>
+				`;
+				// Extract and store the file extension (including the dot)
+				const dotIndex = file.name.lastIndexOf('.');
+				originalFileExtension = dotIndex !== -1 ? file.name.substring(dotIndex) : '.sav';
+
 				uploadSave();
 			} else {
 				dropZone.querySelector('p').textContent = 'Drag and drop your save file here, or click to select.';
