@@ -9,6 +9,9 @@ namespace patchVersion8to9Namespace {
 	constexpr uint16_t INVALID_EVENT_FLAG = -1;
 	constexpr int NUM_EVENTS = 0x8ff;
 	constexpr int PLAINBADGE = 2;
+	constexpr int EVENT_BEAT_CANDELA = 0x596;
+	constexpr int EVENT_BEAT_BLANCHE = 0x597;
+	constexpr int EVENT_BEAT_SPARK = 0x598;
 	constexpr std::pair<uint8_t, uint8_t> GOLDENROD_POKECOM_CENTER_1F = { 11, 24 };
 	constexpr std::pair<uint8_t, uint8_t> PLAYERS_HOUSE_1F = { 24, 6 };
 	constexpr std::pair<uint8_t, uint8_t> validPCWarpIDs[] = {

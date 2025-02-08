@@ -209,6 +209,15 @@ namespace patchVersion8to9Namespace {
 		js_info << "Clear wNuzlockeLandmarkFlags..." << std::endl;
 		clearDataBlock(sd, it8.getAddress(), 19);
 
+		// reset the PGO battle event flags
+		js_info << "Resetting PGO battle event flags..." << std::endl;
+		js_info << "Clearing flag " << std::hex << EVENT_BEAT_CANDELA << std::endl;
+		clearFlagBit(it9, sym9.getPlayerDataAddress("wEventFlags"), EVENT_BEAT_CANDELA);
+		js_info << "Clearing flag " << std::hex << EVENT_BEAT_BLANCHE << std::endl;
+		clearFlagBit(it9, sym9.getPlayerDataAddress("wEventFlags"), EVENT_BEAT_BLANCHE);
+		js_info << "Clearing flag " << std::hex << EVENT_BEAT_SPARK << std::endl;
+		clearFlagBit(it9, sym9.getPlayerDataAddress("wEventFlags"), EVENT_BEAT_SPARK);
+
 		// copy sGameData to sBackupGameData
 	//	js_info <<  "Copying sGameData to sBackupGameData" << std::endl;
 	//	for (int i = sym9.getSRAMAddress("sGameData"); i < sym9.getSRAMAddress("sGameDataEnd"); i++) {
