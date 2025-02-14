@@ -1178,7 +1178,14 @@ roam_struct_v8 convertRoamV7toV8(const roam_struct_v8& roam) {
 	}
 	new_roam.setExtSpecies(species_v8);
 	new_roam.level = roam.level;
-	new_roam.setMap(mapv7toV8(roam.map_group, roam.map_number));
+	std::tuple <uint8_t, uint8_t> map_v8 = mapv7toV8(roam.map_group, roam.map_number);
+	if (std::get<0>(map_v8) == 0 && std::get<1>(map_v8) == 0) {
+		new_roam.setMap(std::tuple <uint8_t, uint8_t>(-1, -1));
+		// print that the map was not found so we set map group/number to -1
+		js_info << "Roam map group " << std::hex << static_cast<int>(roam.map_group) << " number " << std::hex << static_cast<int>(roam.map_number) << " not found in version 8 map list. Setting to -1." << std::endl;
+	} else {
+		new_roam.setMap(map_v8);
+	}
 	new_roam.hp = roam.hp;
 	memcpy(new_roam.dvs, roam.dvs, sizeof(roam.dvs));
 	new_roam.setShiny(roam.isShiny());

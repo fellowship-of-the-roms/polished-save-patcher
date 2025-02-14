@@ -345,6 +345,7 @@ input:checked + .slider:before {
 			<option value="9" data-devtype="2" style="display:none;"> fixVersion9RegisteredKeyItems (ADVANCED) </option>
 			<option value="9" data-devtype="3" style="display:none;"> fixVersion9PCWarpID (ADVANCED) </option>
 			<option value="9" data-devtype="4" style="display:none;"> fixVersion9PGOBattleEvent (ADVANCED) </option>
+			<option value="9" data-devtype="5" style="display:none;"> fixVersion9RoamMap (ADVANCED) </option>
 		</select>
 
 		<button onclick="patchSave()" id="patchButton" disabled>Patch Save</button>
@@ -452,6 +453,13 @@ input:checked + .slider:before {
 					advancedOption3.setAttribute("data-devtype", "4");
 					advancedOption3.textContent = "fixVersion9PGOBattleEvent (ADVANCED)";
 					targetSelect.appendChild(advancedOption3);
+
+					// fixVersion9RoamMap (dev_type=5)
+					let advancedOption4 = document.createElement('option');
+					advancedOption4.value = "9";
+					advancedOption4.setAttribute("data-devtype", "5");
+					advancedOption4.textContent = "fixVersion9RoamMap (ADVANCED)";
+					targetSelect.appendChild(advancedOption4);
 				} else {
 					let noOption = document.createElement('option');
 					noOption.textContent = "No valid patch targets";

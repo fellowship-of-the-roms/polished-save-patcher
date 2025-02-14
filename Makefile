@@ -34,6 +34,7 @@ SOURCES := $(SRC_DIR)/core/CommonPatchFunctions.cpp \
            $(SRC_DIR)/patching/FixVersion9RegisteredKeyItems.cpp \
            $(SRC_DIR)/patching/FixVersion9PCWarpID.cpp \
            $(SRC_DIR)/patching/FixVersion9PGOBattleEvent.cpp \
+           $(SRC_DIR)/patching/FixVersion9RoamMap.cpp \
            $(SRC_DIR)/main.cpp
 
 # Object files

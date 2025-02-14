@@ -101,6 +101,7 @@
     <ClCompile Include="src\patching\FixVersion9PCWarpID.cpp" />
     <ClCompile Include="src\patching\FixVersion9PGOBattleEvent.cpp" />
     <ClCompile Include="src\patching\FixVersion9RegisteredKeyItems.cpp" />
+    <ClCompile Include="src\patching\FixVersion9RoamMap.cpp" />
     <ClCompile Include="src\patching\PatchVersion7to8.cpp" />
     <ClCompile Include="src\patching\PatchVersion7to8_unorderedmaps.cpp" />
     <ClCompile Include="src\patching\PatchVersion8to9.cpp" />
@@ -115,6 +116,7 @@
     <ClInclude Include="include\patching\FixVersion9PCWarpID.h" />
     <ClInclude Include="include\patching\FixVersion9PGOBattleEvent.h" />
     <ClInclude Include="include\patching\FixVersion9RegisteredKeyItems.h" />
+    <ClInclude Include="include\patching\FixVersion9RoamMap.h" />
     <ClInclude Include="include\patching\PatchVersion7to8.h" />
     <ClInclude Include="include\patching\PatchVersion8to9.h" />
   </ItemGroup>
