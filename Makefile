@@ -48,7 +48,8 @@ ADDITIONAL_FILES := $(BUILD_DIR)/polished_save_patcher.js \
                     $(BUILD_DIR)/polished_save_patcher.wasm \
                     $(BUILD_DIR)/polished_save_patcher.mem \
                     $(BUILD_DIR)/polished_save_patcher.worker.js \
-                    $(BUILD_DIR)/index.html
+                    $(BUILD_DIR)/index.html \
+                    $(BUILD_DIR)/styles.css
 
 LDFLAGS := -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=33554432 # 32MB initial memory
 
@@ -113,8 +114,10 @@ $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
 copy-index:
 ifeq ($(OS), Windows_NT)
 	copy index.html $(BUILD_DIR)\index.html
+	copy styles.css $(BUILD_DIR)\styles.css
 else
 	cp index.html $(BUILD_DIR)/index.html
+	cp styles.css $(BUILD_DIR)/styles.css
 endif
 
 
