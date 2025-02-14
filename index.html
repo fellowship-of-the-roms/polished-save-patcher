@@ -85,17 +85,7 @@
 			⚠️ WARNING: You are in advanced mode. These special patches are only for one-off fixes
 			and <em>should not be used unless a developer instructs you to do so!</em>
 		</div>
-		<select id="targetVersion" title="Select the version to patch your save file to." disabled>
-			<option value="9" data-devtype="0" selected>Version 9 (3.1.0)</option>
-			<option value="8" data-devtype="0">Version 8 (3.0.0)</option>
-
-			<!-- Advanced fixes here -->
-			<option value="8" data-devtype="1" style="display:none;"> fixVersion8NoForm (ADVANCED) </option>
-			<option value="9" data-devtype="2" style="display:none;"> fixVersion9RegisteredKeyItems (ADVANCED) </option>
-			<option value="9" data-devtype="3" style="display:none;"> fixVersion9PCWarpID (ADVANCED) </option>
-			<option value="9" data-devtype="4" style="display:none;"> fixVersion9PGOBattleEvent (ADVANCED) </option>
-			<option value="9" data-devtype="5" style="display:none;"> fixVersion9RoamMap (ADVANCED) </option>
-		</select>
+		<select id="targetVersion" title="Select the version to patch your save file to." disabled></select>
 
 		<button onclick="patchSave()" id="patchButton" disabled>Patch Save</button>
 		<div id="indicator">
@@ -109,6 +99,7 @@
 	</div>
 
 	<script>
+		// Set version information
 		document.querySelector('meta[name="tool-version"]').setAttribute('content', toolVersion);
 		document.getElementById('toolVersionDisplay').textContent = `Version ${toolVersion}`;
 
@@ -122,108 +113,70 @@
 		let currentSaveVersion = 0;
 		let originalFileExtension = '.sav';  // default value in case extraction fails
 
+		// ----- PATCH OPTIONS CONFIGURATION -----
+		// Each entry represents a patch option for a given save version.
+		// The "advanced" flag indicates that the option should only be visible in advanced mode.
+		const PATCH_OPTIONS = {
+			7: [
+				{ targetVersion: "9", devType: 0, text: "Version 9 (3.1.0)" },
+				{ targetVersion: "8", devType: 0, text: "Version 8 (3.0.0)" }
+			],
+			8: [
+				{ targetVersion: "9", devType: 0, text: "Version 9 (3.1.0)" },
+				{ targetVersion: "8", devType: 1, text: "fixVersion8NoForm (ADVANCED)", advanced: true }
+			],
+			9: [
+				{ targetVersion: "9", devType: 2, text: "fixVersion9RegisteredKeyItems (ADVANCED)", advanced: true },
+				{ targetVersion: "9", devType: 3, text: "fixVersion9PCWarpID (ADVANCED)", advanced: true },
+				{ targetVersion: "9", devType: 4, text: "fixVersion9PGOBattleEvent (ADVANCED)", advanced: true },
+				{ targetVersion: "9", devType: 5, text: "fixVersion9RoamMap (ADVANCED)", advanced: true }
+			]
+		};
+
+		// Helper to create an <option> element from a patch option configuration.
+		function createOption(optionData) {
+			const option = document.createElement('option');
+			option.value = optionData.targetVersion;
+			option.setAttribute('data-devtype', optionData.devType);
+			option.textContent = optionData.text;
+			return option;
+		}
+
+		// Update the target version dropdown based on the current save version and advanced mode setting.
+		function updateTargetVersionOptions(saveVersion) {
+			const targetSelect = document.getElementById('targetVersion');
+			targetSelect.innerHTML = '';
+			let validPatches = PATCH_OPTIONS[saveVersion] || [];
+			let addedAny = false;
+			validPatches.forEach(optionData => {
+				// If this option is marked as advanced but advanced mode is off, skip it.
+				if (optionData.advanced && !document.getElementById('advancedToggle').checked) {
+					return;
+				}
+				targetSelect.appendChild(createOption(optionData));
+				addedAny = true;
+			});
+			if (!addedAny) {
+				const noOption = document.createElement('option');
+				noOption.textContent = "No valid patch targets";
+				targetSelect.appendChild(noOption);
+				targetSelect.disabled = true;
+			} else {
+				targetSelect.disabled = false;
+				targetSelect.selectedIndex = 0;
+			}
+		}
+
+		// Toggle advanced mode UI and update patch options accordingly.
 		function toggleAdvancedMode() {
 			const advancedOn = document.getElementById('advancedToggle').checked;
-			const disclaimer = document.getElementById('advancedDisclaimer');
-			disclaimer.style.display = advancedOn ? 'block' : 'none';
-
-			// If a save has already been uploaded, update the target version options.
+			document.getElementById('advancedDisclaimer').style.display = advancedOn ? 'block' : 'none';
 			if (currentSaveVersion !== 0) {
 				updateTargetVersionOptions(currentSaveVersion);
 			}
 		}
 
-
-		/**
-		* Rebuilds the target version dropdown based on the current save version.
-		* For normal patches (dev_type=0):
-		*   - If save version is 7, allow patching to version 8 and version 9.
-		*   - If save version is 8, only allow patching to version 9.
-		*
-		* For advanced patches (dev_type=1), we add the special option only when the save
-		* file is version 8 (since fixVersion8NoForm is only relevant there) and its display
-		* will depend on whether advanced mode is enabled.
-		*/
-		function updateTargetVersionOptions(saveVersion) {
-			const targetSelect = document.getElementById('targetVersion');
-			// Clear existing options.
-			targetSelect.innerHTML = '';
-			targetSelect.disabled = false; // Reset disabled state
-
-			if (saveVersion === 7) {
-				// For version 7 saves, allow patching to v9 and v8.
-				let option9 = document.createElement('option');
-				option9.value = "9";
-				option9.setAttribute("data-devtype", "0");
-				option9.textContent = "Version 9 (3.1.0)";
-				targetSelect.appendChild(option9);
-
-				let option8 = document.createElement('option');
-				option8.value = "8";
-				option8.setAttribute("data-devtype", "0");
-				option8.textContent = "Version 8 (3.0.0)";
-				targetSelect.appendChild(option8);
-			} else if (saveVersion === 8) {
-				// For version 8 saves, the normal patch only supports going to v9.
-				let option9 = document.createElement('option');
-				option9.value = "9";
-				option9.setAttribute("data-devtype", "0");
-				option9.textContent = "Version 9 (3.1.0)";
-				targetSelect.appendChild(option9);
-
-				// Add advanced option only if advanced mode is enabled.
-				if (document.getElementById('advancedToggle').checked) {
-					let advancedOption = document.createElement('option');
-					advancedOption.value = "8";  // Target value remains "8" for this fix.
-					advancedOption.setAttribute("data-devtype", "1");
-					advancedOption.textContent = "fixVersion8NoForm (ADVANCED)";
-					targetSelect.appendChild(advancedOption);
-				}
-			} else if (saveVersion === 9) {
-				// For version 9 saves, there is a valid patch only if advanced mode is enabled.
-				if (document.getElementById('advancedToggle').checked) {
-					// fixVersion9RegisteredKeyItems (dev_type=2)
-					let advancedOption1 = document.createElement('option');
-					advancedOption1.value = "9";
-					advancedOption1.setAttribute("data-devtype", "2");
-					advancedOption1.textContent = "fixVersion9RegisteredKeyItems (ADVANCED)";
-					targetSelect.appendChild(advancedOption1);
-
-					// fixVersion9PCWarpID (dev_type=3)
-					let advancedOption2 = document.createElement('option');
-					advancedOption2.value = "9";
-					advancedOption2.setAttribute("data-devtype", "3");
-					advancedOption2.textContent = "fixVersion9PCWarpID (ADVANCED)";
-					targetSelect.appendChild(advancedOption2);
-
-					// fixVersion9PGOBattleEvent (dev_type=4)
-					let advancedOption3 = document.createElement('option');
-					advancedOption3.value = "9";
-					advancedOption3.setAttribute("data-devtype", "4");
-					advancedOption3.textContent = "fixVersion9PGOBattleEvent (ADVANCED)";
-					targetSelect.appendChild(advancedOption3);
-
-					// fixVersion9RoamMap (dev_type=5)
-					let advancedOption4 = document.createElement('option');
-					advancedOption4.value = "9";
-					advancedOption4.setAttribute("data-devtype", "5");
-					advancedOption4.textContent = "fixVersion9RoamMap (ADVANCED)";
-					targetSelect.appendChild(advancedOption4);
-				} else {
-					let noOption = document.createElement('option');
-					noOption.textContent = "No valid patch targets";
-					targetSelect.appendChild(noOption);
-					targetSelect.disabled = true;
-				}
-			} else {
-				let noOption = document.createElement('option');
-				noOption.textContent = "No valid patch targets";
-				targetSelect.appendChild(noOption);
-				targetSelect.disabled = true;
-			}
-			targetSelect.selectedIndex = 0;
-		}
-
+		// ----- LOGGING AND INDICATOR HELPERS -----
 		function logMessage(message, type = 'info') {
 			const outputElement = document.getElementById('output');
 			const timestamp = new Date().toLocaleTimeString();
@@ -244,9 +197,7 @@
 		function updateIndicator(message, type = 'info') {
 			const indicatorMessage = document.getElementById('indicatorMessage');
 			const indicatorIcon = document.getElementById('indicatorIcon');
-
 			indicatorMessage.textContent = message;
-
 			switch (type) {
 				case 'success':
 					indicatorIcon.innerHTML = '✅';
@@ -263,11 +214,10 @@
 			}
 		}
 
-		// Wait for the Module to be fully initialized
+		// ----- MODULE INITIALIZATION -----
 		if (typeof Module !== 'undefined') {
 			Module.onRuntimeInitialized = onModuleInitialized;
 		} else {
-			// If Module is not yet defined, wait for it
 			window.addEventListener('load', function () {
 				Module.onRuntimeInitialized = onModuleInitialized;
 			});
@@ -278,6 +228,7 @@
 			updateIndicator('Ready to patch.', 'info');
 		}
 
+		// ----- UPLOAD AND PATCH FUNCTIONS -----
 		function uploadSave() {
 			const oldSaveFile = document.getElementById('oldSave').files[0];
 			if (!oldSaveFile) {
@@ -290,14 +241,11 @@
 			updateIndicator('Loading save file...', 'info');
 			reader.onload = function (event) {
 				const data = new Uint8Array(event.target.result);
-
-				// Ensure FS is available
 				if (typeof FS === 'undefined') {
 					logMessage('File system not initialized.', 'error');
 					updateIndicator('File system not initialized.', 'error');
 					return;
 				}
-
 				FS.writeFile('/old_save.sav', data);
 				try {
 					logMessage('Checking save file version...');
@@ -313,7 +261,6 @@
 						const versionDisplay = canonicalName
 							? `${saveVersion.toString(16)} (${canonicalName})`
 							: saveVersion.toString(16);
-
 						document.getElementById('currentVersion').textContent = 'Current Save Version: ' + versionDisplay;
 						currentSaveVersion = saveVersion;
 						updateTargetVersionOptions(saveVersion);
@@ -323,8 +270,8 @@
 						updateIndicator('Save file uploaded successfully.', 'success');
 					} else {
 						document.getElementById('currentVersion').textContent = 'Invalid save file.';
-						document.getElementById('patchButton').disabled = true; // Disable patch
-						document.getElementById('targetVersion').disabled = true; // Disable dropdown
+						document.getElementById('patchButton').disabled = true;
+						document.getElementById('targetVersion').disabled = true;
 						logMessage('Invalid save file.', 'error');
 						updateIndicator('Invalid save file.', 'error');
 					}
@@ -338,7 +285,6 @@
 			};
 			reader.readAsArrayBuffer(oldSaveFile);
 		}
-
 
 		function patchSave() {
 			const oldSaveFile = document.getElementById('oldSave').files[0];
@@ -359,12 +305,10 @@
 
 			const oldSavePath = '/old_save.sav';
 			const newSavePath = '/new_save.sav';
-
 			if (FS.analyzePath(newSavePath).exists) {
 				FS.unlink(newSavePath);
 			}
 
-			// Determine normal vs advanced patch
 			const targetSelect = document.getElementById('targetVersion');
 			const selectedOption = targetSelect.options[targetSelect.selectedIndex];
 			const targetVersion = parseInt(selectedOption.value, 10) || 0;
@@ -373,9 +317,7 @@
 			setTimeout(function () {
 				try {
 					logMessage('Patching save file...');
-					// Now call the patch_save with the dev_type param
 					const result = Module.patch_save(oldSavePath, newSavePath, targetVersion, devType);
-
 					if (result.success) {
 						const patchedData = FS.readFile(newSavePath, { encoding: 'binary', flags: 'r' });
 						if (patchedData) {
@@ -388,7 +330,6 @@
 							a.href = patchedBlobUrl;
 							a.download = 'patched_save' + originalFileExtension;
 							a.click();
-
 							updateIndicator('Patching complete. Save file downloaded.', 'success');
 							manualDownloadButton.disabled = false;
 							logMessage('Patching completed successfully.');
@@ -430,7 +371,7 @@
 			URL.revokeObjectURL(url);
 		}
 
-		// Reset functionality
+		// ----- RESET FUNCTIONALITY -----
 		document.getElementById('resetButton').addEventListener('click', () => {
 			const oldSaveInput = document.getElementById('oldSave');
 			const dropZone = document.getElementById('dropZone');
@@ -447,7 +388,7 @@
 			patchedBlobUrl = null;
 		});
 
-		// Drag and drop functionality
+		// ----- DRAG AND DROP FUNCTIONALITY -----
 		const dropZone = document.getElementById('dropZone');
 		const oldSaveInput = document.getElementById('oldSave');
 		const fileDetails = document.getElementById('fileDetails');
@@ -472,7 +413,6 @@
 			e.preventDefault();
 			e.stopPropagation();
 			dropZone.classList.remove('dragover');
-
 			if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
 				oldSaveInput.files = e.dataTransfer.files;
 				oldSaveInput.dispatchEvent(new Event('change'));
@@ -483,23 +423,20 @@
 		oldSaveInput.addEventListener('change', () => {
 			if (oldSaveInput.files.length > 0) {
 				const file = oldSaveInput.files[0];
-				// Escape the file name to prevent XSS
 				const sanitizedFileName = file.name
-					.replace(/&/g, "&amp;")  // Replace '&' first to prevent double-escaping
+					.replace(/&/g, "&amp;")
 					.replace(/</g, "&lt;")
 					.replace(/>/g, "&gt;")
 					.replace(/"/g, "&quot;")
 					.replace(/'/g, "&#039;");
 				dropZone.querySelector('p').textContent = 'Selected file: ' + file.name;
 				fileDetails.innerHTML = `
-						<p><strong>File Name:</strong> ${sanitizedFileName}</p>
-						<p><strong>File Size:</strong> ${(file.size / 1024).toFixed(2)} KB</p>
-						<p><strong>Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}</p>
-					`;
-				// Extract and store the file extension (including the dot)
+							<p><strong>File Name:</strong> ${sanitizedFileName}</p>
+							<p><strong>File Size:</strong> ${(file.size / 1024).toFixed(2)} KB</p>
+							<p><strong>Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}</p>
+						`;
 				const dotIndex = file.name.lastIndexOf('.');
 				originalFileExtension = dotIndex !== -1 ? file.name.substring(dotIndex) : '.sav';
-
 				uploadSave();
 			} else {
 				dropZone.querySelector('p').textContent = 'Drag and drop your save file here, or click to select.';
