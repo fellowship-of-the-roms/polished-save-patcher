@@ -576,6 +576,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		roammon = convertRoamV7toV8(loadStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon1")));
 		writeStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon1"), roammon);
 	}
+	else {
+		roammon = loadStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon1"));
+		roammon.setMap(std::tuple <uint8_t, uint8_t>(-1, -1));
+		writeStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon1"), roammon);
+	}
 
 	js_info << "Fix wRoamMon2..." << std::endl;
 	species = it8.getByte(sym8.getPokemonDataAddress("wRoamMon2Species"));
@@ -583,11 +588,20 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		roammon = convertRoamV7toV8(loadStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon2")));
 		writeStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon2"), roammon);
 	}
+	else {
+		roammon = loadStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon2"));
+		roammon.setMap(std::tuple <uint8_t, uint8_t>(-1, -1));
+		writeStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon2"), roammon);
+	}
 
 	js_info << "Fix wRoamMon3..." << std::endl;
 	species = it8.getByte(sym8.getPokemonDataAddress("wRoamMon3Species"));
 	if (species != 0x00) {
 		roammon = convertRoamV7toV8(loadStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon3")));
+		writeStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon3"), roammon);
+	} else {
+		roammon = loadStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon3"));
+		roammon.setMap(std::tuple <uint8_t, uint8_t>(-1, -1));
 		writeStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon3"), roammon);
 	}
 

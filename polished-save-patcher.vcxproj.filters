@@ -151,5 +151,6 @@
     <None Include=".github\workflows\windows-build.yml">
       <Filter>.github\workflows</Filter>
     </None>
+    <None Include="styles.css" />
   </ItemGroup>
 </Project>

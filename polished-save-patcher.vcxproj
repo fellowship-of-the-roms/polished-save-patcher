@@ -132,6 +132,7 @@
     <None Include="resources\version8\version8.sym" />
     <None Include="resources\version9\version9.sym" />
     <None Include="run.py" />
+    <None Include="styles.css" />
     <None Include="tools\filter_sym.py" />
     <None Include="tools\gzip.ps1" />
     <None Include="tools\map_events.py" />
