@@ -573,10 +573,12 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info << "Fix wRoamMon1..." << std::endl;
 	species = it8.getByte(sym8.getPokemonDataAddress("wRoamMon1Species"));
 	if (species != 0x00) {
+		js_info << "wRoamMon1Species is 0x" << std::hex << static_cast<int>(species) << " converting struct" << std::endl;
 		roammon = convertRoamV7toV8(loadStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon1")));
 		writeStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon1"), roammon);
 	}
 	else {
+		js_info << "wRoamMon1Species is 0x00, setting map to -1, -1" << std::endl;
 		roammon = loadStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon1"));
 		roammon.setMap(std::tuple <uint8_t, uint8_t>(-1, -1));
 		writeStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon1"), roammon);
@@ -585,10 +587,12 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info << "Fix wRoamMon2..." << std::endl;
 	species = it8.getByte(sym8.getPokemonDataAddress("wRoamMon2Species"));
 	if (species != 0x00) {
+		js_info << "wRoamMon2Species is 0x" << std::hex << static_cast<int>(species) << " converting struct" << std::endl;
 		roammon = convertRoamV7toV8(loadStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon2")));
 		writeStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon2"), roammon);
 	}
 	else {
+		js_info << "wRoamMon2Species is 0x00, setting map to -1, -1" << std::endl;
 		roammon = loadStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon2"));
 		roammon.setMap(std::tuple <uint8_t, uint8_t>(-1, -1));
 		writeStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon2"), roammon);
@@ -597,9 +601,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info << "Fix wRoamMon3..." << std::endl;
 	species = it8.getByte(sym8.getPokemonDataAddress("wRoamMon3Species"));
 	if (species != 0x00) {
+		js_info << "wRoamMon3Species is 0x" << std::hex << static_cast<int>(species) << " converting struct" << std::endl;
 		roammon = convertRoamV7toV8(loadStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon3")));
 		writeStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon3"), roammon);
 	} else {
+		js_info << "wRoamMon3Species is 0x00, setting map to -1, -1" << std::endl;
 		roammon = loadStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon3"));
 		roammon.setMap(std::tuple <uint8_t, uint8_t>(-1, -1));
 		writeStruct<roam_struct_v8>(it8, sym8.getPokemonDataAddress("wRoamMon3"), roammon);

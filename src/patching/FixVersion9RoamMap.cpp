@@ -53,6 +53,7 @@ namespace fixVersion9RoamMapNamespace {
 			roammon.setMap(std::make_tuple(-1, -1));
 			js_info << "wRoamMon1 group/map is (0,0), setting map to (-1, -1)" << std::endl;
 		}
+		writeStruct<roam_struct_v9>(itnew, sym9.getPokemonDataAddress("wRoamMon1"), roammon);
 
 		js_info << "Fix wRoamMon2..." << std::endl;
 		roammon = loadStruct<roam_struct_v9>(itnew, sym9.getPokemonDataAddress("wRoamMon2"));
@@ -64,6 +65,7 @@ namespace fixVersion9RoamMapNamespace {
 			roammon.setMap(std::make_tuple(-1, -1));
 			js_info << "wRoamMon2 group/map is (0,0), setting map to (-1, -1)" << std::endl;
 		}
+		writeStruct<roam_struct_v9>(itnew, sym9.getPokemonDataAddress("wRoamMon2"), roammon);
 
 		js_info << "Fix wRoamMon3..." << std::endl;
 		roammon = loadStruct<roam_struct_v9>(itnew, sym9.getPokemonDataAddress("wRoamMon3"));
@@ -75,6 +77,7 @@ namespace fixVersion9RoamMapNamespace {
 			roammon.setMap(std::make_tuple(-1, -1));
 			js_info << "wRoamMon3 group/map is (0,0), setting map to (-1, -1)" << std::endl;
 		}
+		writeStruct<roam_struct_v9>(itnew, sym9.getPokemonDataAddress("wRoamMon3"), roammon);
 
 		// write the new checksums to the version 9 save file
 		js_info << "Write new checksums..." << std::endl;
