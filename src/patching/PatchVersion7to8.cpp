@@ -613,7 +613,7 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	// clear 4 unused bytes after wRoamMon3
 	js_info << "Clear 4 unused bytes after wRoamMon3..." << std::endl;
-	clearDataBlock(sd, sym8.getPokemonDataAddress("wRoamMon3") + 1, 4);
+	clearDataBlock(sd, sym8.getPokemonDataAddress("wRoamMon3") + sizeof(roammon), 4);
 
 	// fix wRegisteredItems...
 	js_info << "Fix wRegisteredItems..." << std::endl;
