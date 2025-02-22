@@ -98,9 +98,9 @@ namespace patchVersion7to8Namespace {
 		bool isShiny() const { return ((personality[0] & SHINY_MASK) >> 7); };
 		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | SHINY_MASK) : (personality[0] & ~SHINY_MASK); };
 		uint8_t getAbility() const { return (personality[0] & ABILITY_MASK) >> 5; };
-		void setAbility(uint8_t ability) { personality[0] = (personality[0] & ~ABILITY_MASK) | (ability << 5); };
+		void setAbility(uint8_t ability) { personality[0] = (personality[0] & ~ABILITY_MASK) | ((ability << 5) & ABILITY_MASK); };
 		uint8_t getNature() const { return personality[0] & NATURE_MASK; };
-		void setNature(uint8_t nature) { personality[0] = (personality[0] & ~NATURE_MASK) | nature; };
+		void setNature(uint8_t nature) { personality[0] = (personality[0] & ~NATURE_MASK) | (nature & NATURE_MASK); };
 
 		bool getGender() const { return (personality[1] & GENDER_MASK) >> 7; };
 		void setGender(bool gender) { personality[1] = gender ? (personality[1] | GENDER_MASK) : (personality[1] & ~GENDER_MASK); };
@@ -112,8 +112,8 @@ namespace patchVersion7to8Namespace {
 			personality[1] = (personality[1] & ~EXTSPECIES_MASK) | ((extspecies & 0x100) >> 3);
 			species = extspecies & 0xFF;
 		};
-		uint8_t getForm() const { return personality[1] & FORM_MASK; }
-		void setForm(uint8_t form) { personality[1] = (personality[1] & ~FORM_MASK) | form; }
+		uint8_t getForm() const { return personality[1] & FORM_MASK; };
+		void setForm(uint8_t form) { personality[1] = (personality[1] & ~FORM_MASK) | (form & FORM_MASK); };
 
 		uint8_t pp[NUM_MOVES];
 		uint8_t happiness;
@@ -121,9 +121,9 @@ namespace patchVersion7to8Namespace {
 		uint8_t caughtdata;
 
 		uint8_t getCaughtTime() const { return (caughtdata & CAUGHT_TIME_MASK) >> 5; };
-		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & ~CAUGHT_TIME_MASK) | (time << 5); };
+		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & ~CAUGHT_TIME_MASK) | ((time << 5) & CAUGHT_TIME_MASK); };
 		uint8_t getCaughtBall() const { return caughtdata & CAUGHT_BALL_MASK; };
-		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & ~CAUGHT_BALL_MASK) | ball; };
+		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & ~CAUGHT_BALL_MASK) | (ball & CAUGHT_BALL_MASK); };
 
 		uint8_t caughtlevel;
 		uint8_t caughtlocation;
@@ -152,9 +152,9 @@ namespace patchVersion7to8Namespace {
 		bool isShiny() const { return ((personality[0] & SHINY_MASK) >> 7); };
 		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | SHINY_MASK) : (personality[0] & ~SHINY_MASK); };
 		uint8_t getAbility() const { return (personality[0] & ABILITY_MASK) >> 5; };
-		void setAbility(uint8_t ability) { personality[0] = (personality[0] & ~ABILITY_MASK) | (ability << 5); };
+		void setAbility(uint8_t ability) { personality[0] = (personality[0] & ~ABILITY_MASK) | ((ability << 5) & ABILITY_MASK); };
 		uint8_t getNature() const { return personality[0] & NATURE_MASK; };
-		void setNature(uint8_t nature) { personality[0] = (personality[0] & ~NATURE_MASK) | nature; };
+		void setNature(uint8_t nature) { personality[0] = (personality[0] & ~NATURE_MASK) | (nature & NATURE_MASK); };
 		bool getGender() const { return (personality[1] & GENDER_MASK) >> 7; };
 		void setGender(bool gender) { personality[1] = gender ? (personality[1] | GENDER_MASK) : (personality[1] & ~GENDER_MASK); };
 		bool isEgg() const { return (personality[1] & EGG_MASK) >> 6; };
@@ -165,8 +165,8 @@ namespace patchVersion7to8Namespace {
 			personality[1] = (personality[1] & ~EXTSPECIES_MASK) | ((extspecies & 0x100) >> 3);
 			species = extspecies & 0xFF;
 		};
-		uint8_t getForm() const { return personality[1] & FORM_MASK; }
-		void setForm(uint8_t form) { personality[1] = (personality[1] & ~FORM_MASK) | form; }
+		uint8_t getForm() const { return personality[1] & FORM_MASK; };
+		void setForm(uint8_t form) { personality[1] = (personality[1] & ~FORM_MASK) | (form & FORM_MASK); };
 
 		uint8_t ppups;
 		uint8_t happiness;
@@ -174,9 +174,9 @@ namespace patchVersion7to8Namespace {
 		uint8_t caughtdata;
 
 		uint8_t getCaughtTime() const { return (caughtdata & CAUGHT_TIME_MASK) >> 5; };
-		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & ~CAUGHT_TIME_MASK) | (time << 5); };
+		void setCaughtTime(uint8_t time) { caughtdata = (caughtdata & ~CAUGHT_TIME_MASK) | ((time << 5) & CAUGHT_TIME_MASK); };
 		uint8_t getCaughtBall() const { return caughtdata & CAUGHT_BALL_MASK; };
-		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & ~CAUGHT_BALL_MASK) | ball; };
+		void setCaughtBall(uint8_t ball) { caughtdata = (caughtdata & ~CAUGHT_BALL_MASK) | (ball & CAUGHT_BALL_MASK); };
 
 		uint8_t caughtlevel;
 		uint8_t caughtlocation;
@@ -194,9 +194,9 @@ namespace patchVersion7to8Namespace {
 		bool isShiny() const { return ((personality[0] & SHINY_MASK) >> 7); };
 		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | SHINY_MASK) : (personality[0] & ~SHINY_MASK); };
 		uint8_t getAbility() const { return (personality[0] & ABILITY_MASK) >> 5; };
-		void setAbility(uint8_t ability) { personality[0] = (personality[0] & ~ABILITY_MASK) | (ability << 5); };
+		void setAbility(uint8_t ability) { personality[0] = (personality[0] & ~ABILITY_MASK) | ((ability << 5) & ABILITY_MASK); };
 		uint8_t getNature() const { return personality[0] & NATURE_MASK; };
-		void setNature(uint8_t nature) { personality[0] = (personality[0] & ~NATURE_MASK) | nature; };
+		void setNature(uint8_t nature) { personality[0] = (personality[0] & ~NATURE_MASK) | (nature & NATURE_MASK); };
 		bool getGender() const { return (personality[1] & GENDER_MASK) >> 7; };
 		void setGender(bool gender) { personality[1] = gender ? (personality[1] | GENDER_MASK) : (personality[1] & ~GENDER_MASK); };
 		bool isEgg() const { return (personality[1] & EGG_MASK) >> 6; };
@@ -207,8 +207,8 @@ namespace patchVersion7to8Namespace {
 			personality[1] = (personality[1] & ~EXTSPECIES_MASK) | ((extspecies & 0x100) >> 3);
 			species = extspecies & 0xFF;
 		};
-		uint8_t getForm() const { return personality[1] & FORM_MASK; }
-		void setForm(uint8_t form) { personality[1] = (personality[1] & ~FORM_MASK) | form; }
+		uint8_t getForm() const { return personality[1] & FORM_MASK; };
+		void setForm(uint8_t form) { personality[1] = (personality[1] & ~FORM_MASK) | (form & FORM_MASK); };
 
 		uint8_t level;
 		uint8_t nickname[MON_NAME_LENGTH - 1];
@@ -230,9 +230,9 @@ namespace patchVersion7to8Namespace {
 		bool isShiny() const { return ((personality[0] & SHINY_MASK) >> 7); };
 		void setShiny(bool shiny) { personality[0] = shiny ? (personality[0] | SHINY_MASK) : (personality[0] & ~SHINY_MASK); };
 		uint8_t getAbility() const { return (personality[0] & ABILITY_MASK) >> 5; };
-		void setAbility(uint8_t ability) { personality[0] = (personality[0] & ~ABILITY_MASK) | (ability << 5); };
+		void setAbility(uint8_t ability) { personality[0] = (personality[0] & ~ABILITY_MASK) | ((ability << 5) & ABILITY_MASK); };
 		uint8_t getNature() const { return personality[0] & NATURE_MASK; };
-		void setNature(uint8_t nature) { personality[0] = (personality[0] & ~NATURE_MASK) | nature; };
+		void setNature(uint8_t nature) { personality[0] = (personality[0] & ~NATURE_MASK) | (nature & NATURE_MASK); };
 		bool getGender() const { return (personality[1] & GENDER_MASK) >> 7; };
 		void setGender(bool gender) { personality[1] = gender ? (personality[1] | GENDER_MASK) : (personality[1] & ~GENDER_MASK); };
 		bool isEgg() const { return (personality[1] & EGG_MASK) >> 6; };
@@ -243,8 +243,8 @@ namespace patchVersion7to8Namespace {
 			personality[1] = (personality[1] & ~EXTSPECIES_MASK) | ((extspecies & 0x100) >> 3);
 			species = extspecies & 0xFF;
 		};
-		uint8_t getForm() const { return personality[1] & FORM_MASK; }
-		void setForm(uint8_t form) { personality[1] = (personality[1] & ~FORM_MASK) | form; }
+		uint8_t getForm() const { return personality[1] & FORM_MASK; };
+		void setForm(uint8_t form) { personality[1] = (personality[1] & ~FORM_MASK) | (form & FORM_MASK); };
 
 		uint8_t status;
 	};
