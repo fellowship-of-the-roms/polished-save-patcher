@@ -3645,6 +3645,7 @@ uint16_t mapV7SpeciesFormToV8Extspecies(uint16_t species, uint8_t form) {
 // converts a version 7 magikarp form to a version 8 magikarp form
 uint8_t mapV7MagikarpFormToV8(uint8_t v7) {
 	std::unordered_map<uint8_t, uint8_t> indexMap = {
+		{0x01, 0x01}, // MAGIKARP_PLAIN_FORM
 		{0x02, 0x02}, // MAGIKARP_SKELLY_FORM
 		{0x03, 0x03}, // MAGIKARP_CALICO1_FORM
 		{0x04, 0x04}, // MAGIKARP_CALICO2_FORM

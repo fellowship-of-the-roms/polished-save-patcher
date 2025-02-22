@@ -997,7 +997,12 @@ savemon_struct_v8 convertSavemonV7toV8(const savemon_struct_v8& savemon, std::ve
 		caught_mons.push_back(new_savemon.getExtSpecies());
 	}
 	if (species_v8 == MAGIKARP_V8) {
-		new_savemon.setForm(mapV7MagikarpFormToV8(savemon.getForm()));
+		uint8_t form = mapV7MagikarpFormToV8(savemon.getForm());
+		if (form == 0xFF) {
+			js_warning << "Magikarp form " << std::hex << static_cast<int>(savemon.getForm()) << " not found in version 8 form list." << std::endl;
+		} else {
+			new_savemon.setForm(form);
+		}
 	}
 	if (species_v8 == GYARADOS_V8) {
 		if (savemon.getForm() == GYARADOS_RED_FORM_V7) {
@@ -1098,7 +1103,13 @@ breedmon_struct_v8 convertBreedmonV7toV8(const breedmon_struct_v8& breedmon, std
 		caught_mons.push_back(extspecies_v8);
 	}
 	if (species_v8 == MAGIKARP_V8) {
-		new_breedmon.setForm(mapV7MagikarpFormToV8(breedmon.getForm()));
+		uint8_t form = mapV7MagikarpFormToV8(breedmon.getForm());
+		if (form == 0xFF) {
+			js_warning << "Magikarp form " << std::hex << static_cast<int>(breedmon.getForm()) << " not found in version 8 form list." << std::endl;
+		}
+		else {
+			new_breedmon.setForm(form);
+		}
 	}
 	if (species_v8 == GYARADOS_V8) {
 		if (breedmon.getForm() == GYARADOS_RED_FORM_V7) {
@@ -1172,7 +1183,13 @@ hofmon_struct_v8 convertHofmonV7toV8(const hofmon_struct_v8& hofmon, std::vector
 		caught_mons.push_back(extspecies_v8);
 	}
 	if (species_v8 == MAGIKARP_V8) {
-		new_hofmon.setForm(mapV7MagikarpFormToV8(hofmon.getForm()));
+		uint8_t form = mapV7MagikarpFormToV8(hofmon.getForm());
+		if (form == 0xFF) {
+			js_warning << "Magikarp form " << std::hex << static_cast<int>(hofmon.getForm()) << " not found in version 8 form list." << std::endl;
+		}
+		else {
+			new_hofmon.setForm(form);
+		}
 	}
 	if (species_v8 == GYARADOS_V8) {
 		if (hofmon.getForm() == GYARADOS_RED_FORM_V7) {
