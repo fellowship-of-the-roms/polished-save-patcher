@@ -75,6 +75,9 @@
     <ClCompile Include="src\patching\FixVersion9RoamMap.cpp">
       <Filter>Source Files\patching</Filter>
     </ClCompile>
+    <ClCompile Include="src\patching\FixVersion9MagikarpPlainForm.cpp">
+      <Filter>Source Files\patching</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\core\CommonPatchFunctions.h">
@@ -111,6 +114,9 @@
       <Filter>Header Files\patching</Filter>
     </ClInclude>
     <ClInclude Include="include\patching\FixVersion9RoamMap.h">
+      <Filter>Header Files\patching</Filter>
+    </ClInclude>
+    <ClInclude Include="include\patching\FixVersion9MagikarpPlainForm.h">
       <Filter>Header Files\patching</Filter>
     </ClInclude>
   </ItemGroup>

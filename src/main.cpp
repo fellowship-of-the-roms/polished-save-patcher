@@ -6,6 +6,7 @@
 #include "patching/FixVersion9PCWarpID.h"
 #include "patching/FixVersion9PGOBattleEvent.h"
 #include "patching/FixVersion9RoamMap.h"
+#include "patching/FixVersion9MagikarpPlainForm.h"
 #include "core/PatcherConstants.h"
 #include "core/Logging.h"
 #include <iostream>
@@ -80,6 +81,12 @@ emscripten::val patch_save(const std::string &old_save_path, const std::string &
 		case 5:
 			if (!fixVersion9RoamMapNamespace::fixVersion9RoamMap(oldSave, newSave)) {
 				js_error << "fixVersion9RoamMap failed." << std::endl;
+				success = false;
+			}
+			break;
+		case 6:
+			if (!fixVersion9MagikarpPlainFormNamespace::fixVersion9MagikarpPlainForm(oldSave, newSave)) {
+				js_error << "fixVersion9MagikarpPlainForm failed." << std::endl;
 				success = false;
 			}
 			break;
