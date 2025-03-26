@@ -29,9 +29,9 @@ jobs:
         run: |
           if not exist emsdk git clone https://github.com/emscripten-core/emsdk.git
           cd emsdk
-          .\emsdk install latest
-          .\emsdk activate latest
-          call .\emsdk_env.bat
+          call emsdk install latest
+          call emsdk activate latest
+          call emsdk_env.bat
           cd ..
           echo "Building project for commit: %COMMIT_MESSAGE%"
           make release
