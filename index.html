@@ -3,7 +3,7 @@
 <head>
 	<title>Polished Crystal Save Patcher</title>
 	<script>
-		const toolVersion = "1.0.4";
+		const toolVersion = "1.0.5";
 	</script>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -71,6 +71,10 @@
 						<td style="padding: 10px; border: 1px solid #555;">9</td>
 						<td style="padding: 10px; border: 1px solid #555;">3.1.0</td>
 					</tr>
+					<tr>
+						<td style="padding: 10px; border: 1px solid #555;">10</td>
+						<td style="padding: 10px; border: 1px solid #555;">3.2.0</td>
+					</tr>
 				</tbody>
 			</table>
 		</div>
@@ -118,14 +122,17 @@
 		// The "advanced" flag indicates that the option should only be visible in advanced mode.
 		const PATCH_OPTIONS = {
 			7: [
+				{ targetVersion: "10", devType: 0, text: "Version 10 (3.2.0)" },
 				{ targetVersion: "9", devType: 0, text: "Version 9 (3.1.0)" },
 				{ targetVersion: "8", devType: 0, text: "Version 8 (3.0.0)" }
 			],
 			8: [
+				{ targetVersion: "10", devType: 0, text: "Version 10 (3.2.0)" },
 				{ targetVersion: "9", devType: 0, text: "Version 9 (3.1.0)" },
 				{ targetVersion: "8", devType: 1, text: "fixVersion8NoForm (ADVANCED)", advanced: true }
 			],
 			9: [
+				{ targetVersion: "10", devType: 0, text: "Version 10 (3.2.0)" },
 				{ targetVersion: "9", devType: 2, text: "fixVersion9RegisteredKeyItems (ADVANCED)", advanced: true },
 				{ targetVersion: "9", devType: 3, text: "fixVersion9PCWarpID (ADVANCED)", advanced: true },
 				{ targetVersion: "9", devType: 4, text: "fixVersion9PGOBattleEvent (ADVANCED)", advanced: true },
@@ -256,7 +263,8 @@
 						const versionMap = {
 							7: '3.0.0-beta',
 							8: '3.0.0',
-							9: '3.1.0'
+							9: '3.1.0',
+							10: '3.2.0'
 						};
 						const canonicalName = versionMap[saveVersion];
 						const versionDisplay = canonicalName
