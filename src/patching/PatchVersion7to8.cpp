@@ -811,6 +811,10 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	uint16_t new_save_version = 0x08;
 	save8.setWordBE(SAVE_VERSION_ABS_ADDRESS, new_save_version);
 
+	// Copy sGameData to sBackupGameData
+	js_info << "Copy sGameData to sBackupGameData..." << std::endl;
+	copyDataBlock(sd, sym8.getSRAMAddress("sGameData"), sym8.getSRAMAddress("sBackupGameData"), sym8.getSRAMAddress("sGameDataEnd") - sym8.getSRAMAddress("sGameData"));
+
 	// write new checksums to the version 8 save file
 	js_info <<  "Write new checksums..." << std::endl;
 	uint16_t new_checksum = calculateSaveChecksum(save8, sym8.getSRAMAddress("sGameData"), sym8.getSRAMAddress("sGameDataEnd"));

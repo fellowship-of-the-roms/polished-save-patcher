@@ -128,16 +128,48 @@ namespace patchVersion9to10Namespace {
 			}
 		}
 
+		// Fix sPartyMail
+		mailmsg_struct_v10 mailmsg;
+		js_info << "Fixing sPartyMail..." << std::endl;
+		for (int i = 0; i < PARTY_LENGTH; i++) {
+			mailmsg = convertMailmsgV9toV10(loadStruct<mailmsg_struct_v10>(it9, sym9.getSRAMAddress("sPartyMail") + i * sizeof(mailmsg_struct_v10)));
+			writeStruct<mailmsg_struct_v10>(it10, sym10.getSRAMAddress("sPartyMail") + i * sizeof(mailmsg_struct_v10), mailmsg);
+		}
+
+		// Fix sPartyMailBackup
+		js_info << "Fixing sPartyMailBackup..." << std::endl;
+		for (int i = 0; i < PARTY_LENGTH; i++) {
+			mailmsg = convertMailmsgV9toV10(loadStruct<mailmsg_struct_v10>(it9, sym9.getSRAMAddress("sPartyMailBackup") + i * sizeof(mailmsg_struct_v10)));
+			writeStruct<mailmsg_struct_v10>(it10, sym10.getSRAMAddress("sPartyMailBackup") + i * sizeof(mailmsg_struct_v10), mailmsg);
+		}
+
+		// Fix sMailbox
+		js_info << "Fixing sMailbox..." << std::endl;
+		for (int i = 0; i < MAILBOX_CAPACITY; i++) {
+			mailmsg = convertMailmsgV9toV10(loadStruct<mailmsg_struct_v10>(it9, sym9.getSRAMAddress("sMailbox") + i * sizeof(mailmsg_struct_v10)));
+			writeStruct<mailmsg_struct_v10>(it10, sym10.getSRAMAddress("sMailbox") + i * sizeof(mailmsg_struct_v10), mailmsg);
+		}
+
+		// Fix sMailboxBackup
+		js_info << "Fixing sMailboxBackup..." << std::endl;
+		for (int i = 0; i < MAILBOX_CAPACITY; i++) {
+			mailmsg = convertMailmsgV9toV10(loadStruct<mailmsg_struct_v10>(it9, sym9.getSRAMAddress("sMailboxBackup") + i * sizeof(mailmsg_struct_v10)));
+			writeStruct<mailmsg_struct_v10>(it10, sym10.getSRAMAddress("sMailboxBackup") + i * sizeof(mailmsg_struct_v10), mailmsg);
+		}
+
 		// write the new save version number big endian
 		js_info << "Writing new save version number..." << std::endl;
 		uint16_t new_save_version = 0x0A;
 		save10.setWordBE(SAVE_VERSION_ABS_ADDRESS, new_save_version);
 
+		// copy sGameData to sBackupGameData
+		js_info << "Copying sGameData to sBackupGameData..." << std::endl;
+		copyDataBlock(sd, sym10.getSRAMAddress("sGameData"), sym10.getSRAMAddress("sBackupGameData"), sym10.getSRAMAddress("sGameDataEnd") - sym10.getSRAMAddress("sGameData"));
+
 		// write the new checksums to the version 10 save file
 		js_info << "Writing new checksums..." << std::endl;
 		uint16_t new_checksum = calculateSaveChecksum(save10, sym10.getSRAMAddress("sGameData"), sym10.getSRAMAddress("sGameDataEnd"));
 		save10.setWord(SAVE_CHECKSUM_ABS_ADDRESS, new_checksum);
-
 
 		// write the new backup checksum to the version 10 save file
 		uint16_t new_backup_checksum = calculateSaveChecksum(save10, sym10.getSRAMAddress("sBackupGameData"), sym10.getSRAMAddress("sBackupGameDataEnd"));
@@ -2406,6 +2438,125 @@ namespace patchVersion9to10Namespace {
 
 		// Return the corresponding version 8 event flag or INVALID_EVENT_FLAG if not found
 		return indexMap.find(v9) != indexMap.end() ? indexMap[v9] : INVALID_EVENT_FLAG;
+	}
+
+	mailmsg_struct_v10 convertMailmsgV9toV10(const mailmsg_struct_v10& mailmsg) {
+		mailmsg_struct_v10 new_mailmsg;
+		std::vector<uint8_t> decoded_chars = decodeV9ToChar(mailmsg.message, sizeof(mailmsg.message));
+		if (decoded_chars.size() > sizeof(new_mailmsg.message)) {
+			js_error << "Decoded mail message is too large to fit in v10 message buffer ("
+				<< decoded_chars.size() << " > " << sizeof(new_mailmsg.message) << ")" << std::endl;
+		}
+		memset(new_mailmsg.message, 0, sizeof(new_mailmsg.message));
+		size_t copy_len = std::min(decoded_chars.size(), sizeof(new_mailmsg.message));
+		memcpy(new_mailmsg.message, decoded_chars.data(), copy_len);
+		new_mailmsg.message_end = mailmsg.message_end;
+		memcpy(new_mailmsg.author, mailmsg.author, sizeof(mailmsg.author));
+		new_mailmsg.nationality = mailmsg.nationality;
+		new_mailmsg.author_id = mailmsg.author_id;
+		new_mailmsg.species = mailmsg.species;
+		new_mailmsg.type = mailmsg.type;
+
+		return new_mailmsg;
+	}
+
+	std::vector<uint8_t> decodeV9ToChar(const uint8_t* data, size_t length) {
+		std::unordered_map<uint8_t, std::vector<uint8_t>> v9NgramMap = {
+			{0x09, {0xA4, 0x7F}},
+			{0x0A, {0x7F, 0xB3}},
+			{0x0B, {0xAE, 0xB4}},
+			{0x0C, {0xA8, 0xAD}},
+			{0x0D, {0xB3, 0xA7}},
+			{0x0E, {0xA7, 0xA4}},
+			{0x0F, {0xB3, 0x7F}},
+			{0x10, {0xA4, 0xB1}},
+			{0x11, {0xAE, 0xAD}},
+			{0x12, {0xB1, 0xA4}},
+			{0x13, {0xB2, 0x7F}},
+			{0x14, {0xA0, 0xB3}},
+			{0x15, {0xA0, 0xAD}},
+			{0x16, {0xB3, 0xAE}},
+			{0x17, {0xA7, 0xA0}},
+			{0x18, {0xAD, 0xA6}},
+			{0x19, {0xA8, 0xB3}},
+			{0x1A, {0xA8, 0xB2}},
+			{0x1B, {0xA4, 0xA0}},
+			{0x1C, {0xB5, 0xA4}},
+			{0x1D, {0xA0, 0xB1}},
+			{0x1E, {0xB2, 0xB3}},
+			{0x1F, {0xAB, 0xA4}},
+			{0x20, {0xAE, 0xB1}},
+			{0x21, {0xB3, 0xA4}},
+			{0x22, {0xA0, 0xB2}},
+			{0x23, {0xB8, 0xAE}},
+			{0x24, {0xB8, 0x7F}},
+			{0x25, {0xB1, 0x7F}},
+			{0x26, {0x7F, 0xA1}},
+			{0x27, {0xA4, 0xAD}},
+			{0x28, {0xAC, 0xA4}},
+			{0x29, {0xA4, 0x7F, 0xB3}},
+			{0x2A, {0x9D, 0x7F}},
+			{0x2B, {0xA4, 0xB2}},
+			{0x2C, {0xA4, 0x7F, 0xB8, 0xAE, 0xB4}},
+			{0x2D, {0xB2, 0xA4}},
+			{0x2E, {0xAD, 0xA4}},
+			{0x2F, {0x7F, 0xA7}},
+			{0x30, {0x88, 0x7F}},
+			{0x31, {0xAE, 0xB4, 0xB1}},
+			{0x32, {0x98, 0xAE, 0xB4}},
+			{0x33, {0xAD, 0xA3}},
+			{0x34, {0xAE, 0xB6}},
+			{0x35, {0x7F, 0xA2}},
+			{0x36, {0x7F, 0xB6, 0xA0}},
+			{0x37, {0xAE, 0xAC, 0xA4}},
+			{0x38, {0xA0, 0xB1, 0xA4}},
+			{0x39, {0x93, 0xA7, 0xA4}},
+			{0x3A, {0xB3, 0xC0, 0xB2}},
+			{0x3B, {0xB4, 0xB3}},
+			{0x3C, {0xAD, 0xB3}},
+			{0x3D, {0xB3, 0xA7, 0xA4}},
+			{0x3E, {0xB8, 0xAE, 0xB4}},
+			{0x3F, {0xA8, 0xAD, 0xA6}},
+			{0x40, {0xA7, 0xA0, 0xB3}},
+			{0x41, {0xA0, 0xAD, 0xA3}},
+			{0x42, {0xA5, 0xAE, 0xB1}},
+			{0x43, {0xA0, 0xAB, 0xAB}},
+			{0x44, {0xA7, 0xA4, 0xB1, 0xA4}},
+			{0x45, {0xB3, 0xA7, 0xA0, 0xB3}},
+			{0x46, {0xA7, 0xA0, 0xB5, 0xA4}},
+			{0x47, {0xB1, 0xA0, 0xA8, 0xAD}},
+			{0x48, {0xB3, 0xA7, 0xA8, 0xB2}},
+			{0x49, {0xA8, 0xA6, 0xA7, 0xB3}},
+			{0x4A, {0xB6, 0xA8, 0xB3, 0xA7}},
+			{0x4B, {0xAE, 0xB4, 0xAB, 0xA3}},
+			{0x4C, {0xA0, 0xB3, 0xB3, 0xAB, 0xA4}},
+		};
+
+		std::vector<uint8_t> decoded;
+		decoded.reserve(length);
+
+		// 3) Walk each byte, decode or pass-through
+		for (size_t i = 0; i < length; i++)
+		{
+			uint8_t b = data[i];
+
+			// If b is in our n-gram map, expand it
+			auto it = v9NgramMap.find(b);
+			if (it != v9NgramMap.end()) {
+				const std::vector<uint8_t>& expansion = it->second;
+				decoded.insert(decoded.end(), expansion.begin(), expansion.end());
+			}
+			else {
+				// Not in 0x09..0x51 (or it’s an unlisted code).
+				// => treat as a single "character code"
+				decoded.push_back(b);
+				if (b == 0x52 || b == 0x53) {
+					// <DONE> or @ character found, stop decoding
+					break;
+				}
+			}
+		}
+		return decoded;
 	}
 
 }
