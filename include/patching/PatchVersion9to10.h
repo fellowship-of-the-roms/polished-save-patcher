@@ -13,6 +13,8 @@ namespace patchVersion9to10Namespace {
 	constexpr int PLAYER_NAME_LENGTH = 8;
 	constexpr int PARTY_LENGTH = 6;
 	constexpr int MAILBOX_CAPACITY = 10;
+	constexpr int NO_EXP_OPT = 2;
+	constexpr int RESET_INIT_OPTS = 7;
 
 #pragma pack(push, 1)
 	struct mailmsg_struct_v10 {

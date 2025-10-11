@@ -82,6 +82,13 @@ namespace patchVersion9to10Namespace {
 		}
 		it10.setByte(sym10.getOptionsAddress("wOptions1"), (opt1_byte & ~TEXT_DELAY_MASK) | reversedBits);
 
+		// Ensure the new NO_EXP_OPT bit in wInitialOptions2 is cleared by default
+		js_info << "Clearing NO_EXP_OPT in wInitialOptions2..." << std::endl;
+		it10.resetBit(sym10.getOptionsAddress("wInitialOptions2"), NO_EXP_OPT);
+
+		// Reset Initial Options so the game asks the player to set them again.
+		js_info << "Resetting Initial Options..." << std::endl;
+		it10.setBit(RESET_INIT_OPTS);
 
 		// check if wMagikarpRecordHoldersName is equal to Ralph@ (0x91, 0xa0, 0xab, 0xaf, 0xa7, 0x53)
 		it9.seek(sym9.getPokemonDataAddress("wMagikarpRecordHoldersName"));
@@ -2547,7 +2554,7 @@ namespace patchVersion9to10Namespace {
 				decoded.insert(decoded.end(), expansion.begin(), expansion.end());
 			}
 			else {
-				// Not in 0x09..0x51 (or it’s an unlisted code).
+				// Not in 0x09..0x51 (or itï¿½s an unlisted code).
 				// => treat as a single "character code"
 				decoded.push_back(b);
 				if (b == 0x52 || b == 0x53) {
