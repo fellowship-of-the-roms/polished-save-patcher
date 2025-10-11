@@ -211,37 +211,6 @@ pre {
 	height: 20px;
 }
 
-/* GitHub link styles */
-.github-link {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	text-decoration: none;
-	color: #e0e0e0;
-	background-color: transparent;
-	padding: 6px 10px;
-	border-radius: 6px;
-	border: 1px solid transparent;
-	transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-	font-weight: 600;
-}
-
-.github-link svg {
-	width: 18px;
-	height: 18px;
-	fill: #e0e0e0;
-}
-
-.github-link:hover, .github-link:focus {
-	background-color: #2e2e2e;
-	border-color: #444;
-	color: #b39ddb;
-}
-
-.github-link:hover svg, .github-link:focus svg {
-	fill: #b39ddb;
-}
-
 	.switch input {
 		opacity: 0;
 		width: 0;
