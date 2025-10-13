@@ -106,6 +106,7 @@
     <ClCompile Include="src\patching\PatchVersion7to8.cpp" />
     <ClCompile Include="src\patching\PatchVersion7to8_unorderedmaps.cpp" />
     <ClCompile Include="src\patching\PatchVersion8to9.cpp" />
+    <ClCompile Include="src\patching\PatchVersion9to10.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\core\CommonPatchFunctions.h" />
@@ -121,6 +122,7 @@
     <ClInclude Include="include\patching\FixVersion9RoamMap.h" />
     <ClInclude Include="include\patching\PatchVersion7to8.h" />
     <ClInclude Include="include\patching\PatchVersion8to9.h" />
+    <ClInclude Include="include\patching\PatchVersion9to10.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
@@ -130,6 +132,7 @@
     <None Include="index.html" />
     <None Include="Makefile" />
     <None Include="README.md" />
+    <None Include="resources\version10\version10.sym" />
     <None Include="resources\version7\version7.sym" />
     <None Include="resources\version8\version8.sym" />
     <None Include="resources\version9\version9.sym" />

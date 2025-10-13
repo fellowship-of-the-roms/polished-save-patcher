@@ -3,7 +3,7 @@
 <head>
 	<title>Polished Crystal Save Patcher</title>
 	<script>
-		const toolVersion = "1.0.4";
+		const toolVersion = "1.1.0";
 	</script>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,11 @@
 </head>
 <body>
 	<div class="container">
-		<div style="top: 20px; right: 20px;">
+		<div class="top-controls" style="display:flex; justify-content:flex-end; gap:10px; align-items:center; margin-bottom:10px;">
+			<a class="github-link" href="https://github.com/fellowship-of-the-roms/polished-save-patcher" target="_blank" rel="noopener noreferrer" aria-label="View source on GitHub">
+				<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.19 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
+				<span>View Source</span>
+			</a>
 			<label class="switch">
 				<input type="checkbox" id="advancedToggle" onclick="toggleAdvancedMode()">
 				<span class="slider"></span>
@@ -30,12 +34,12 @@
 			</p>
 			<ol>
 				<li>
-					Save your game on the second floor of the
+					Save your game near the stairs on the second floor of the
 					<span class="tooltip">
 						PKMN Center
 						<span class="tooltiptext"><img src="https://tcrf.net/images/7/76/PokemonCrystal_PokeCenter_2F_International.png" alt="PKMN Center" width="200"></span>
 					</span>
-					(Where you normally do link battles/trades).
+					(where you normally do link battles/trades).
 				</li>
 				<li>Back up your original save file somewhere safe.</li>
 				<li>Drag and drop your save file into the area below, or click to select your old save file.</li>
@@ -70,6 +74,10 @@
 					<tr>
 						<td style="padding: 10px; border: 1px solid #555;">9</td>
 						<td style="padding: 10px; border: 1px solid #555;">3.1.0</td>
+					</tr>
+					<tr>
+						<td style="padding: 10px; border: 1px solid #555;">10</td>
+						<td style="padding: 10px; border: 1px solid #555;">3.2.0</td>
 					</tr>
 				</tbody>
 			</table>
@@ -118,14 +126,17 @@
 		// The "advanced" flag indicates that the option should only be visible in advanced mode.
 		const PATCH_OPTIONS = {
 			7: [
+				{ targetVersion: "10", devType: 0, text: "Version 10 (3.2.0)" },
 				{ targetVersion: "9", devType: 0, text: "Version 9 (3.1.0)" },
 				{ targetVersion: "8", devType: 0, text: "Version 8 (3.0.0)" }
 			],
 			8: [
+				{ targetVersion: "10", devType: 0, text: "Version 10 (3.2.0)" },
 				{ targetVersion: "9", devType: 0, text: "Version 9 (3.1.0)" },
 				{ targetVersion: "8", devType: 1, text: "fixVersion8NoForm (ADVANCED)", advanced: true }
 			],
 			9: [
+				{ targetVersion: "10", devType: 0, text: "Version 10 (3.2.0)" },
 				{ targetVersion: "9", devType: 2, text: "fixVersion9RegisteredKeyItems (ADVANCED)", advanced: true },
 				{ targetVersion: "9", devType: 3, text: "fixVersion9PCWarpID (ADVANCED)", advanced: true },
 				{ targetVersion: "9", devType: 4, text: "fixVersion9PGOBattleEvent (ADVANCED)", advanced: true },
@@ -256,7 +267,8 @@
 						const versionMap = {
 							7: '3.0.0-beta',
 							8: '3.0.0',
-							9: '3.1.0'
+							9: '3.1.0',
+							10: '3.2.0'
 						};
 						const canonicalName = versionMap[saveVersion];
 						const versionDisplay = canonicalName

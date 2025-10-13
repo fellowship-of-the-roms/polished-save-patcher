@@ -19,7 +19,7 @@ CXXFLAGS := -Iinclude -std=c++17
 SRC_DIR := src
 INCLUDE_DIR := include
 RESOURCES_DIR := resources
-VERSION_DIRS := resources/version7 resources/version8 resources/version9
+VERSION_DIRS := resources/version7 resources/version8 resources/version9 resources/version10
 BUILD_DIR := build
 
 # Source files
@@ -30,6 +30,7 @@ SOURCES := $(SRC_DIR)/core/CommonPatchFunctions.cpp \
            $(SRC_DIR)/patching/PatchVersion7to8.cpp \
            $(SRC_DIR)/patching/PatchVersion7to8_unorderedmaps.cpp \
            $(SRC_DIR)/patching/PatchVersion8to9.cpp \
+		   $(SRC_DIR)/patching/PatchVersion9to10.cpp \
            $(SRC_DIR)/patching/FixVersion8NoForm.cpp \
            $(SRC_DIR)/patching/FixVersion9RegisteredKeyItems.cpp \
            $(SRC_DIR)/patching/FixVersion9PCWarpID.cpp \

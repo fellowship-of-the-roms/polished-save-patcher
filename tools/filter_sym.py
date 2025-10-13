@@ -9,7 +9,7 @@ def extract_strings_from_cpp(cpp_dirs):
         for root, _, files in os.walk(cpp_dir):
             for file in files:
                 if file.endswith(".cpp"):
-                    with open(os.path.join(root, file), 'r', encoding='utf-8') as f:
+                    with open(os.path.join(root, file), 'r', encoding='utf-8', errors='replace') as f:
                         content = f.read()
                         # Find all string literals "...", accounting for escaped quotes
                         found = re.findall(r'"([^"\\]*(?:\\.[^"\\]*)*)"', content)

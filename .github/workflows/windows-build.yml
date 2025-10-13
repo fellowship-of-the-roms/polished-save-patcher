@@ -22,22 +22,16 @@ jobs:
           restore-keys: |
             windows-emsdk-
 
-      - name: Setup Emscripten on Windows
-        run: |
-          if not exist emsdk (
-            git clone https://github.com/emscripten-core/emsdk.git
-          )
-          cd emsdk
-          .\emsdk install latest
-          .\emsdk activate latest
-          . .\emsdk_env.bat
+      - name: Setup Emscripten and Build on Windows
         shell: cmd
-
-      - name: Build the project
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          echo "Building project for commit: $COMMIT_MESSAGE"
-          call .\emsdk\emsdk_env.bat
+          if not exist emsdk git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          call emsdk install latest
+          call emsdk activate latest
+          call emsdk_env.bat
+          cd ..
+          echo "Building project for commit: %COMMIT_MESSAGE%"
           make release
-        shell: cmd

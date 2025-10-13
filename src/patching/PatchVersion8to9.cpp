@@ -269,6 +269,10 @@ namespace patchVersion8to9Namespace {
 		uint16_t new_save_version = 0x09;
 		save9.setWordBE(SAVE_VERSION_ABS_ADDRESS, new_save_version);
 
+		// copy sGameData to sBackupGameData
+		js_info << "Copying sGameData to sBackupGameData..." << std::endl;
+		copyDataBlock(sd, sym9.getSRAMAddress("sGameData"), sym9.getSRAMAddress("sBackupGameData"), sym9.getSRAMAddress("sGameDataEnd") - sym9.getSRAMAddress("sGameData"));
+
 		// write the new checksums to the version 9 save file
 		js_info << "Writing the new checksums" << std::endl;
 		uint16_t new_checksum = calculateSaveChecksum(save9, sym9.getSRAMAddress("sGameData"), sym9.getSRAMAddress("sGameDataEnd"));

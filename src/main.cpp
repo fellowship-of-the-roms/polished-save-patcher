@@ -1,6 +1,7 @@
 #include "core/SaveBinary.h"
 #include "patching/PatchVersion7to8.h"
 #include "patching/PatchVersion8to9.h"
+#include "patching/PatchVersion9to10.h"
 #include "patching/FixVersion8NoForm.h"
 #include "patching/FixVersion9RegisteredKeyItems.h"
 #include "patching/FixVersion9PCWarpID.h"
@@ -25,7 +26,7 @@ emscripten::val patch_save(const std::string &old_save_path, const std::string &
 
 	if (dev_type == 0) {
 		uint16_t saveVersion = oldSave.getWordBE(SAVE_VERSION_ABS_ADDRESS);
-		if (saveVersion != 0x07 && saveVersion != 0x08) {
+		if (saveVersion != 0x07 && saveVersion != 0x08 && saveVersion != 0x09) {
 			js_error << "Unsupported save version: " << std::hex << saveVersion << std::endl;
 			success = false;
 		}
@@ -48,6 +49,17 @@ emscripten::val patch_save(const std::string &old_save_path, const std::string &
 				}
 				else {
 					js_info << "Patched save file from version 8 to 9." << std::endl;
+					saveVersion = 0x09; // Update the save version to 9
+					oldSave = newSave; // Update the old save to the new save
+				}
+			}
+			if (saveVersion == 0x09 && target_version >= 10) {
+				if (!patchVersion9to10Namespace::patchVersion9to10(oldSave, newSave)) {
+					js_error << "Failed to patch save file from version 9 to 10." << std::endl;
+					success = false;
+				}
+				else {
+					js_info << "Patched save file from version 9 to 10." << std::endl;
 				}
 			}
 		}
