@@ -164,6 +164,18 @@ namespace patchVersion9to10Namespace {
 			writeStruct<mailmsg_struct_v10>(it10, sym10.getSRAMAddress("sMailboxBackup") + i * sizeof(mailmsg_struct_v10), mailmsg);
 		}
 
+		// set v10 wCurMapSceneScriptCount and wCurMapCallbackCount to 0
+		// set v10 wCurMapSceneScriptPointer word to 0
+		// this is done to prevent the game from running any map scripts on load
+		js_info << "Set wCurMapSceneScriptCount and wCurMapCallbackCount to 0..." << std::endl;
+		it10.seek(sym10.getPlayerDataAddress("wCurMapSceneScriptCount"));
+		it10.setByte(0);
+		it10.seek(sym10.getPlayerDataAddress("wCurMapCallbackCount"));
+		it10.setByte(0);
+		js_info << "Set wCurMapSceneScriptPointer to 0..." << std::endl;
+		it10.seek(sym10.getPlayerDataAddress("wCurMapSceneScriptPointer"));
+		it10.setWord(0);
+
 		// write the new save version number big endian
 		js_info << "Writing new save version number..." << std::endl;
 		uint16_t new_save_version = 0x0A;

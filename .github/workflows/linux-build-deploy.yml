@@ -10,7 +10,7 @@ on:
 # One place to change version/tag info.
 env:
   PRE_RELEASE_TAG: "do-not-checkout"
-  PRE_RELEASE_NAME: "1.1.0-beta"
+  PRE_RELEASE_NAME: "1.2.0-beta"
 
 jobs:
   build:
