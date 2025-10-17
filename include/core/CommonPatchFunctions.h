@@ -4,6 +4,7 @@
 #include "SymbolDatabase.h"
 #include "PatcherConstants.h"
 #include "Logging.h"
+#include <cstring>
 
 // struct containing source and destination save data and symbol databases
 struct SourceDest {
