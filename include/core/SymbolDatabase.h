@@ -19,6 +19,7 @@ public:
 
 	// Constructor
 	SymbolDatabase(const std::string& symbolFilePath);
+	SymbolDatabase(const unsigned char* buffer, size_t length);
 	// Destructor
 	~SymbolDatabase();
 	// Get the symbol by name
@@ -49,6 +50,7 @@ public:
 private:
 	std::unordered_map<std::string, Symbol> m_symbols;
 	std::string decompressGzip(const std::string& compressedData);
+	void processCompressedString(std::string& compressedData);
 };
 
 #endif // SYMBOLDATABASE_H

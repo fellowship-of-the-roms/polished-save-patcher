@@ -71,6 +71,9 @@ SYM_FILES := $(foreach DIR, $(VERSION_DIRS), $(wildcard $(DIR)/*.sym))
 # We'll produce .sym.filtered files, then compress those
 FILTERED_SYM_FILES := $(SYM_FILES:.sym=.sym.filtered)
 COMPRESSED_SYM_FILES := $(SYM_FILES:.sym=.sym.gz)
+COMPRESSED_SYM_FILES_C := $(SYM_FILES:.sym=.sym.c)
+COMPRESSED_SYM_FILES_O := $(COMPRESSED_SYM_FILES_C:.sym.c=.sym.o)
+
 
 $(info VERSION_DIRS: $(VERSION_DIRS))
 $(info SYM_FILES: $(SYM_FILES))
@@ -94,6 +97,9 @@ else
 	mkdir -p $(BUILD_DIR)
 endif
 
+bin2c.exe: src/bin2c.c
+	$(CC) -o $@ $^
+
 %.sym.filtered: %.sym
 	python tools/filter_sym.py $< $@
 
@@ -104,9 +110,15 @@ compress-symbols: $(COMPRESSED_SYM_FILES)
 %.sym.gz: %.sym.filtered
 	$(GZIP) -c $< > $@
 
+$(COMPRESSED_SYM_FILES_C): bin2c.exe
+
+%.sym.c: %.sym.gz
+	./bin2c.exe $< > $@
+
+
 # Linking
-$(TARGET): $(OBJECTS) $(COMPRESSED_SYM_FILES)
-	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s FORCE_FILESYSTEM=1 --embed-file resources --exclude-file *.sym --exclude-file *.sym.filtered --bind -sUSE_ZLIB=1
+$(TARGET): $(OBJECTS) $(COMPRESSED_SYM_FILES_O)
+	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' --bind -sUSE_ZLIB=1
 
 # Compilation
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -134,7 +146,7 @@ ifeq ($(OS), Windows_NT)
 	}"
 	if exist "$(BUILD_DIR)" rmdir /S /Q "$(BUILD_DIR)"
 else
-	$(RM) $(OBJECTS) $(TARGET) $(ADDITIONAL_FILES) $(FILTERED_SYM_FILES) $(COMPRESSED_SYM_FILES)
+	$(RM) $(OBJECTS) $(TARGET) $(ADDITIONAL_FILES) $(FILTERED_SYM_FILES) $(COMPRESSED_SYM_FILES) $(COMPRESSED_SYM_FILES_C) $(COMPRESSED_SYM_FILES_O)
 	rm -rf $(BUILD_DIR)
 endif
 
