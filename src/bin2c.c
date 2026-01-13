@@ -1,5 +1,5 @@
 /* (C) 2019 rofl0r */
-/* released into the public domain, or at your choice 0BSD or WTFPL */
+/* released into the public domain, or at your choice 0BSD, MIT or WTFPL */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
