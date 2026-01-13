@@ -71,8 +71,8 @@ SYM_FILES := $(foreach DIR, $(VERSION_DIRS), $(wildcard $(DIR)/*.sym))
 # We'll produce .sym.filtered files, then compress those
 FILTERED_SYM_FILES := $(SYM_FILES:.sym=.sym.filtered)
 COMPRESSED_SYM_FILES := $(SYM_FILES:.sym=.sym.gz)
-COMPRESSED_SYM_FILES_C := $(SYM_FILES:.sym=.sym.c)
-COMPRESSED_SYM_FILES_O := $(COMPRESSED_SYM_FILES_C:.sym.c=.sym.o)
+COMPRESSED_SYM_FILES_CXX := $(SYM_FILES:.sym=.sym.cpp)
+COMPRESSED_SYM_FILES_O := $(COMPRESSED_SYM_FILES_CXX:.sym.cpp=.sym.o)
 
 
 $(info VERSION_DIRS: $(VERSION_DIRS))
@@ -110,15 +110,15 @@ compress-symbols: $(COMPRESSED_SYM_FILES)
 %.sym.gz: %.sym.filtered
 	$(GZIP) -c $< > $@
 
-$(COMPRESSED_SYM_FILES_C): bin2c.exe
+$(COMPRESSED_SYM_FILES_CXX): bin2c.exe
 
-%.sym.c: %.sym.gz
+%.sym.cpp: %.sym.gz
 	./bin2c.exe $< > $@
 
 
 # Linking
 $(TARGET): $(OBJECTS) $(COMPRESSED_SYM_FILES_O)
-	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' --bind -sUSE_ZLIB=1
+	$(CXX) $^ -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' --bind -sUSE_ZLIB=1
 
 # Compilation
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
