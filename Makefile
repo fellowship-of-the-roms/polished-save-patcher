@@ -7,8 +7,11 @@ endif
 
 ifeq ($(OS), Windows_NT)
 	SHELL := cmd
+	TOOL_PFX =
 else
 	SHELL := /usr/bin/bash
+	TOOL_PFX = ./
+
 endif
 
 # Compiler and flags
@@ -113,7 +116,7 @@ compress-symbols: $(COMPRESSED_SYM_FILES)
 $(COMPRESSED_SYM_FILES_CXX): bin2c.exe
 
 %.sym.cpp: %.sym.gz
-	./bin2c.exe -C $< > $@
+	$(TOOL_PFX)bin2c.exe -C $< > $@
 
 
 # Linking
