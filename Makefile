@@ -113,7 +113,7 @@ compress-symbols: $(COMPRESSED_SYM_FILES)
 $(COMPRESSED_SYM_FILES_CXX): bin2c.exe
 
 %.sym.cpp: %.sym.gz
-	./bin2c.exe $< > $@
+	./bin2c.exe -C $< > $@
 
 
 # Linking

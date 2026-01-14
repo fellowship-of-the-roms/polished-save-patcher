@@ -9,7 +9,9 @@
 static int usage() {
 	printf( "bin2hdr - converts a file into a C string\n"
 		"the output is written to stdout.\n"
-		"usage: bin2hdr filename\n"
+		"usage: bin2hdr [-C] filename\n\n"
+	/* https://stackoverflow.com/questions/998425/why-does-const-imply-internal-linkage-in-c-when-it-doesnt-in-c */
+		"-C: symbols are declared as extern to get C linkage in C++ compilers\n"
 	);
 	return 1;
 }
@@ -58,10 +60,10 @@ static int escape_char(int ch, char buf[5], int *dirty) {
 }
 
 int main(int argc, char** argv) {
-	int c, compress = 0;
+	int c, cplus = 0;
 	int f_arg = 1;
-	while((c = getopt(argc, argv, "c")) != EOF) switch(c) {
-		case 'c': compress = 1; f_arg++; break;
+	while((c = getopt(argc, argv, "C")) != EOF) switch(c) {
+		case 'C': cplus = 1; f_arg++; break;
 		default: usage();
 	}
 	if(optind >= argc) return usage();
@@ -81,9 +83,9 @@ int main(int argc, char** argv) {
 		else p++;
 		char *q = p;
 		while((q = strchr(q, '.'))) *q = '_';
-		printf( "const unsigned %s_len = %zu;\n"
-			"const unsigned char %s_data[] = \n",
-			p, insize, p);
+		printf( "%sconst unsigned %s_len = %zu;\n"
+			"%sconst unsigned char %s_data[] = \n",
+			cplus?"extern ":"",p, insize, cplus?"extern ":"",p);
 	}
 
 	int ch, dirty;
