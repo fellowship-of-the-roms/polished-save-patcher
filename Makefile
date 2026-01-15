@@ -11,7 +11,6 @@ ifeq ($(OS), Windows_NT)
 else
 	SHELL := /usr/bin/bash
 	TOOL_PFX = ./
-
 endif
 
 # Compiler and flags
