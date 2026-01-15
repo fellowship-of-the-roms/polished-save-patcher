@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
 	}
 	if(optind >= argc) return usage();
 	unsigned cpl = 77;
-	FILE *f = fopen(argv[f_arg], "r");
+	FILE *f = fopen(argv[f_arg], "rb");
 	if(!f) { perror("fopen"); return 1; }
 	{
 		off_t end, start = ftello(f);
