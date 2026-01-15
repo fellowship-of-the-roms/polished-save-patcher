@@ -96,8 +96,8 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          exclude: |
-            emsdk/
+          paths-ignore: |
+            emsdk/**
 
       - name: Build project for CodeQL
         env:
