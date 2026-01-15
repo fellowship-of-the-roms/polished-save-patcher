@@ -145,6 +145,8 @@ ifeq ($(OS), Windows_NT)
 		$(foreach FILE, $(ADDITIONAL_FILES), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
 		$(foreach FILE, $(FILTERED_SYM_FILES), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
 		$(foreach FILE, $(COMPRESSED_SYM_FILES), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
+		$(foreach FILE, $(COMPRESSED_SYM_FILES_CXX), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
+		$(foreach FILE, $(COMPRESSED_SYM_FILES_O), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
 	}"
 	if exist "$(BUILD_DIR)" rmdir /S /Q "$(BUILD_DIR)"
 else
