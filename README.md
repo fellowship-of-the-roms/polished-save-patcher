@@ -91,7 +91,6 @@ The patcher embeds the per-version symbol databases as filtered, uncompressed bl
 ### Requirements for CLI version
 
 - C++-20 compiler and C99 compiler (distro-provided gcc or clang should work)
-- libz
 - Python 3
 
 You can either build natively on Linux/macOS or use Windows with Emscripten. If using Windows Subsystem for Linux (WSL), see the note below about serving files locally.

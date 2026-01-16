@@ -68,17 +68,13 @@ ADDITIONAL_FILES := $(BUILD_DIR)/polished_save_patcher.js \
 
 ifeq ($(CLI_VERSION),)
 LDFLAGS := -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=33554432 -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' --bind
-else
-LDFLAGS := -lz
 endif
 
 # Windows-specific settings
 ifeq ($(OS), Windows_NT)
 	RM := del
-	GZIP := powershell -ExecutionPolicy Bypass -file tools/gzip.ps1 -k -f
 else
 	RM := rm -f
-	GZIP := gzip -kf
 endif
 
 # Find all .sym files in version* directories
