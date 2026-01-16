@@ -3,6 +3,7 @@
 #include "core/SymbolDatabase.h"
 #include "core/Logging.h"
 #include "core/SymbolDatabaseContents.h"
+#include <algorithm>
 
 namespace patchVersion7to8Namespace {
 
