@@ -1,5 +1,6 @@
 #include "core/Logging.h"
 
+#ifndef CLI_VERSION
 // Declare an external JavaScript function to log messages
 EM_JS(void, js_log_message, (const char* str, const char* level), {
 	// Convert the C string to a JavaScript string and trim any whitespace
@@ -12,6 +13,11 @@ EM_JS(void, js_log_message, (const char* str, const char* level), {
 		console.warn("logMessage function not found.");
 	}
 });
+#else
+void js_log_message(const char* msg, const char* level) {
+	std::cout << level << ": " << msg;
+}
+#endif
 
 // Constructor for JSStreambuf, initializes the log level and reserves space in the buffer
 JSStreambuf::JSStreambuf(LogLevel level) : level(level) {

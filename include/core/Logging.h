@@ -4,7 +4,9 @@
 #include <iostream>
 #include <streambuf>
 #include <vector>
+#ifndef CLI_VERSION
 #include <emscripten/emscripten.h>
+#endif
 
 enum class LogLevel {
 	INFO,

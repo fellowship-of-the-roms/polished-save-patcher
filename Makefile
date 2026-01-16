@@ -7,17 +7,20 @@ endif
 
 ifeq ($(OS), Windows_NT)
 	SHELL := cmd
-	TOOL_PFX =
 	EXE := .exe
 else
 	SHELL := /usr/bin/bash
-	TOOL_PFX = ./
 	EXE :=
 endif
 
 # Compiler and flags
+ifeq ($(CLI_VERSION),)
 CXX := emcc
 CXXFLAGS := -Iinclude -std=c++17
+else
+# CXX either set via command line or using system default
+CXXFLAGS := -Iinclude -std=c++17 -DCLI_VERSION=1
+endif
 
 # Directories
 SRC_DIR := src
@@ -35,7 +38,7 @@ SOURCES := $(SRC_DIR)/core/CommonPatchFunctions.cpp \
            $(SRC_DIR)/patching/PatchVersion7to8.cpp \
            $(SRC_DIR)/patching/PatchVersion7to8_unorderedmaps.cpp \
            $(SRC_DIR)/patching/PatchVersion8to9.cpp \
-		   $(SRC_DIR)/patching/PatchVersion9to10.cpp \
+           $(SRC_DIR)/patching/PatchVersion9to10.cpp \
            $(SRC_DIR)/patching/FixVersion8NoForm.cpp \
            $(SRC_DIR)/patching/FixVersion9RegisteredKeyItems.cpp \
            $(SRC_DIR)/patching/FixVersion9PCWarpID.cpp \
@@ -48,7 +51,11 @@ SOURCES := $(SRC_DIR)/core/CommonPatchFunctions.cpp \
 OBJECTS := $(SOURCES:.cpp=.o)
 
 # Executable name
+ifeq ($(CLI_VERSION),)
 TARGET := $(BUILD_DIR)/polished_save_patcher.html
+else
+TARGET := $(BUILD_DIR)/polished_save_patcher$(EXE)
+endif
 
 # Additional output files
 ADDITIONAL_FILES := $(BUILD_DIR)/polished_save_patcher.js \
@@ -58,16 +65,16 @@ ADDITIONAL_FILES := $(BUILD_DIR)/polished_save_patcher.js \
                     $(BUILD_DIR)/index.html \
                     $(BUILD_DIR)/styles.css
 
-LDFLAGS := -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=33554432 # 32MB initial memory
+
+ifeq ($(CLI_VERSION),)
+LDFLAGS := -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=33554432 -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' --bind
+endif
 
 # Windows-specific settings
 ifeq ($(OS), Windows_NT)
-	CXX := emcc
 	RM := del
-	GZIP := powershell -ExecutionPolicy Bypass -file tools/gzip.ps1 -k -f
 else
 	RM := rm -f
-	GZIP := gzip -kf
 endif
 
 # Find all .sym files in version* directories
@@ -119,7 +126,7 @@ ifeq ($(OS), Windows_NT)
 else
 	mkdir -p $(dir $@)
 endif
-	python tools/filter_sym.py $< $@
+	python3 tools/filter_sym.py $< $@
 
 $(FILTERED_SYM_FILES_CXX): $(BIN2C)
 
@@ -129,7 +136,7 @@ $(GEN_DIR)/%.sym.cpp: $(GEN_DIR)/%.sym
 
 # Linking
 $(TARGET): $(OBJECTS) $(FILTERED_SYM_FILES_O)
-	$(CXX) $^ -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' --bind
+	$(CXX) $^ -o $@ $(LDFLAGS)
 
 # Compilation
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 
 // This class is used to store the save binary data. The save file is 2Mib in size.
 // it can be initiated by inputing the path to the save file.

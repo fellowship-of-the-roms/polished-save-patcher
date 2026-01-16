@@ -330,7 +330,7 @@
 			setTimeout(function () {
 				try {
 					logMessage('Patching save file...');
-					const result = Module.patch_save(oldSavePath, newSavePath, targetVersion, devType);
+					const result = Module.patch_save_js(oldSavePath, newSavePath, targetVersion, devType);
 					if (result.success) {
 						const patchedData = FS.readFile(newSavePath, { encoding: 'binary', flags: 'r' });
 						if (patchedData) {

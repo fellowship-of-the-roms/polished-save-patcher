@@ -70,6 +70,18 @@ jobs:
           publish_dir: ./build
           publish_branch: gh-pages
 
+
+  build_cli:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Build CLI version
+        run: |
+          make -j4 CLI_VERSION=1
+
+
   codeql-analysis:
     needs: build
     runs-on: ubuntu-latest

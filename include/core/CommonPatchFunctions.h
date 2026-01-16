@@ -1,5 +1,6 @@
 #ifndef COMMON_PATCH_FUNCTIONS_H
 #define COMMON_PATCH_FUNCTIONS_H
+#include <cstring>
 #include "SaveBinary.h"
 #include "SymbolDatabase.h"
 #include "PatcherConstants.h"
