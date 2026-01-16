@@ -79,7 +79,7 @@ jobs:
 
       - name: Build CLI version
         run: |
-          make CLI_VERSION=1
+          make -j4 CLI_VERSION=1
 
 
   codeql-analysis:
