@@ -101,8 +101,7 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-          paths-ignore: |
-            emsdk/**
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Build project for CodeQL
         env:
@@ -113,7 +112,6 @@ jobs:
           make
 
       - name: Perform CodeQL Analysis
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: github/codeql-action/analyze@v4
 
   prerelease:
