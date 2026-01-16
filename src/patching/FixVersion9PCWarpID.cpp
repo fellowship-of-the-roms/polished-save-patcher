@@ -13,7 +13,7 @@ namespace fixVersion9PCWarpIDNamespace {
 		SaveBinary::Iterator itnew(patchedsave, 0);
 
 		// Load the version 9 sym file
-		SymbolDatabase sym9(version9_sym_gz_data, version9_sym_gz_len);
+		SymbolDatabase sym9(version9_sym_data, version9_sym_len);
 
 		// get the checksum word from the save file
 		uint16_t save_checksum = patchedsave.getWord(SAVE_CHECKSUM_ABS_ADDRESS);

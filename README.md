@@ -17,7 +17,7 @@ This project is a WebAssembly-based tool that patches Polished Crystal save file
 
 The patcher ships as a WebAssembly module compiled from the C++ sources in `src/`. The browser-hosted UI in `build/polished_save_patcher.html` loads the compiled module, feeds it the uploaded save file, and streams progress back to JavaScript for display. Each patch lives in `src/patching` where it consumes helpers from `src/core` to read and modify binary structures.
 
-The patcher embeds the per-version symbol databases as compressed blobs in the compiled binary (WASM/CLI). They are decompressed and parsed at runtime; the compressed payloads are small, but the in-memory symbol map will use more memory than the compressed size.
+The patcher embeds the per-version symbol databases as filtered, uncompressed blobs in the compiled binary (WASM/CLI). They are parsed at runtime, and the in-memory symbol map will use more memory than the embedded data.
 
 ### Data Flow
 - User uploads a save file through the web UI.

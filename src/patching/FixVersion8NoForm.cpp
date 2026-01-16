@@ -14,7 +14,7 @@ namespace fixVersion8NoFormNamespace {
 		SaveBinary::Iterator itnew(patchedsave, 0);
 
 		// Load the version 7 and version 8 sym files
-		SymbolDatabase sym8(version8_sym_gz_data, version8_sym_gz_len);
+		SymbolDatabase sym8(version8_sym_data, version8_sym_len);
 
 		// get the checksum word from the save file
 		uint16_t save_checksum = patchedsave.getWord(SAVE_CHECKSUM_ABS_ADDRESS);

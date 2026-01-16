@@ -5,30 +5,6 @@
 #include <iostream>
 #include <regex>
 #include <sstream>
-#include <zlib.h>
-
-std::string SymbolDatabase::decompressGzip(const std::string& compressedData) {
-	std::stringstream decompressed;
-	z_stream strm = {};
-	strm.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(compressedData.data()));
-	strm.avail_in = compressedData.size();
-
-	inflateInit2(&strm, 16 + MAX_WBITS);
-	char buffer[4096];
-	do {
-		strm.next_out = reinterpret_cast<Bytef*>(buffer);
-		strm.avail_out = sizeof(buffer);
-		int ret = inflate(&strm, Z_NO_FLUSH);
-		if (ret == Z_STREAM_ERROR || ret == Z_MEM_ERROR) {
-			inflateEnd(&strm);
-			js_error <<  "Decompression failed: " << strm.msg << std::endl;
-			throw std::runtime_error("Decompression failed");
-		}
-		decompressed.write(buffer, sizeof(buffer) - strm.avail_out);
-	} while (strm.avail_out == 0);
-	inflateEnd(&strm);
-	return decompressed.str();
-}
 
 static
 std::string bytes_to_string(const unsigned char* data, std::size_t len) {
@@ -36,17 +12,8 @@ std::string bytes_to_string(const unsigned char* data, std::size_t len) {
     return std::string(reinterpret_cast<const char*>(data), len);
 }
 
-void SymbolDatabase::processCompressedString(std::string& compressedData) {
-	// Decompress data
-	std::string decompressedData;
-	try {
-		decompressedData = decompressGzip(compressedData);
-	} catch (const std::exception& e) {
-		js_error <<  "Failed to decompress symbol file: " << e.what() << std::endl;
-		return;
-	}
-
-	std::istringstream decompressedStream(decompressedData);
+void SymbolDatabase::processSymbolString(const std::string& data) {
+	std::istringstream decompressedStream(data);
 	std::string line;
 	std::regex symbolRegex(R"((\w{2}):(\w{4})\s([A-Za-z0-9_.]+))");
 	std::smatch match;
@@ -70,8 +37,8 @@ void SymbolDatabase::processCompressedString(std::string& compressedData) {
 
 // Constructor
 SymbolDatabase::SymbolDatabase(const unsigned char* buffer, size_t length) {
-	std::string compressedData = bytes_to_string(buffer, length);
-	processCompressedString(compressedData);
+	std::string data = bytes_to_string(buffer, length);
+	processSymbolString(data);
 }
 
 // Destructor
@@ -269,4 +236,3 @@ uint32_t SymbolDatabase::getPokemonDataAddress(const std::string& wram_symbol_na
 	// calculate the absolute address of the pokemon data
 	return getSRAMAddress("sPokemonData") + distance;
 }
-

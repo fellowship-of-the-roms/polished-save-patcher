@@ -73,23 +73,22 @@ endif
 # Find all .sym files in version* directories
 SYM_FILES := $(foreach DIR, $(VERSION_DIRS), $(wildcard $(DIR)/*.sym))
 
-# We'll produce .sym.filtered files, then compress those.
+# We'll produce filtered .sym files and embed those directly.
 # All generated artifacts live under $(GEN_DIR) so builds don't create untracked
 # files in the source tree (e.g. under resources/).
-FILTERED_SYM_FILES := $(patsubst %,$(GEN_DIR)/%,$(SYM_FILES:.sym=.sym.filtered))
-COMPRESSED_SYM_FILES := $(patsubst %,$(GEN_DIR)/%,$(SYM_FILES:.sym=.sym.gz))
-COMPRESSED_SYM_FILES_CXX := $(patsubst %,$(GEN_DIR)/%,$(SYM_FILES:.sym=.sym.cpp))
-COMPRESSED_SYM_FILES_O := $(COMPRESSED_SYM_FILES_CXX:.sym.cpp=.sym.o)
+FILTERED_SYM_FILES := $(patsubst %,$(GEN_DIR)/%,$(SYM_FILES))
+FILTERED_SYM_FILES_CXX := $(FILTERED_SYM_FILES:.sym=.sym.cpp)
+FILTERED_SYM_FILES_O := $(FILTERED_SYM_FILES_CXX:.sym.cpp=.sym.o)
 
 
 $(info VERSION_DIRS: $(VERSION_DIRS))
 $(info SYM_FILES: $(SYM_FILES))
-$(info COMPRESSED_SYM_FILES: $(COMPRESSED_SYM_FILES))
+$(info FILTERED_SYM_FILES: $(FILTERED_SYM_FILES))
 
 
 
 # Build target
-all: $(BUILD_DIR) compress-symbols $(TARGET) copy-index
+all: $(BUILD_DIR) $(TARGET) copy-index
 
 # Release target with optimizations
 release: CXXFLAGS += -O3
@@ -114,7 +113,7 @@ endif
 $(BIN2C): src/bin2c.c | $(BUILD_DIR)
 	$(CC) -o $@ $^
 
-$(GEN_DIR)/%.sym.filtered: %.sym
+$(GEN_DIR)/%.sym: %.sym
 ifeq ($(OS), Windows_NT)
 	if not exist "$(dir $@)" mkdir "$(dir $@)"
 else
@@ -122,26 +121,19 @@ else
 endif
 	python tools/filter_sym.py $< $@
 
-# Compress .sym files
-compress-symbols: $(COMPRESSED_SYM_FILES)
+$(FILTERED_SYM_FILES_CXX): $(BIN2C)
 
-# Rule to compress .sym files
-$(GEN_DIR)/%.sym.gz: $(GEN_DIR)/%.sym.filtered
-	$(GZIP) -c $< > $@
-
-$(COMPRESSED_SYM_FILES_CXX): $(BIN2C)
-
-$(GEN_DIR)/%.sym.cpp: $(GEN_DIR)/%.sym.gz
+$(GEN_DIR)/%.sym.cpp: $(GEN_DIR)/%.sym
 	$(BIN2C_RUN) -C $< > $@
 
 
 # Linking
-$(TARGET): $(OBJECTS) $(COMPRESSED_SYM_FILES_O)
-	$(CXX) $^ -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' --bind -sUSE_ZLIB=1
+$(TARGET): $(OBJECTS) $(FILTERED_SYM_FILES_O)
+	$(CXX) $^ -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' --bind
 
 # Compilation
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@ -sUSE_ZLIB=1
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Copy index.html to build directory
 copy-index:
@@ -169,7 +161,7 @@ endif
 
 
 # Phony targets
-.PHONY: all clean copy-index release compress-symbols prune-build
+.PHONY: all clean copy-index release prune-build
 
 
 # Remove intermediate/generated artifacts from build/ but keep the web output.
