@@ -11,6 +11,7 @@
 #include "core/PatcherConstants.h"
 #include "core/Logging.h"
 #include <iostream>
+#include <cstring>
 #ifndef CLI_VERSION
 #include <emscripten/bind.h>
 #endif
@@ -141,8 +142,14 @@ EMSCRIPTEN_BINDINGS(patch_save_module) {
 }
 #endif
 
-static int usage(void) {
-	js_info << "usage: polished_save_patcher oldsave.sav newsave.sav" << std::endl;
+static int usage(char* a0) {
+	char* p = strrchr(a0, '/');
+	if (!p) p = strrchr(a0, '\\');
+	if (!p) p = a0;
+	else *(p++) = 0;
+	js_info << "usage: ";
+	js_info << p;
+	js_info << " oldsave.sav newsave.sav" << std::endl;
 	js_info << "patches oldsave.sav to latest patchversion and saves" << std::endl;
 	js_info << "it as newsave.sav" << std::endl;
 	return 1;
