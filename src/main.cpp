@@ -11,11 +11,21 @@
 #include "core/PatcherConstants.h"
 #include "core/Logging.h"
 #include <iostream>
+#ifndef CLI_VERSION
 #include <emscripten/bind.h>
+#endif
 
-emscripten::val patch_save(const std::string &old_save_path, const std::string &new_save_path, int target_version, int dev_type = 0) {
+#ifndef CLI_VERSION
+emscripten::val patch_save_js(const std::string &old_save_path, const std::string &new_save_path, int target_version, int dev_type = 0) {
 	// Result object to return to JavaScript
 	emscripten::val result = emscripten::val::object();
+	bool success=patch_save(old_save_path, new_save_path, target_version, dev_type);
+	result.set("success", success);
+	return result;
+}
+#endif
+
+bool patch_save(const std::string &old_save_path, const std::string &new_save_path, int target_version, int dev_type = 0) {
 	bool success = true;
 
 	// Load the old save file
@@ -113,8 +123,7 @@ emscripten::val patch_save(const std::string &old_save_path, const std::string &
 		newSave.save(new_save_path);
 		js_info << "File saved successfully!" << std::endl;
 	}
-	result.set("success", success);
-	return result;
+	return success;
 }
 
 uint16_t get_save_version(const std::string &old_save_path) {
@@ -122,16 +131,31 @@ uint16_t get_save_version(const std::string &old_save_path) {
 	return oldSave.getWordBE(SAVE_VERSION_ABS_ADDRESS);
 }
 
+#ifndef CLI_VERSION
 EMSCRIPTEN_BINDINGS(patch_save_module) {
-	emscripten::function("patch_save",
-		(emscripten::val(*)(const std::string&, const std::string&, int, int)) & patch_save,
+	emscripten::function("patch_save_js",
+		(emscripten::val(*)(const std::string&, const std::string&, int, int)) & patch_save_js,
 		emscripten::allow_raw_pointers()
 	);
 	emscripten::function("get_save_version", &get_save_version);
 }
+#endif
+
+static int usage(void) {
+	printf("usage: polished-save oldsave.sav newsave.sav\n");
+	printf("patches oldsave.sav to latest patchversion and saves\n");
+	printf("it as newsave.sav\n");
+	return 1;
+}
 
 int main(int argc, char* argv[]) {
-	js_info << "Emscripten Save Patcher Version: " << EMSCRIPTEN_PATCHER_VERSION << std::endl;
+	js_info << "PolishedCrystal Save Patcher Version: " << EMSCRIPTEN_PATCHER_VERSION << std::endl;
+#ifndef CLI_VERSION
 	js_error << "This program is intended to be run in a browser using Emscripten." << std::endl;
 	return 1;
+#else
+	if(argc < 3) return usage();
+	int old_version = get_save_version(argv[1]);
+	return patch_save(argv[1], argv[2], 10 /* current last version */, 0)==false;
+#endif
 }

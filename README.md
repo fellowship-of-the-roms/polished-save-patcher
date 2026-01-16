@@ -16,6 +16,7 @@ This project is a WebAssembly-based tool that patches Polished Crystal save file
 ## Architecture Overview
 
 The patcher ships as a WebAssembly module compiled from the C++ sources in `src/`. The browser-hosted UI in `build/polished_save_patcher.html` loads the compiled module, feeds it the uploaded save file, and streams progress back to JavaScript for display. Each patch lives in `src/patching` where it consumes helpers from `src/core` to read and modify binary structures.
+Alternatively, a command line version can be requested (see Build).
 
 The patcher embeds the per-version symbol databases as filtered, uncompressed blobs in the compiled binary (WASM/CLI). They are parsed at runtime, and the in-memory symbol map will use more memory than the embedded data.
 
@@ -82,10 +83,16 @@ The patcher embeds the per-version symbol databases as filtered, uncompressed bl
 
 ## Building From Source
 
-### Requirements
+### Requirements for WASM version
 
 - [Emscripten](https://emscripten.org/docs/getting_started/index.html) (Ensure you can run `emcc` in your environment.)
 - [Python 3](https://www.python.org/) (for serving files locally if you want to test in a browser)
+
+### Requirements for CLI version
+
+- C++-20 compiler and C99 compiler (distro-provided gcc or clang should work)
+- libz
+- Python 3
 
 You can either build natively on Linux/macOS or use Windows with Emscripten. If using Windows Subsystem for Linux (WSL), see the note below about serving files locally.
 
@@ -105,6 +112,13 @@ You can either build natively on Linux/macOS or use Windows with Emscripten. If 
    make
    # OR for a release (optimized) build
    # make release
+   ```
+   CLI version:
+   ```sh
+   # Normal build (unoptimized)
+   make CLI_VERSION=1
+   # OR for a release (optimized) build
+   # make release CLI_VERSION=1
    ```
 
    The build artifacts will appear in the `build` directory
