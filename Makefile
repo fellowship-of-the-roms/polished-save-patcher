@@ -16,10 +16,10 @@ endif
 # Compiler and flags
 ifeq ($(CLI_VERSION),)
 CXX := emcc
-CXXFLAGS := -Iinclude -std=c++20
+CXXFLAGS := -Iinclude -std=c++17
 else
 # CXX either set via command line or using system default
-CXXFLAGS := -Iinclude -std=c++20 -DCLI_VERSION=1
+CXXFLAGS := -Iinclude -std=c++17 -DCLI_VERSION=1
 endif
 
 # Directories
