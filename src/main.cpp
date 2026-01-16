@@ -162,6 +162,6 @@ int main(int argc, char* argv[]) {
 	return 1;
 #else
 	if (argc < 3) return usage(argv[0]);
-	return patch_save(argv[1], argv[2], 10 /* current last version */, 0) == false;
+	return !patch_save(argv[1], argv[2], 10 /* current last version */, 0);
 #endif
 }
