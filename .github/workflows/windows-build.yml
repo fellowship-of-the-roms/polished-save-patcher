@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Cache emsdk
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: emsdk
           key: windows-emsdk-${{ hashFiles('emsdk/emsdk_manifest.json') }}
