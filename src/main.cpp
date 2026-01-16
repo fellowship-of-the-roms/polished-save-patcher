@@ -15,16 +15,6 @@
 #include <emscripten/bind.h>
 #endif
 
-#ifndef CLI_VERSION
-emscripten::val patch_save_js(const std::string &old_save_path, const std::string &new_save_path, int target_version, int dev_type = 0) {
-	// Result object to return to JavaScript
-	emscripten::val result = emscripten::val::object();
-	bool success=patch_save(old_save_path, new_save_path, target_version, dev_type);
-	result.set("success", success);
-	return result;
-}
-#endif
-
 bool patch_save(const std::string &old_save_path, const std::string &new_save_path, int target_version, int dev_type = 0) {
 	bool success = true;
 
@@ -125,6 +115,16 @@ bool patch_save(const std::string &old_save_path, const std::string &new_save_pa
 	}
 	return success;
 }
+
+#ifndef CLI_VERSION
+emscripten::val patch_save_js(const std::string &old_save_path, const std::string &new_save_path, int target_version, int dev_type = 0) {
+	// Result object to return to JavaScript
+	emscripten::val result = emscripten::val::object();
+	bool success=patch_save(old_save_path, new_save_path, target_version, dev_type);
+	result.set("success", success);
+	return result;
+}
+#endif
 
 uint16_t get_save_version(const std::string &old_save_path) {
 	SaveBinary oldSave(old_save_path);
