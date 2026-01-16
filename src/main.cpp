@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
 	js_error << "This program is intended to be run in a browser using Emscripten." << std::endl;
 	return 1;
 #else
-	if (argc < 3) return usage();
+	if (argc < 3) return usage(argv[0]);
 	return patch_save(argv[1], argv[2], 10 /* current last version */, 0) == false;
 #endif
 }
