@@ -2,7 +2,6 @@
 #include "core/SymbolDatabase.h"
 #include "core/PatcherConstants.h"
 #include "core/Logging.h"
-#include <fstream>
 #include <iostream>
 #include <regex>
 #include <sstream>
@@ -31,32 +30,13 @@ std::string SymbolDatabase::decompressGzip(const std::string& compressedData) {
 	return decompressed.str();
 }
 
-// Constructor
-SymbolDatabase::SymbolDatabase(const std::string& symbolFilePath) {
-	// symbols are in the format of:
-	// two_digit_hex_bank:four_digit_hex_address symbol_name
-	// lines that do not match the above format should be ignored.
+static
+std::string bytes_to_string(const unsigned char* data, std::size_t len) {
+    if (!data || len == 0) return std::string();
+    return std::string(reinterpret_cast<const char*>(data), len);
+}
 
-	std::string compressedFilePath = symbolFilePath + ".gz";
-
-	// check if the compressed symbol file exists
-	std::ifstream compressedFile(compressedFilePath);
-	if (!compressedFile.is_open()) {
-		js_error <<  "Compressed symbol file not found: " << compressedFilePath << std::endl;
-		return;
-	}
-	compressedFile.close();
-
-	// Load compressed symbol file
-	std::ifstream file(compressedFilePath, std::ios::binary);
-	if (!file.is_open()) {
-		js_error <<  "Failed to open compressed symbol file: " << compressedFilePath << std::endl;
-		return;
-	}
-
-	// Read compressed data
-	std::string compressedData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
+void SymbolDatabase::processCompressedString(std::string& compressedData) {
 	// Decompress data
 	std::string decompressedData;
 	try {
@@ -86,6 +66,12 @@ SymbolDatabase::SymbolDatabase(const std::string& symbolFilePath) {
 
 		m_symbols[symbol.name] = symbol;
 	}
+}
+
+// Constructor
+SymbolDatabase::SymbolDatabase(const unsigned char* buffer, size_t length) {
+	std::string compressedData = bytes_to_string(buffer, length);
+	processCompressedString(compressedData);
 }
 
 // Destructor

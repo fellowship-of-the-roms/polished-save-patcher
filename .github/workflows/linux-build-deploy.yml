@@ -46,6 +46,11 @@ jobs:
           source ./emsdk/emsdk_env.sh
           make release
 
+      - name: Prune build directory (remove intermediates)
+        run: |
+          source ./emsdk/emsdk_env.sh
+          make prune-build
+
       # Zip and upload the build/ directory
       - name: Zip build directory
         run: zip -r build.zip build

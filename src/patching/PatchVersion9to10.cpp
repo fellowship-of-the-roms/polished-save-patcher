@@ -2,6 +2,7 @@
 #include "core/CommonPatchFunctions.h"
 #include "core/SymbolDatabase.h"
 #include "core/Logging.h"
+#include "core/SymbolDatabaseContents.h"
 
 namespace patchVersion9to10Namespace {
 
@@ -14,8 +15,8 @@ namespace patchVersion9to10Namespace {
 		SaveBinary::Iterator it10(save10, 0);
 
 		// Load the version 9 and 10 sym files
-		SymbolDatabase sym9(VERSION_9_SYMBOL_FILE);
-		SymbolDatabase sym10(VERSION_10_SYMBOL_FILE);
+		SymbolDatabase sym9(version9_sym_gz_data, version9_sym_gz_len);
+		SymbolDatabase sym10(version10_sym_gz_data, version10_sym_gz_len);
 
 		SourceDest sd = { it9, it10, sym9, sym10 };
 

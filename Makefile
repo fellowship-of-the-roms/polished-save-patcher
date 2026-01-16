@@ -7,8 +7,12 @@ endif
 
 ifeq ($(OS), Windows_NT)
 	SHELL := cmd
+	TOOL_PFX =
+	EXE := .exe
 else
 	SHELL := /usr/bin/bash
+	TOOL_PFX = ./
+	EXE :=
 endif
 
 # Compiler and flags
@@ -21,6 +25,7 @@ INCLUDE_DIR := include
 RESOURCES_DIR := resources
 VERSION_DIRS := resources/version7 resources/version8 resources/version9 resources/version10
 BUILD_DIR := build
+GEN_DIR := $(BUILD_DIR)/generated
 
 # Source files
 SOURCES := $(SRC_DIR)/core/CommonPatchFunctions.cpp \
@@ -68,9 +73,14 @@ endif
 # Find all .sym files in version* directories
 SYM_FILES := $(foreach DIR, $(VERSION_DIRS), $(wildcard $(DIR)/*.sym))
 
-# We'll produce .sym.filtered files, then compress those
-FILTERED_SYM_FILES := $(SYM_FILES:.sym=.sym.filtered)
-COMPRESSED_SYM_FILES := $(SYM_FILES:.sym=.sym.gz)
+# We'll produce .sym.filtered files, then compress those.
+# All generated artifacts live under $(GEN_DIR) so builds don't create untracked
+# files in the source tree (e.g. under resources/).
+FILTERED_SYM_FILES := $(patsubst %,$(GEN_DIR)/%,$(SYM_FILES:.sym=.sym.filtered))
+COMPRESSED_SYM_FILES := $(patsubst %,$(GEN_DIR)/%,$(SYM_FILES:.sym=.sym.gz))
+COMPRESSED_SYM_FILES_CXX := $(patsubst %,$(GEN_DIR)/%,$(SYM_FILES:.sym=.sym.cpp))
+COMPRESSED_SYM_FILES_O := $(COMPRESSED_SYM_FILES_CXX:.sym.cpp=.sym.o)
+
 
 $(info VERSION_DIRS: $(VERSION_DIRS))
 $(info SYM_FILES: $(SYM_FILES))
@@ -94,19 +104,40 @@ else
 	mkdir -p $(BUILD_DIR)
 endif
 
-%.sym.filtered: %.sym
+BIN2C := $(BUILD_DIR)/bin2c$(EXE)
+ifeq ($(OS), Windows_NT)
+BIN2C_RUN := $(subst /,\,$(BIN2C))
+else
+BIN2C_RUN := $(BIN2C)
+endif
+
+$(BIN2C): src/bin2c.c | $(BUILD_DIR)
+	$(CC) -o $@ $^
+
+$(GEN_DIR)/%.sym.filtered: %.sym
+ifeq ($(OS), Windows_NT)
+	if not exist "$(dir $@)" mkdir "$(dir $@)"
+else
+	mkdir -p $(dir $@)
+endif
 	python tools/filter_sym.py $< $@
 
 # Compress .sym files
 compress-symbols: $(COMPRESSED_SYM_FILES)
 
 # Rule to compress .sym files
-%.sym.gz: %.sym.filtered
+$(GEN_DIR)/%.sym.gz: $(GEN_DIR)/%.sym.filtered
 	$(GZIP) -c $< > $@
 
+$(COMPRESSED_SYM_FILES_CXX): $(BIN2C)
+
+$(GEN_DIR)/%.sym.cpp: $(GEN_DIR)/%.sym.gz
+	$(BIN2C_RUN) -C $< > $@
+
+
 # Linking
-$(TARGET): $(OBJECTS) $(COMPRESSED_SYM_FILES)
-	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s FORCE_FILESYSTEM=1 --embed-file resources --exclude-file *.sym --exclude-file *.sym.filtered --bind -sUSE_ZLIB=1
+$(TARGET): $(OBJECTS) $(COMPRESSED_SYM_FILES_O)
+	$(CXX) $^ -o $@ $(LDFLAGS) -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' --bind -sUSE_ZLIB=1
 
 # Compilation
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -127,18 +158,29 @@ clean:
 ifeq ($(OS), Windows_NT)
 	powershell -Command "& { \
 		$(foreach FILE, $(OBJECTS), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
-		$(foreach FILE, $(TARGET), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
-		$(foreach FILE, $(ADDITIONAL_FILES), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
-		$(foreach FILE, $(FILTERED_SYM_FILES), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
-		$(foreach FILE, $(COMPRESSED_SYM_FILES), Remove-Item -Path '$(FILE)' -Force -ErrorAction SilentlyContinue; ) \
+		Remove-Item -Path 'bin2c.exe' -Force -ErrorAction SilentlyContinue; \
 	}"
 	if exist "$(BUILD_DIR)" rmdir /S /Q "$(BUILD_DIR)"
 else
-	$(RM) $(OBJECTS) $(TARGET) $(ADDITIONAL_FILES) $(FILTERED_SYM_FILES) $(COMPRESSED_SYM_FILES)
+	$(RM) $(OBJECTS) bin2c.exe
 	rm -rf $(BUILD_DIR)
 endif
 
 
 
 # Phony targets
-.PHONY: all clean copy-index release compress-symbols
+.PHONY: all clean copy-index release compress-symbols prune-build
+
+
+# Remove intermediate/generated artifacts from build/ but keep the web output.
+# Intended for CI publishing.
+prune-build:
+ifeq ($(OS), Windows_NT)
+	powershell -Command "& { \
+		Remove-Item -Path '$(GEN_DIR)' -Recurse -Force -ErrorAction SilentlyContinue; \
+		Remove-Item -Path '$(BIN2C)' -Force -ErrorAction SilentlyContinue; \
+	}"
+else
+	rm -rf $(GEN_DIR)
+	$(RM) $(BIN2C)
+endif
