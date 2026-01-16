@@ -120,7 +120,7 @@ bool patch_save(const std::string &old_save_path, const std::string &new_save_pa
 emscripten::val patch_save_js(const std::string &old_save_path, const std::string &new_save_path, int target_version, int dev_type = 0) {
 	// Result object to return to JavaScript
 	emscripten::val result = emscripten::val::object();
-	bool success=patch_save(old_save_path, new_save_path, target_version, dev_type);
+	bool success = patch_save(old_save_path, new_save_path, target_version, dev_type);
 	result.set("success", success);
 	return result;
 }
@@ -142,9 +142,9 @@ EMSCRIPTEN_BINDINGS(patch_save_module) {
 #endif
 
 static int usage(void) {
-	printf("usage: polished-save oldsave.sav newsave.sav\n");
-	printf("patches oldsave.sav to latest patchversion and saves\n");
-	printf("it as newsave.sav\n");
+	js_info << "usage: polished-save oldsave.sav newsave.sav" << std::endl;
+	js_info << "patches oldsave.sav to latest patchversion and saves" << std::endl;
+	js_info << "it as newsave.sav" << std::endl;
 	return 1;
 }
 
@@ -154,8 +154,7 @@ int main(int argc, char* argv[]) {
 	js_error << "This program is intended to be run in a browser using Emscripten." << std::endl;
 	return 1;
 #else
-	if(argc < 3) return usage();
-	int old_version = get_save_version(argv[1]);
-	return patch_save(argv[1], argv[2], 10 /* current last version */, 0)==false;
+	if (argc < 3) return usage();
+	return patch_save(argv[1], argv[2], 10 /* current last version */, 0) == false;
 #endif
 }
