@@ -6,7 +6,8 @@ This project is a WebAssembly-based tool that patches Polished Crystal save file
 |--------------|----------------|
 | 7            | 3.0.0-beta     |
 | 8            | 3.0.0          |
-| 9            | 3.1.0          |
+| 9            | 3.1.x          |
+| 10           | 3.2.x          |
 
 ## Features
 
@@ -139,6 +140,7 @@ You can either build natively on Linux/macOS or use Windows with Emscripten. If 
 ## Troubleshooting
 - **`ReferenceError: FS` or missing WASM file**: Re-run `make` to regenerate `polished_save_patcher.js` and ensure the `build` directory is served.
 - **Patch reports "unsupported version"**: Confirm the save originates from versions 7, 8, or 9 and that you selected the correct file (.sav, not .sgm).
+ - **Patch reports "unsupported version"**: Confirm the save originates from versions 7, 8, 9, or 10 and that you selected the correct file (.sav, not .sgm).
 - **Browser refuses to download output**: Check for pop-up blockers or try a different browser; the download is triggered via JavaScript `Blob`.
 - **`emcc` not found**: Verify the Emscripten environment script was sourced (`emsdk_env` on Windows, `emsdk_env.sh` on Unix-based systems).
 
