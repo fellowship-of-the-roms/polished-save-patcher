@@ -61,5 +61,13 @@ $RECYCLE.BIN/
 .vs/
 *.pdb
 
+# Visual Studio (not used; prefer VS Code)
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+x64/
+polished.*/
+
 # Visual Studio Code
 .history/
