@@ -2,7 +2,6 @@
 #include "core/SymbolDatabase.h"
 #include "core/PatcherConstants.h"
 #include "core/Logging.h"
-#include <fstream>
 #include <iostream>
 #include <regex>
 #include <sstream>
@@ -72,35 +71,6 @@ void SymbolDatabase::processCompressedString(std::string& compressedData) {
 // Constructor
 SymbolDatabase::SymbolDatabase(const unsigned char* buffer, size_t length) {
 	std::string compressedData = bytes_to_string(buffer, length);
-	processCompressedString(compressedData);
-}
-
-// Constructor
-SymbolDatabase::SymbolDatabase(const std::string& symbolFilePath) {
-	// symbols are in the format of:
-	// two_digit_hex_bank:four_digit_hex_address symbol_name
-	// lines that do not match the above format should be ignored.
-
-	std::string compressedFilePath = symbolFilePath + ".gz";
-
-	// check if the compressed symbol file exists
-	std::ifstream compressedFile(compressedFilePath);
-	if (!compressedFile.is_open()) {
-		js_error <<  "Compressed symbol file not found: " << compressedFilePath << std::endl;
-		return;
-	}
-	compressedFile.close();
-
-	// Load compressed symbol file
-	std::ifstream file(compressedFilePath, std::ios::binary);
-	if (!file.is_open()) {
-		js_error <<  "Failed to open compressed symbol file: " << compressedFilePath << std::endl;
-		return;
-	}
-
-	// Read compressed data
-	std::string compressedData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
 	processCompressedString(compressedData);
 }
 

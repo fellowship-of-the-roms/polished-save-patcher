@@ -46,12 +46,6 @@ constexpr uint8_t NUM_HRAM_BANKS = 1;
 // SAVE constants
 constexpr uint32_t MIN_SAVE_SIZE = SRAM_BANK_SIZE * NUM_SRAM_BANKS;
 
-// Symbol file locations
-constexpr const char* VERSION_7_SYMBOL_FILE = "resources/version7/version7.sym";
-constexpr const char* VERSION_8_SYMBOL_FILE = "resources/version8/version8.sym";
-constexpr const char* VERSION_9_SYMBOL_FILE = "resources/version9/version9.sym";
-constexpr const char* VERSION_10_SYMBOL_FILE = "resources/version10/version10.sym";
-
 // Common patch constants
 constexpr int MON_CENTER_2F_GROUP = 20;
 constexpr int MON_CENTER_2F_MAP = 1;

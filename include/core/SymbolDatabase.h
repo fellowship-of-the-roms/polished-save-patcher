@@ -1,13 +1,14 @@
 #ifndef SYMBOLDATABASE_H
 #define SYMBOLDATABASE_H
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
-#include <vector>
 #include <unordered_map>
 
 // This class is used to store the symbols that are used in the save patcher.
 // each symbol consists of bank, address, and name.
-// it is initiated by inputing the path to the symbol file.
+// it is initiated from an embedded compressed symbol blob.
 
 class SymbolDatabase {
 public:
@@ -18,7 +19,6 @@ public:
 	};
 
 	// Constructor
-	SymbolDatabase(const std::string& symbolFilePath);
 	SymbolDatabase(const unsigned char* buffer, size_t length);
 	// Destructor
 	~SymbolDatabase();

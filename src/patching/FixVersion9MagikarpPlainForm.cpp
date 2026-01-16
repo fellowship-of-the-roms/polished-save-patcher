@@ -1,5 +1,7 @@
 #include "patching/FixVersion9MagikarpPlainForm.h"
 
+#include "core/SymbolDatabaseContents.h"
+
 namespace fixVersion9MagikarpPlainFormNamespace {
 
 	bool fixVersion9MagikarpPlainForm(SaveBinary& oldsave, SaveBinary& patchedsave) {
@@ -10,7 +12,7 @@ namespace fixVersion9MagikarpPlainFormNamespace {
 		SaveBinary::Iterator itnew(patchedsave, 0);
 
 		// Load the version 9 sym file
-		SymbolDatabase sym9(VERSION_9_SYMBOL_FILE);
+		SymbolDatabase sym9(version9_sym_gz_data, version9_sym_gz_len);
 
 		// get the checksum word from the save file
 		uint16_t save_checksum = patchedsave.getWord(SAVE_CHECKSUM_ABS_ADDRESS);

@@ -1,5 +1,7 @@
 #include "patching/FixVersion9RegisteredKeyItems.h"
 
+#include "core/SymbolDatabaseContents.h"
+
 namespace fixVersion9RegisteredKeyItemsNamespace {
 	bool fixVersion9RegisteredKeyItems(SaveBinary& oldsave, SaveBinary& patchedsave) {
 		using namespace fixVersion9RegisteredKeyItemsNamespace;
@@ -11,7 +13,7 @@ namespace fixVersion9RegisteredKeyItemsNamespace {
 		SaveBinary::Iterator itnew(patchedsave, 0);
 
 		// Load the version 9 sym file
-		SymbolDatabase sym9(VERSION_9_SYMBOL_FILE);
+		SymbolDatabase sym9(version9_sym_gz_data, version9_sym_gz_len);
 
 		// get the checksum word from the save file
 		uint16_t save_checksum = patchedsave.getWord(SAVE_CHECKSUM_ABS_ADDRESS);
