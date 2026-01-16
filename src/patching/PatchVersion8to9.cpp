@@ -15,8 +15,8 @@ namespace patchVersion8to9Namespace {
 		SaveBinary::Iterator it9(save9, 0);
 
 		// Load the version 8 and version 9 sym files
-		SymbolDatabase sym8(version8_sym_gz_data, version8_sym_gz_len);
-		SymbolDatabase sym9(version9_sym_gz_data, version9_sym_gz_len);
+		SymbolDatabase sym8(version8_sym_data, version8_sym_len);
+		SymbolDatabase sym9(version9_sym_data, version9_sym_len);
 
 		SourceDest sd = { it8, it9, sym8, sym9 };
 

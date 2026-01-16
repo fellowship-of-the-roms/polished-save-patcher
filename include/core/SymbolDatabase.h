@@ -8,7 +8,7 @@
 
 // This class is used to store the symbols that are used in the save patcher.
 // each symbol consists of bank, address, and name.
-// it is initiated from an embedded compressed symbol blob.
+// it is initiated from an embedded symbol blob.
 
 class SymbolDatabase {
 public:
@@ -49,8 +49,7 @@ public:
 
 private:
 	std::unordered_map<std::string, Symbol> m_symbols;
-	std::string decompressGzip(const std::string& compressedData);
-	void processCompressedString(std::string& compressedData);
+	void processSymbolString(const std::string& data);
 };
 
 #endif // SYMBOLDATABASE_H
