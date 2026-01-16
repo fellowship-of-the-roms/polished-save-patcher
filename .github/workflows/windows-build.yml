@@ -35,3 +35,25 @@ jobs:
           cd ..
           echo "Building project for commit: %COMMIT_MESSAGE%"
           make release
+
+  build-windows-cli:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup MSYS2 (MinGW toolchain)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-python
+
+      - name: Build CLI version
+        shell: msys2 {0}
+        run: |
+          make -j4 CLI_VERSION=1
