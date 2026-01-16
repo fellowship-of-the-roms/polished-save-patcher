@@ -6,9 +6,6 @@
 #include "core/PatcherConstants.h"
 #include "core/CommonPatchFunctions.h"
 
-#define HO_OH_V8 0xfa
-
-
 namespace patchVersion7to8Namespace {
 	using namespace patchVersion7to8Namespace;
 	constexpr int NUM_OBJECT_STRUCTS = 13;
@@ -70,6 +67,7 @@ namespace patchVersion7to8Namespace {
 	constexpr int AFFECTION_OPT = 5;
 	constexpr int EVS_OPT_CLASSIC = 1;
 	constexpr int RESET_INIT_OPTS = 7;
+	constexpr uint16_t HO_OH_V8 = 0xfa;
 	constexpr uint16_t LUGIA_V8 = 0xf9;
 	constexpr uint16_t RAIKOU_V8 = 0xf3;
 	constexpr uint16_t ENTEI_V8 = 0xf4;
