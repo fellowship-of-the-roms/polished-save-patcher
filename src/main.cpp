@@ -142,7 +142,7 @@ EMSCRIPTEN_BINDINGS(patch_save_module) {
 #endif
 
 static int usage(void) {
-	js_info << "usage: polished-save oldsave.sav newsave.sav" << std::endl;
+	js_info << "usage: polished_save_patcher oldsave.sav newsave.sav" << std::endl;
 	js_info << "patches oldsave.sav to latest patchversion and saves" << std::endl;
 	js_info << "it as newsave.sav" << std::endl;
 	return 1;
