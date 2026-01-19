@@ -82,7 +82,7 @@ jobs:
           make -j4 CLI_VERSION=1
 
       - name: install mingw
-        run: sudo apt update && sudo apt install gcc-mingw-w64-i686
+        run: sudo apt update && sudo apt install g++-mingw-w64-i686
 
       - name: Build Windows CLI version
         run: |
