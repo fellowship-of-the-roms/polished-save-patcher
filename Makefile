@@ -10,7 +10,7 @@ ifeq ($(OS), Windows_NT)
 	EXE := .exe
 else
 	SHELL := /usr/bin/bash
-	EXE :=
+	EXE ?=
 endif
 
 # Compiler and flags

@@ -56,4 +56,4 @@ jobs:
       - name: Build CLI version
         shell: msys2 {0}
         run: |
-          make -j4 CLI_VERSION=1
+          mingw32-make -j4 CLI_VERSION=1

@@ -77,9 +77,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Build CLI version
+      - name: Build Linux CLI version
         run: |
           make -j4 CLI_VERSION=1
+
+      - name: install mingw
+        run: sudo apt update && sudo apt install g++-mingw-w64-i686
+
+      - name: Build Windows CLI version
+        run: |
+          make clean
+          make -j4 CLI_VERSION=1 CXX=i686-w64-mingw32-g++ EXE=.exe
 
 
   codeql-analysis:
