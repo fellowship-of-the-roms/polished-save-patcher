@@ -1,4 +1,6 @@
 #include "patching/PatchVersion7to8.h"
+#include "patching/schemas/V7toV8Schema.h"
+#include "core/MigrationEngine.h"
 #include "core/CommonPatchFunctions.h"
 #include "core/SymbolDatabase.h"
 #include "core/Logging.h"
@@ -21,37 +23,9 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 
 	SourceDest sd = {it7, it8, sym7, sym8};
 
-	// get the checksum word from the version 7 save file
-	uint16_t save_checksum = save7.getWord(SAVE_CHECKSUM_ABS_ADDRESS);
-
-	// verify the checksum of the version 7 file matches the calculated checksum
-	// calculate the checksum from lookup symbol name "sGameData" to "sGameDataEnd"
-	uint16_t calculated_checksum = calculateSaveChecksum(save7, sym7.getSRAMAddress("sGameData"), sym7.getSRAMAddress("sGameDataEnd"));
-	if (save_checksum != calculated_checksum) {
-		js_error << "sGameData: " << std::hex << sym7.getSRAMAddress("sGameData") << std::endl;
-		js_error << "sGameDataEnd: " << std::hex << sym7.getSRAMAddress("sGameDataEnd") << std::endl;
-		js_error <<  "Checksum mismatch! Expected: " << std::hex << calculated_checksum << ", got: " << save_checksum << std::endl;
-		return false;
-	}
-
-	// check the backup checksum word from the version 7 save file
-	uint16_t backup_checksum = save7.getWord(SAVE_BACKUP_CHECKSUM_ABS_ADDRESS);
-	// verify the backup checksum of the version 7 file matches the calculated checksum
-	// calculate the checksum from lookup symbol name "sBackupGameData" to "sBackupGameDataEnd"
-	uint16_t calculated_backup_checksum = calculateSaveChecksum(save7, sym7.getSRAMAddress("sBackupGameData"), sym7.getSRAMAddress("sBackupGameDataEnd"));
-	if (backup_checksum != calculated_backup_checksum) {
-		js_error <<  "Backup checksum mismatch! Expected: " << std::hex << calculated_backup_checksum << ", got: " << backup_checksum << std::endl;
-		return false;
-	}
-
-	// check if the player in the PKMN Center 2nd Floor
-	uint8_t map_group = it7.getByte(sym7.getMapDataAddress("wMapGroup"));
-	it7.next();
-	uint8_t map_num = it7.getByte();
-	if (map_group != MON_CENTER_2F_GROUP || map_num != MON_CENTER_2F_MAP) {
-		js_error <<  "Player is not in the PKMN Center 2nd Floor. Go to where you heal in game, and head upstairs. Then re-save your game and try again." << std::endl;
-		return false;
-	}
+	// --- Common pre-migration validation ---
+	if (!validateChecksums(save7, sym7)) return false;
+	if (!checkPlayerInPokemonCenter2F(it7, sym7)) return false;
 
 	// Due to a change in map blocks for the SHAMOUTI_POKECENTER, we don't support saving here.
 	uint8_t prev_map_group = it7.getByte(sym7.getMapDataAddress("wBackupMapGroup"));
@@ -322,33 +296,11 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 	js_info <<  "Copy from [wE***LabSceneID, wEventFlags)" << std::endl;
 	copyDataBlock(sd, sym7.getPlayerDataAddress("wElmsLabSceneID"), sym8.getPlayerDataAddress("wElmsLabSceneID"), sym7.getPlayerDataAddress("wEventFlags") - sym7.getPlayerDataAddress("wElmsLabSceneID"));
 
-	// clear it8 wEventFlags
-	js_info <<  "Clearing save 8 [wEventFalgs, wEventFlags + flag_array(NUM_EVENTS))" << std::endl;
-	clearDataBlock(sd, sym8.getPlayerDataAddress("wEventFlags"), flag_array(NUM_EVENTS));
-
-	it8.seek(sym8.getPlayerDataAddress("wEventFlags"));
-	// wEventFlags is a flag_array of NUM_EVENTS bits. If v7 bit is set, lookup the bit index in the map and set the corresponding bit in v8
-	js_info <<  "Patching wEventFlags..." << std::endl;
-	for (int i = 0; i < NUM_EVENTS; i++) {
-		// check if the bit is set
-		if (isFlagBitSet(it7, sym7.getPlayerDataAddress("wEventFlags"), i)) {
-			// get the event flag index is equal to the bit index
-			uint16_t eventFlagIndex = i;
-			// map the version 7 event flag to the version 8 event flag
-			uint16_t eventFlagIndexV8 = mapV7EventFlagToV8(eventFlagIndex);
-			// if the event flag is found set the corresponding bit in it8
-			if (eventFlagIndexV8 != INVALID_EVENT_FLAG) {
-				// print found event flagv7 and converted event flagv8
-				if (eventFlagIndex != eventFlagIndexV8){
-					js_info <<  "Event Flag " << std::dec << eventFlagIndex << " converted to " << eventFlagIndexV8 << std::endl;
-				}
-				setFlagBit(it8, sym8.getPlayerDataAddress("wEventFlags"), eventFlagIndexV8);
-			} else {
-				// warn we couldn't find v7 event flag in v8
-				js_warning <<  "Event Flag " << eventFlagIndex << " not found in version 8 event flag list." << std::endl;
-			}
-		}
-	}
+	// --- Schema-driven event flag remapping ---
+	remapEventFlags(it7, it8, sym7, sym8,
+		v7toV8Schema::EVENT_FLAG_MAPPINGS,
+		v7toV8Schema::NUM_EVENT_FLAG_MAPPINGS,
+		v7toV8Schema::NUM_EVENTS, sd);
 
 	// Initialize EVENT_CRYS_IN_NAVEL_ROCK
 	js_info << "Initialize EVENT_CRYS_IN_NAVEL_ROCK..." << std::endl;
@@ -796,38 +748,10 @@ bool patchVersion7to8(SaveBinary& save7, SaveBinary& save8) {
 		js_info << "Found caught mon " << std::hex << static_cast<int>(SUDOWOODO_V8) << std::endl;
 	}
 
-	// set v8 wCurMapSceneScriptCount and wCurMapCallbackCount to 0
-	// set v8 wCurMapSceneScriptPointer word to 0
-	// this is done to prevent the game from running any map scripts on load
-	js_info <<  "Set wCurMapSceneScriptCount and wCurMapCallbackCount to 0..." << std::endl;
-	it8.seek(sym8.getPlayerDataAddress("wCurMapSceneScriptCount"));
-	it8.setByte(0);
-	it8.seek(sym8.getPlayerDataAddress("wCurMapCallbackCount"));
-	it8.setByte(0);
-	js_info <<  "Set wCurMapSceneScriptPointer to 0..." << std::endl;
-	it8.seek(sym8.getPlayerDataAddress("wCurMapSceneScriptPointer"));
-	it8.setWord(0);
+	// --- Common post-migration steps ---
+	resetMapScripts(it8, sym8);
+	finalizeSave(save8, sym8, 0x08, sd);
 
-	// write the new save version number big endian
-	js_info <<  "Write new save version number..." << std::endl;
-	uint16_t new_save_version = 0x08;
-	save8.setWordBE(SAVE_VERSION_ABS_ADDRESS, new_save_version);
-
-	// Copy sGameData to sBackupGameData
-	js_info << "Copy sGameData to sBackupGameData..." << std::endl;
-	copyDataBlock(sd, sym8.getSRAMAddress("sGameData"), sym8.getSRAMAddress("sBackupGameData"), sym8.getSRAMAddress("sGameDataEnd") - sym8.getSRAMAddress("sGameData"));
-
-	// write new checksums to the version 8 save file
-	js_info <<  "Write new checksums..." << std::endl;
-	uint16_t new_checksum = calculateSaveChecksum(save8, sym8.getSRAMAddress("sGameData"), sym8.getSRAMAddress("sGameDataEnd"));
-	save8.setWord(SAVE_CHECKSUM_ABS_ADDRESS, new_checksum);
-
-	// write new backup checksums to the version 8 save file
-	js_info <<  "Write new backup checksums..." << std::endl;
-	uint16_t new_backup_checksum = calculateSaveChecksum(save8, sym8.getSRAMAddress("sBackupGameData"), sym8.getSRAMAddress("sBackupGameDataEnd"));
-	save8.setWord(SAVE_BACKUP_CHECKSUM_ABS_ADDRESS, new_backup_checksum);
-
-	// write the modified save file to the output file and print success message
 	js_info <<  "Sucessfully patched to 3.0.0 save version 8!" << std::endl;
 	return true;
 }
