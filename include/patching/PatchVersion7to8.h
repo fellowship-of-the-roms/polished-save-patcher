@@ -5,6 +5,7 @@
 #include "core/SymbolDatabase.h"
 #include "core/PatcherConstants.h"
 #include "core/CommonPatchFunctions.h"
+#include "core/MigrationSchema.h"
 
 namespace patchVersion7to8Namespace {
 	using namespace patchVersion7to8Namespace;
@@ -54,7 +55,6 @@ namespace patchVersion7to8Namespace {
 	constexpr int HOF_MON_LENGTH = 1 + 2 + 2 + 1 + (MON_NAME_LENGTH - 1); // species, id, personality, level, nick
 	constexpr int HOF_LENGTH = 1 + HOF_MON_LENGTH * PARTY_LENGTH + 1; // win count, party, terminator
 	constexpr uint16_t INVALID_SPECIES = -1;
-	constexpr uint16_t INVALID_EVENT_FLAG = -1;
 	constexpr uint8_t MAGIKARP_V8 = 0x81;
 	constexpr uint8_t GYARADOS_V8 = 0x82;
 	constexpr uint8_t GYARADOS_RED_FORM_V7 = 0x11;

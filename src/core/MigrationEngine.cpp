@@ -50,8 +50,6 @@ void remapEventFlags(
 	int numEvents,
 	SourceDest& sd
 ) {
-	constexpr uint16_t INVALID_EVENT_FLAG = static_cast<uint16_t>(-1);
-
 	// Build lookup table from source flag index to destination flag index
 	std::unordered_map<uint16_t, uint16_t> flagMap;
 	flagMap.reserve(numMappings);

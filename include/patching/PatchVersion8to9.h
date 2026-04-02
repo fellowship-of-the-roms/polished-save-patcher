@@ -2,11 +2,11 @@
 #define PATCHVERSION8TO9_H
 
 #include "core/SaveBinary.h"
+#include "core/MigrationSchema.h"
 
 namespace patchVersion8to9Namespace {
 	using namespace patchVersion8to9Namespace;
 	constexpr int NUM_KEY_ITEMS_V9 = 0x26;
-	constexpr uint16_t INVALID_EVENT_FLAG = -1;
 	constexpr int NUM_EVENTS = 0x8ff;
 	constexpr int PLAINBADGE = 2;
 	constexpr int EVENT_BEAT_CANDELA = 0x596;

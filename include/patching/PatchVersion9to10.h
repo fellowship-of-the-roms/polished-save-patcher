@@ -2,10 +2,10 @@
 #define PATCHVERSION9TO10_H
 
 #include "core/SaveBinary.h"
+#include "core/MigrationSchema.h"
 
 namespace patchVersion9to10Namespace {
 	using namespace patchVersion9to10Namespace;
-	constexpr uint16_t INVALID_EVENT_FLAG = -1;
 	constexpr int NUM_EVENTS = 0x8ff;
 	constexpr uint8_t TEXT_DELAY_MASK = 0x03;
 	constexpr uint8_t ralphName[] = { 0x91, 0xA0, 0xAB, 0xAF, 0xA7, 0x53 };

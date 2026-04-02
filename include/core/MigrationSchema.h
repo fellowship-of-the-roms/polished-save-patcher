@@ -12,6 +12,9 @@ struct FlagMapping {
 	uint16_t dst;
 };
 
+// Sentinel value indicating an event flag has no mapping in the target version.
+constexpr uint16_t INVALID_EVENT_FLAG = static_cast<uint16_t>(-1);
+
 // A mapping from a source item ID to a destination item ID.
 // Used for key item and regular item remapping between save versions.
 struct ItemMapping {
