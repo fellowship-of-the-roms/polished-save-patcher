@@ -9,6 +9,7 @@
 *.sh text eol=lf
 *.md text eol=lf
 *.sym text eol=lf
+*.sav binary
 
 # Visual Studio-specific files (CRLF line endings)
 *.sln text eol=crlf
