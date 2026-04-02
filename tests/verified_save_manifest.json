@@ -1,0 +1,74 @@
+[
+  {
+    "name": "MrKat-Save v7->v8",
+    "input": "tests/verified-saves/MrKat-Save/v7/Polished Crystal.sav",
+    "target_version": 8,
+    "expected": "tests/verified-saves/MrKat-Save/v8/patched_save.sav"
+  },
+  {
+    "name": "MrKat-Save v7->v9",
+    "input": "tests/verified-saves/MrKat-Save/v7/Polished Crystal.sav",
+    "target_version": 9,
+    "expected": "tests/verified-saves/MrKat-Save/v9/patched_save.sav"
+  },
+  {
+    "name": "MrKat-Save v7->v10",
+    "input": "tests/verified-saves/MrKat-Save/v7/Polished Crystal.sav",
+    "target_version": 10,
+    "expected": "tests/verified-saves/MrKat-Save/v10/patched_save.sav"
+  },
+  {
+    "name": "MrKat-Save v8->v9",
+    "input": "tests/verified-saves/MrKat-Save/v8/patched_save.sav",
+    "target_version": 9,
+    "expected": "tests/verified-saves/MrKat-Save/v9/patched_save.sav"
+  },
+  {
+    "name": "MrKat-Save v8->v10",
+    "input": "tests/verified-saves/MrKat-Save/v8/patched_save.sav",
+    "target_version": 10,
+    "expected": "tests/verified-saves/MrKat-Save/v10/patched_save.sav"
+  },
+  {
+    "name": "MrKat-Save v9->v10",
+    "input": "tests/verified-saves/MrKat-Save/v9/patched_save.sav",
+    "target_version": 10,
+    "expected": "tests/verified-saves/MrKat-Save/v10/patched_save.sav"
+  },
+  {
+    "name": "ProtoBlues-Save v7->v8",
+    "input": "tests/verified-saves/ProtoBlues-Save/v7/polishedcrystal-3.0.0-beta-22d6f8e1.sav",
+    "target_version": 8,
+    "expected": "tests/verified-saves/ProtoBlues-Save/v8/patched_save.sav"
+  },
+  {
+    "name": "ProtoBlues-Save v7->v9",
+    "input": "tests/verified-saves/ProtoBlues-Save/v7/polishedcrystal-3.0.0-beta-22d6f8e1.sav",
+    "target_version": 9,
+    "expected": "tests/verified-saves/ProtoBlues-Save/v9/patched_save.sav"
+  },
+  {
+    "name": "ProtoBlues-Save v7->v10",
+    "input": "tests/verified-saves/ProtoBlues-Save/v7/polishedcrystal-3.0.0-beta-22d6f8e1.sav",
+    "target_version": 10,
+    "expected": "tests/verified-saves/ProtoBlues-Save/v10/patched_save.sav"
+  },
+  {
+    "name": "ProtoBlues-Save v8->v9",
+    "input": "tests/verified-saves/ProtoBlues-Save/v8/patched_save.sav",
+    "target_version": 9,
+    "expected": "tests/verified-saves/ProtoBlues-Save/v9/patched_save.sav"
+  },
+  {
+    "name": "ProtoBlues-Save v8->v10",
+    "input": "tests/verified-saves/ProtoBlues-Save/v8/patched_save.sav",
+    "target_version": 10,
+    "expected": "tests/verified-saves/ProtoBlues-Save/v10/patched_save.sav"
+  },
+  {
+    "name": "ProtoBlues-Save v9->v10",
+    "input": "tests/verified-saves/ProtoBlues-Save/v9/patched_save.sav",
+    "target_version": 10,
+    "expected": "tests/verified-saves/ProtoBlues-Save/v10/patched_save.sav"
+  }
+]

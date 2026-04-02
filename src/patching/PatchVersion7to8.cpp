@@ -939,7 +939,7 @@ void mapAndWriteMapGroupNumber(SourceDest &sd, uint32_t mapGroupAddr7, uint32_t 
 
 savemon_struct_v8 convertSavemonV7toV8(const savemon_struct_v8& savemon, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons) {
 	// input is a savemon_struct_v8 because we convert in place
-	savemon_struct_v8 new_savemon;
+	savemon_struct_v8 new_savemon = {};
 	uint16_t species_v8 = mapV7PkmnToV8(savemon.species);
 	if (species_v8 == INVALID_SPECIES) {
 		js_error << "Savemon species " << std::hex << static_cast<int>(savemon.species) << " not found in version 8 mon list." << std::endl;
@@ -1048,7 +1048,7 @@ savemon_struct_v8 convertSavemonV7toV8(const savemon_struct_v8& savemon, std::ve
 }
 
 breedmon_struct_v8 convertBreedmonV7toV8(const breedmon_struct_v8& breedmon, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons) {
-	breedmon_struct_v8 new_breedmon;
+	breedmon_struct_v8 new_breedmon = {};
 	uint16_t species_v8 = mapV7PkmnToV8(breedmon.species);
 	if (species_v8 == INVALID_SPECIES) {
 		js_error << "Breedmon species " << std::hex << static_cast<int>(breedmon.species) << " not found in version 8 mon list." << std::endl;
@@ -1154,7 +1154,7 @@ breedmon_struct_v8 convertBreedmonV7toV8(const breedmon_struct_v8& breedmon, std
 }
 
 party_struct_v8 convertPartyV7toV8(const party_struct_v8& party, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons) {
-	party_struct_v8 new_party;
+	party_struct_v8 new_party = {};
 	new_party.breedmon = convertBreedmonV7toV8(party.breedmon, seen_mons, caught_mons);
 	new_party.status = party.status;
 	new_party.unused = party.unused;
@@ -1165,7 +1165,7 @@ party_struct_v8 convertPartyV7toV8(const party_struct_v8& party, std::vector<uin
 }
 
 hofmon_struct_v8 convertHofmonV7toV8(const hofmon_struct_v8& hofmon, std::vector<uint16_t>& seen_mons, std::vector<uint16_t>& caught_mons) {
-	hofmon_struct_v8 new_hofmon;
+	hofmon_struct_v8 new_hofmon = {};
 	uint16_t species_v8 = mapV7PkmnToV8(hofmon.species);
 	if (species_v8 == INVALID_SPECIES) {
 		js_error << "Hofmon species " << std::hex << static_cast<int>(hofmon.species) << " not found in version 8 mon list." << std::endl;
@@ -1210,7 +1210,7 @@ hofmon_struct_v8 convertHofmonV7toV8(const hofmon_struct_v8& hofmon, std::vector
 }
 
 roam_struct_v8 convertRoamV7toV8(const roam_struct_v8& roam) {
-	roam_struct_v8 new_roam;
+	roam_struct_v8 new_roam = {};
 	uint16_t species_v8 = mapV7PkmnToV8(roam.species);
 	if (species_v8 == INVALID_SPECIES) {
 		js_error << "Roam species " << std::hex << static_cast<int>(roam.species) << " not found in version 8 mon list." << std::endl;
@@ -1247,7 +1247,7 @@ roam_struct_v8 convertRoamV7toV8(const roam_struct_v8& roam) {
 }
 
 mailmsg_struct_v8 convertMailmsgV7toV8(const mailmsg_struct_v8& mailmsg) {
-	mailmsg_struct_v8 new_mailmsg;
+	mailmsg_struct_v8 new_mailmsg = {};
 	for (int i = 0; i < sizeof(mailmsg.message); i++) {
 		new_mailmsg.message[i] = mapV7CharToV8(mailmsg.message[i]);
 	}

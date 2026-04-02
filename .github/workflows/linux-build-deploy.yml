@@ -13,8 +13,23 @@ env:
   PRE_RELEASE_NAME: "1.2.0-beta"
 
 jobs:
-  build:
+  verify-regression-saves:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Verify verified save regressions
+        run: |
+          make test-verified-saves
+
+  build:
+    needs: verify-regression-saves
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -72,7 +87,10 @@ jobs:
 
 
   build_cli:
+    needs: verify-regression-saves
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
