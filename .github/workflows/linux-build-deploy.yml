@@ -162,14 +162,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Delete old release (if exists)
-        id: delete_release
-        uses: cb80/delrel@latest
-        with:
-          tag: ${{ env.PRE_RELEASE_TAG }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Force push the tag to current commit
         run: |
           git tag -f ${{ env.PRE_RELEASE_TAG }}
@@ -183,25 +175,31 @@ jobs:
           name: build
           path: .
 
-      - name: Create new rolling prerelease
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ env.PRE_RELEASE_TAG }}
-          name: ${{ env.PRE_RELEASE_NAME }}
-          prerelease: true
-          body: |
-            ## Rolling Prerelease (${{ env.PRE_RELEASE_NAME }})
-            **Commit:** ${{ github.sha }}  
-            **Date:** ${{ github.event.head_commit.timestamp }}
+      - name: Create or update rolling prerelease
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          body_file="$(mktemp)"
+          cat >"$body_file" <<EOF
+          ## Rolling Prerelease (${PRE_RELEASE_NAME})
+          **Commit:** ${GITHUB_SHA}  
+          **Date:** ${{ github.event.head_commit.timestamp }}
 
-            **Artifacts:**
-            - **build.zip** — compiled project for running locally with `python -m http.server`
-            - **Souce Code** (zip/tar.gz) - source code for the project
+          **Artifacts:**
+          - **build.zip** — compiled project for running locally with \`python -m http.server\`
+          - **Souce Code** (zip/tar.gz) - source code for the project
+          EOF
 
-      - name: Upload build.zip
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ env.PRE_RELEASE_TAG }}
-          files: |
-            build.zip
+          if gh release view "${PRE_RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release edit "${PRE_RELEASE_TAG}" \
+              --title "${PRE_RELEASE_NAME}" \
+              --notes-file "$body_file" \
+              --prerelease
+          else
+            gh release create "${PRE_RELEASE_TAG}" \
+              --title "${PRE_RELEASE_NAME}" \
+              --notes-file "$body_file" \
+              --prerelease
+          fi
+
+          gh release upload "${PRE_RELEASE_TAG}" build.zip --clobber
