@@ -10,7 +10,7 @@ from pathlib import Path
 
 def parse_args() -> argparse.Namespace:
     repo_root = Path(__file__).resolve().parents[1]
-    parser = argparse.ArgumentParser(description="Verify golden save fixtures against the CLI patcher.")
+    parser = argparse.ArgumentParser(description="Verify human-verified patched saves against the CLI patcher.")
     parser.add_argument(
         "--patcher",
         type=Path,
@@ -20,8 +20,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--manifest",
         type=Path,
-        default=repo_root / "tests" / "fixture_manifest.json",
-        help="Path to the fixture manifest JSON file.",
+        default=repo_root / "tests" / "verified_save_manifest.json",
+        help="Path to the verified save manifest JSON file.",
     )
     parser.add_argument(
         "--repo-root",
@@ -47,7 +47,7 @@ def run_case(case: dict[str, object], patcher: Path, repo_root: Path) -> None:
     expected_path = repo_root / str(case["expected"])
     target_version = str(case["target_version"])
 
-    with tempfile.TemporaryDirectory(prefix="fixture-verify-") as temp_dir:
+    with tempfile.TemporaryDirectory(prefix="verified-save-verify-") as temp_dir:
         output_path = Path(temp_dir) / "patched_save.sav"
         completed = subprocess.run(
             [str(patcher), str(input_path), str(output_path), target_version],
@@ -90,19 +90,19 @@ def main() -> int:
         return 1
 
     if not manifest_path.is_file():
-        print(f"Fixture manifest not found: {manifest_path}", file=sys.stderr)
+        print(f"Verified save manifest not found: {manifest_path}", file=sys.stderr)
         return 1
 
     cases = json.loads(manifest_path.read_text(encoding="utf-8"))
     if not isinstance(cases, list) or not cases:
-        print(f"Fixture manifest is empty: {manifest_path}", file=sys.stderr)
+        print(f"Verified save manifest is empty: {manifest_path}", file=sys.stderr)
         return 1
 
     for case in cases:
         run_case(case, patcher, repo_root)
         print(f"PASS {case['name']}")
 
-    print(f"Verified {len(cases)} fixture cases.")
+    print(f"Verified {len(cases)} verified save cases.")
     return 0
 
 

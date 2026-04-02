@@ -13,7 +13,7 @@ env:
   PRE_RELEASE_NAME: "1.2.0-beta"
 
 jobs:
-  verify-fixtures:
+  verify-regression-saves:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,12 +21,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Verify fixture parity
+      - name: Verify verified save regressions
         run: |
-          make test-fixtures
+          make test-verified-saves
 
   build:
-    needs: verify-fixtures
+    needs: verify-regression-saves
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -87,7 +87,7 @@ jobs:
 
 
   build_cli:
-    needs: verify-fixtures
+    needs: verify-regression-saves
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -168,7 +168,7 @@ endif
 
 
 # Phony targets
-.PHONY: all clean copy-index release prune-build test-fixtures test
+.PHONY: all clean copy-index release prune-build test-verified-saves test-fixtures test
 
 
 # Remove intermediate/generated artifacts from build/ but keep the web output.
@@ -184,9 +184,11 @@ else
 	$(RM) $(BIN2C)
 endif
 
-test-fixtures:
+test-verified-saves:
 	$(MAKE) clean
 	$(MAKE) -j4 CLI_VERSION=1
-	python3 /home/runner/work/polished-save-patcher/polished-save-patcher/tests/verify_fixtures.py
+	python3 tests/verify_verified_saves.py
 
-test: test-fixtures
+test-fixtures: test-verified-saves
+
+test: test-verified-saves
