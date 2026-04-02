@@ -187,7 +187,7 @@ jobs:
 
           **Artifacts:**
           - **build.zip** — compiled project for running locally with \`python -m http.server\`
-          - **Souce Code** (zip/tar.gz) - source code for the project
+          - **Source Code** (zip/tar.gz) - source code for the project
           EOF
 
           if gh release view "${PRE_RELEASE_TAG}" >/dev/null 2>&1; then
