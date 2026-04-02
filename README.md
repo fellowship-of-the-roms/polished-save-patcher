@@ -147,9 +147,17 @@ You can either build natively on Linux/macOS or use Windows with Emscripten. If 
 ## Developer Onboarding
 - Install clang-format and clang-tidy to keep code style consistent; default configurations live in the project root when added.
 - Build locally with `make` before pushing to ensure the WebAssembly artifacts compile.
+- Run `make test-fixtures` to build the CLI patcher and verify the vendored golden saves in `/home/runner/work/polished-save-patcher/polished-save-patcher/tests/fixtures`.
 - Run `python tools/map_events.py` and related helpers to regenerate derived data when touching event maps.
 - Prefer adding new patches under `src/patching` with matching headers in `include/patching` and wire them up in the patch orchestration code in `main.cpp`.
 - Document notable save-structure discoveries in `include/core` headers so future romhack support can reuse them.
+
+## Fixture Verification
+
+- Vendored save verification files live under `/home/runner/work/polished-save-patcher/polished-save-patcher/tests/fixtures` and preserve the upstream structure for each fixture set.
+- The explicit fixture matrix lives in `/home/runner/work/polished-save-patcher/polished-save-patcher/tests/fixture_manifest.json`.
+- Run `make test-fixtures` to build the CLI patcher, patch each root save to its requested target version, and compare the produced bytes with the corresponding `patched_save.sav` golden file.
+- A passing run means every manifest case matches its expected fixture byte-for-byte.
 
 ## Running From a Release
 If you prefer to use a pre-built release instead of compiling from source:

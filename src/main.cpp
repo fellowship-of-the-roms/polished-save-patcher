@@ -12,6 +12,7 @@
 #include "core/Logging.h"
 #include <iostream>
 #include <cstring>
+#include <stdexcept>
 #ifndef CLI_VERSION
 #include <emscripten/bind.h>
 #endif
@@ -149,8 +150,8 @@ static int usage(char* a0) {
 	else *(p++) = 0;
 	js_info << "usage: ";
 	js_info << p;
-	js_info << " oldsave.sav newsave.sav" << std::endl;
-	js_info << "patches oldsave.sav to latest patchversion and saves" << std::endl;
+	js_info << " oldsave.sav newsave.sav [target_version]" << std::endl;
+	js_info << "patches oldsave.sav to target_version (default: latest patchversion) and saves" << std::endl;
 	js_info << "it as newsave.sav" << std::endl;
 	return 1;
 }
@@ -162,6 +163,20 @@ int main(int argc, char* argv[]) {
 	return 1;
 #else
 	if (argc < 3) return usage(argv[0]);
-	return !patch_save(argv[1], argv[2], 10 /* current last version */, 0);
+	int targetVersion = 10;
+	if (argc >= 4) {
+		try {
+			targetVersion = std::stoi(argv[3]);
+		}
+		catch (const std::exception&) {
+			js_error << "Invalid target version: " << argv[3] << std::endl;
+			return usage(argv[0]);
+		}
+	}
+	if (targetVersion < 8 || targetVersion > 10) {
+		js_error << "Unsupported target version: " << targetVersion << std::endl;
+		return usage(argv[0]);
+	}
+	return !patch_save(argv[1], argv[2], targetVersion, 0);
 #endif
 }
