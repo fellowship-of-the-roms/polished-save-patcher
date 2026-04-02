@@ -32,6 +32,7 @@ GEN_DIR := $(BUILD_DIR)/generated
 
 # Source files
 SOURCES := $(SRC_DIR)/core/CommonPatchFunctions.cpp \
+           $(SRC_DIR)/core/MigrationEngine.cpp \
            $(SRC_DIR)/core/SaveBinary.cpp \
            $(SRC_DIR)/core/SymbolDatabase.cpp \
            $(SRC_DIR)/core/Logging.cpp \
