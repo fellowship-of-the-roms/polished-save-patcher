@@ -16,7 +16,7 @@ endif
 
 # Compiler and flags
 ifeq ($(CLI_VERSION),)
-CXX := emcc
+CXX := em++
 CXXFLAGS := -Iinclude -std=c++17
 else
 # CXX either set via command line or using system default
