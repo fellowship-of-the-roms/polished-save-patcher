@@ -3,7 +3,7 @@
 <head>
 	<title>Polished Crystal Save Patcher</title>
 	<script>
-		const toolVersion = "1.1.2";
+		const toolVersion = "1.2.0";
 	</script>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -77,7 +77,11 @@
 					</tr>
 					<tr>
 						<td style="padding: 10px; border: 1px solid #555;">10</td>
-						<td style="padding: 10px; border: 1px solid #555;">3.2.1</td>
+						<td style="padding: 10px; border: 1px solid #555;">3.2.0–3.2.3</td>
+					</tr>
+					<tr>
+						<td style="padding: 10px; border: 1px solid #555;">11</td>
+						<td style="padding: 10px; border: 1px solid #555;">3.3.0</td>
 					</tr>
 				</tbody>
 			</table>
@@ -126,22 +130,28 @@
 		// The "advanced" flag indicates that the option should only be visible in advanced mode.
 		const PATCH_OPTIONS = {
 			7: [
-				{ targetVersion: "10", devType: 0, text: "Version 10 (3.2.0)" },
+				{ targetVersion: "11", devType: 0, text: "Version 11 (3.3.0)" },
+				{ targetVersion: "10", devType: 0, text: "Version 10 (3.2.0–3.2.3)" },
 				{ targetVersion: "9", devType: 0, text: "Version 9 (3.1.0)" },
 				{ targetVersion: "8", devType: 0, text: "Version 8 (3.0.0)" }
 			],
 			8: [
-				{ targetVersion: "10", devType: 0, text: "Version 10 (3.2.0)" },
+				{ targetVersion: "11", devType: 0, text: "Version 11 (3.3.0)" },
+				{ targetVersion: "10", devType: 0, text: "Version 10 (3.2.0–3.2.3)" },
 				{ targetVersion: "9", devType: 0, text: "Version 9 (3.1.0)" },
 				{ targetVersion: "8", devType: 1, text: "fixVersion8NoForm (ADVANCED)", advanced: true }
 			],
 			9: [
-				{ targetVersion: "10", devType: 0, text: "Version 10 (3.2.1)" },
+				{ targetVersion: "11", devType: 0, text: "Version 11 (3.3.0)" },
+				{ targetVersion: "10", devType: 0, text: "Version 10 (3.2.0–3.2.3)" },
 				{ targetVersion: "9", devType: 2, text: "fixVersion9RegisteredKeyItems (ADVANCED)", advanced: true },
 				{ targetVersion: "9", devType: 3, text: "fixVersion9PCWarpID (ADVANCED)", advanced: true },
 				{ targetVersion: "9", devType: 4, text: "fixVersion9PGOBattleEvent (ADVANCED)", advanced: true },
 				{ targetVersion: "9", devType: 5, text: "fixVersion9RoamMap (ADVANCED)", advanced: true },
 				{ targetVersion: "9", devType: 6, text: "fixVersion9MagikarpPlainForm (ADVANCED)", advanced: true }
+			],
+			10: [
+				{ targetVersion: "11", devType: 0, text: "Version 11 (3.3.0)" }
 			]
 		};
 
@@ -170,13 +180,14 @@
 			});
 			if (!addedAny) {
 				const noOption = document.createElement('option');
-				noOption.textContent = "No valid patch targets";
+				noOption.textContent = saveVersion === 11 ? "Already compatible with 3.3.0" : "No valid patch targets";
 				targetSelect.appendChild(noOption);
 				targetSelect.disabled = true;
 			} else {
 				targetSelect.disabled = false;
 				targetSelect.selectedIndex = 0;
 			}
+			document.getElementById('patchButton').disabled = !addedAny;
 		}
 
 		// Toggle advanced mode UI and update patch options accordingly.
@@ -268,17 +279,16 @@
 							7: '3.0.0-beta',
 							8: '3.0.0',
 							9: '3.1.0',
-							10: '3.2.0'
+							10: '3.2.0–3.2.3',
+							11: '3.3.0'
 						};
 						const canonicalName = versionMap[saveVersion];
 						const versionDisplay = canonicalName
-							? `${saveVersion.toString(16)} (${canonicalName})`
-							: saveVersion.toString(16);
+							? `${saveVersion} (${canonicalName})`
+							: saveVersion.toString();
 						document.getElementById('currentVersion').textContent = 'Current Save Version: ' + versionDisplay;
 						currentSaveVersion = saveVersion;
 						updateTargetVersionOptions(saveVersion);
-						document.getElementById('targetVersion').disabled = false;
-						document.getElementById('patchButton').disabled = false;
 						logMessage('Save file uploaded successfully. Version: ' + versionDisplay);
 						updateIndicator('Save file uploaded successfully.', 'success');
 					} else {

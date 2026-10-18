@@ -1,4 +1,5 @@
 # Makefile for polished_save_patcher with WebAssembly
+.DEFAULT_GOAL := all
 
 # Detect the operating system
 ifeq ($(OS),)
@@ -26,7 +27,7 @@ endif
 SRC_DIR := src
 INCLUDE_DIR := include
 RESOURCES_DIR := resources
-VERSION_DIRS := resources/version7 resources/version8 resources/version9 resources/version10
+VERSION_DIRS := resources/version7 resources/version8 resources/version9 resources/version10 resources/version11
 BUILD_DIR := build
 GEN_DIR := $(BUILD_DIR)/generated
 
@@ -39,6 +40,7 @@ SOURCES := $(SRC_DIR)/core/CommonPatchFunctions.cpp \
            $(SRC_DIR)/patching/PatchVersion7to8_unorderedmaps.cpp \
            $(SRC_DIR)/patching/PatchVersion8to9.cpp \
            $(SRC_DIR)/patching/PatchVersion9to10.cpp \
+           $(SRC_DIR)/patching/PatchVersion10to11.cpp \
            $(SRC_DIR)/patching/FixVersion8NoForm.cpp \
            $(SRC_DIR)/patching/FixVersion9RegisteredKeyItems.cpp \
            $(SRC_DIR)/patching/FixVersion9PCWarpID.cpp \
@@ -86,6 +88,11 @@ SYM_FILES := $(foreach DIR, $(VERSION_DIRS), $(wildcard $(DIR)/*.sym))
 FILTERED_SYM_FILES := $(patsubst %,$(GEN_DIR)/%,$(SYM_FILES))
 FILTERED_SYM_FILES_CXX := $(FILTERED_SYM_FILES:.sym=.sym.cpp)
 FILTERED_SYM_FILES_O := $(FILTERED_SYM_FILES_CXX:.sym.cpp=.sym.o)
+
+# Patches can introduce new symbol names without changing the source .sym file.
+$(FILTERED_SYM_FILES): $(SOURCES) tools/filter_sym.py
+$(OBJECTS): $(wildcard include/core/*.h include/patching/*.h)
+.SECONDARY: $(FILTERED_SYM_FILES)
 
 
 $(info VERSION_DIRS: $(VERSION_DIRS))
@@ -168,7 +175,7 @@ endif
 
 
 # Phony targets
-.PHONY: all clean copy-index release prune-build test-verified-saves test-fixtures test
+.PHONY: all clean copy-index release prune-build test-verified-saves test-fixtures test-v11 test
 
 
 # Remove intermediate/generated artifacts from build/ but keep the web output.
@@ -192,3 +199,9 @@ test-verified-saves:
 test-fixtures: test-verified-saves
 
 test: test-verified-saves
+	python3 tests/test_version11.py
+
+test-v11:
+	$(MAKE) clean
+	$(MAKE) -j4 CLI_VERSION=1
+	python3 tests/test_version11.py

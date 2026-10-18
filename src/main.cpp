@@ -2,6 +2,7 @@
 #include "patching/PatchVersion7to8.h"
 #include "patching/PatchVersion8to9.h"
 #include "patching/PatchVersion9to10.h"
+#include "patching/PatchVersion10to11.h"
 #include "patching/FixVersion8NoForm.h"
 #include "patching/FixVersion9RegisteredKeyItems.h"
 #include "patching/FixVersion9PCWarpID.h"
@@ -28,7 +29,11 @@ bool patch_save(const std::string &old_save_path, const std::string &new_save_pa
 
 	if (dev_type == 0) {
 		uint16_t saveVersion = oldSave.getWordBE(SAVE_VERSION_ABS_ADDRESS);
-		if (saveVersion != 0x07 && saveVersion != 0x08 && saveVersion != 0x09) {
+		if (target_version < 8 || target_version > 11 || target_version <= saveVersion) {
+			js_error << "Choose a newer target save version between 8 and 11. Downgrades and repeated migrations are not supported." << std::endl;
+			return false;
+		}
+		if (saveVersion != 0x07 && saveVersion != 0x08 && saveVersion != 0x09 && saveVersion != 0x0A) {
 			js_error << "Unsupported save version: " << std::hex << saveVersion << std::endl;
 			success = false;
 		}
@@ -62,6 +67,17 @@ bool patch_save(const std::string &old_save_path, const std::string &new_save_pa
 				}
 				else {
 					js_info << "Patched save file from version 9 to 10." << std::endl;
+					saveVersion = 0x0A;
+					oldSave = newSave;
+				}
+			}
+			if (success && saveVersion == 0x0A && target_version >= 11) {
+				if (!patchVersion10to11Namespace::patchVersion10to11(oldSave, newSave)) {
+					js_error << "Failed to patch save file from version 10 to 11." << std::endl;
+					success = false;
+				}
+				else {
+					js_info << "Patched save file from version 10 to 11." << std::endl;
 				}
 			}
 		}
@@ -163,7 +179,7 @@ int main(int argc, char* argv[]) {
 	return 1;
 #else
 	if (argc < 3) return usage(argv[0]);
-	int targetVersion = 10;
+	int targetVersion = 11;
 	if (argc >= 4) {
 		try {
 			targetVersion = std::stoi(argv[3]);
@@ -173,7 +189,7 @@ int main(int argc, char* argv[]) {
 			return usage(argv[0]);
 		}
 	}
-	if (targetVersion < 8 || targetVersion > 10) {
+	if (targetVersion < 8 || targetVersion > 11) {
 		js_error << "Unsupported target version: " << targetVersion << std::endl;
 		return usage(argv[0]);
 	}

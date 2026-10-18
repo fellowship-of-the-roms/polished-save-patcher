@@ -6,3 +6,5 @@ extern const unsigned version9_sym_len;
 extern const unsigned char version9_sym_data[];
 extern const unsigned version10_sym_len;
 extern const unsigned char version10_sym_data[];
+extern const unsigned version11_sym_len;
+extern const unsigned char version11_sym_data[];
