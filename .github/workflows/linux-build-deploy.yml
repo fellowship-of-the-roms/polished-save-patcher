@@ -21,9 +21,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Verify verified save regressions
+      - name: Verify saved fixtures and version 11 migration
         run: |
-          make test-verified-saves
+          make test
 
   build:
     needs: verify-regression-saves

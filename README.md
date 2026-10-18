@@ -7,12 +7,16 @@ This project is a WebAssembly-based tool that patches Polished Crystal save file
 | 7            | 3.0.0-beta     |
 | 8            | 3.0.0          |
 | 9            | 3.1.x          |
-| 10           | 3.2.x          |
+| 10           | 3.2.0–3.2.3    |
+| 11           | 3.3.0          |
 
 ## Features
 
 - Provides a user-friendly web interface for patching save files.
 - Outputs detailed logs for troubleshooting.
+- Migrates version 10 saves to Polished Crystal 3.3.0 (save version 11), including Arbok forms, Pokédex entries, Fly destinations, map references, and event state.
+
+The browser and CLI default to version 11. The [v3.3.0 save audit](docs/v3.3.0-save-audit.md) records the exact upstream revisions, changes, migration behavior, and validation. Development builds that changed the save layout while still claiming version 10 are not distinguishable from released version 10 saves; use a save last written by a released 3.2.x ROM.
 
 ## Architecture Overview
 
@@ -139,8 +143,7 @@ You can either build natively on Linux/macOS or use Windows with Emscripten. If 
 
 ## Troubleshooting
 - **`ReferenceError: FS` or missing WASM file**: Re-run `make` to regenerate `polished_save_patcher.js` and ensure the `build` directory is served.
-- **Patch reports "unsupported version"**: Confirm the save originates from versions 7, 8, or 9 and that you selected the correct file (.sav, not .sgm).
- - **Patch reports "unsupported version"**: Confirm the save originates from versions 7, 8, 9, or 10 and that you selected the correct file (.sav, not .sgm).
+- **Patch reports "unsupported version"**: Confirm the save originates from versions 7, 8, 9, or 10 and that you selected the correct file (.sav, not .sgm). Version 11 saves already support 3.3.0; repeated migrations and downgrades are rejected.
 - **Browser refuses to download output**: Check for pop-up blockers or try a different browser; the download is triggered via JavaScript `Blob`.
 - **`emcc` not found**: Verify the Emscripten environment script was sourced (`emsdk_env` on Windows, `emsdk_env.sh` on Unix-based systems).
 
@@ -148,6 +151,7 @@ You can either build natively on Linux/macOS or use Windows with Emscripten. If 
 - Install clang-format and clang-tidy to keep code style consistent; default configurations live in the project root when added.
 - Build locally with `make` before pushing to ensure the WebAssembly artifacts compile.
 - Run `make test-verified-saves` to build the CLI patcher and verify the vendored human-verified saves in `tests/verified-saves`.
+- Run `make test` to also exercise the version 11 migration, or `make test-v11` for only the new migration checks.
 - Run `python tools/map_events.py` and related helpers to regenerate derived data when touching event maps.
 - Prefer adding new patches under `src/patching` with matching headers in `include/patching` and wire them up in the patch orchestration code in `main.cpp`.
 - Document notable save-structure discoveries in `include/core` headers so future romhack support can reuse them.
@@ -158,6 +162,9 @@ You can either build natively on Linux/macOS or use Windows with Emscripten. If 
 - The explicit verification matrix lives in `tests/verified_save_manifest.json`.
 - Run `make test-verified-saves` to build the CLI patcher, patch each root save to its requested target version, and compare the produced bytes with the corresponding verified `patched_save.sav`.
 - A passing run means every manifest case matches its verified save byte-for-byte.
+- Version 11 tests use the same real saves plus synthetic boundary cases; they are separate from the human-verified v8–v10 golden files. They cover both checksums, RTC trailer preservation, migration chains, map and flag translations, all stored Arbok formats, legendary roamer initialization, all facility set IDs, both option copies, story scene conversions, and invalid inputs.
+- With the upstream repository available, run `python3 tools/audit_v11_tables.py /path/to/polishedcrystal` to verify the option/facility assumptions and `version/minor` PR ancestry against the pinned revisions. See [the v3.3.0 audit](docs/v3.3.0-save-audit.md) for coverage and limitations.
+- Run `python3 tools/audit_v11_scenes.py /path/to/polishedcrystal` to cross-check saved scene bindings and numeric script states, including Burned Tower and Olivine's inserted scenes.
 
 ## Running From a Release
 If you prefer to use a pre-built release instead of compiling from source:
