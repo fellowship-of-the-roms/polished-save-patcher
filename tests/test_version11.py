@@ -78,6 +78,27 @@ def sign_box(mon):
 
 
 class Version11Tests(unittest.TestCase):
+    def test_story_scene_insertions(self):
+        # These bytes did not move, but new scenes changed their meaning.
+        # Sweep even invalid values so the migration cannot reset other progress.
+        for before in range(256):
+            source = self.base()
+            source[saved("wBurnedTower1FSceneID")] = before
+            source[saved("wOlivineCitySceneID")] = before
+            scene_names = [name for name in SYM if name.startswith("w") and name.endswith("SceneID")
+                           and SYM[name][0] == SYM["wPlayerData"][0]
+                           and SYM["wPlayerData"][1] <= SYM[name][1] < SYM["wPlayerDataEnd"][1]
+                           and name not in ("wBurnedTower1FSceneID", "wOlivineCitySceneID", "wPokecenter2FSceneID")]
+            for index, name in enumerate(scene_names):
+                source[saved(name)] = index % 9
+            checksum_save(source)
+            output = self.patch(source)
+            self.assertEqual(output[saved("wBurnedTower1FSceneID")],
+                             before + 1 if before in (1, 2) else before)
+            self.assertEqual(output[saved("wOlivineCitySceneID")], 2 if before == 1 else before)
+            for name in scene_names:
+                self.assertEqual(output[saved(name)], source[saved(name)], name)
+
     def test_saved_layout_matches_version10(self):
         old = symbols(ROOT / "resources/version10/version10.sym")
         aliases = {

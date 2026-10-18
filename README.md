@@ -162,8 +162,9 @@ You can either build natively on Linux/macOS or use Windows with Emscripten. If 
 - The explicit verification matrix lives in `tests/verified_save_manifest.json`.
 - Run `make test-verified-saves` to build the CLI patcher, patch each root save to its requested target version, and compare the produced bytes with the corresponding verified `patched_save.sav`.
 - A passing run means every manifest case matches its verified save byte-for-byte.
-- Version 11 tests use the same real saves plus synthetic boundary cases; they are separate from the human-verified v8–v10 golden files. They cover both checksums, RTC trailer preservation, migration chains, map and flag translations, all stored Arbok formats, legendary roamer initialization, all facility set IDs, both option copies, and invalid inputs.
+- Version 11 tests use the same real saves plus synthetic boundary cases; they are separate from the human-verified v8–v10 golden files. They cover both checksums, RTC trailer preservation, migration chains, map and flag translations, all stored Arbok formats, legendary roamer initialization, all facility set IDs, both option copies, story scene conversions, and invalid inputs.
 - With the upstream repository available, run `python3 tools/audit_v11_tables.py /path/to/polishedcrystal` to verify the option/facility assumptions and `version/minor` PR ancestry against the pinned revisions. See [the v3.3.0 audit](docs/v3.3.0-save-audit.md) for coverage and limitations.
+- Run `python3 tools/audit_v11_scenes.py /path/to/polishedcrystal` to cross-check saved scene bindings and numeric script states, including Burned Tower and Olivine's inserted scenes.
 
 ## Running From a Release
 If you prefer to use a pre-built release instead of compiling from source:

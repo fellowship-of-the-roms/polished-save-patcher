@@ -68,6 +68,26 @@ def main():
         read(repo, NEW_REV, "constants/ram_constants.asm"))
     print("Options: existing encodings unchanged; only nickname and NO_TEXT_PAUSE bits added")
 
+    for path in (
+        "constants/move_constants.asm", "constants/nature_constants.asm",
+        "constants/phone_constants.asm", "constants/deco_constants.asm",
+        "constants/tmhm_constants.asm", "constants/battle_tower_constants.asm",
+        "data/radio/buenas_passwords.asm", "data/decorations/attributes.asm",
+    ):
+        assert read(repo, OLD_REV, path) == read(repo, NEW_REV, path), path
+    print("Stable saved indexes: moves, natures, phones, decorations, TMs/HMs, facility modes and Buena passwords")
+
+    # Continue restores wScreenSave over the map. Existing upstairs block IDs
+    # therefore need to keep their geometry/collisions, even if graphics change.
+    for path in ("maps/JohtoPokeCenter2F.ablk", "maps/KantoPokeCenter2F.ablk"):
+        blobs = [subprocess.check_output(["git", "-C", str(repo), "show", f"{rev}:{path}"])
+                 for rev in (OLD_REV, NEW_REV)]
+        assert blobs[0] == blobs[1], path
+    old_collision = read(repo, OLD_REV, "data/tilesets/pokecenter_collision.asm")
+    new_collision = read(repo, NEW_REV, "data/tilesets/pokecenter_collision.asm")
+    assert new_collision.startswith(old_collision)
+    print("Upstairs saved screen: both blockmaps unchanged; existing collision entries unchanged")
+
     # Discovered via gh pr list --state merged --label version/minor. Check
     # ancestry, not merge dates: #1301 predates the tag date but is absent from it.
     for number, commit, in_old in (

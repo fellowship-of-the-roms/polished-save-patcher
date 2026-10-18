@@ -216,6 +216,16 @@ bool patchVersion10to11(SaveBinary& save10, SaveBinary& save11) {
 	save11.setByte(player("wFollowInSync"), 0);
 	const auto opponent = save10.getByte(player("wDailyTrainerHouseOpponent"));
 	if (opponent == 4 || opponent == 5) save11.setByte(player("wDailyTrainerHouseOpponent"), opponent + 1);
+	// New scenes reuse old numeric values without moving the saved bytes.
+	// Preserve the pending rival battle / completed state, rather than replaying
+	// Burned Tower's introduction or Olivine's new lighthouse exit animation.
+	const auto burnedTower = save10.getByte(player("wBurnedTower1FSceneID"));
+	if (burnedTower == 1 || burnedTower == 2) {
+		save11.setByte(player("wBurnedTower1FSceneID"), burnedTower + 1);
+	}
+	if (save10.getByte(player("wOlivineCitySceneID")) == 1) {
+		save11.setByte(player("wOlivineCitySceneID"), 2);
+	}
 
 	// Previously unused bytes now hold persistent weather/palette state.
 	clear(save11, player("wPaletteSwapAddress"), player("wTimeOfDayPalFlags"));

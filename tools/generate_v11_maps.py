@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 OLD_REV = "3fa43192379df5c3e7b09a08e4d5d79af4f02f42"  # v3.2.3
-NEW_REV = "84acd5a45e32b368755254cee44e6df8344ddfaf"  # audited master, SAVE_VERSION 11
+NEW_REV = "aff9285473a13dd7946e4f689cc29071012cf397"  # audited master, SAVE_VERSION 11
 
 # Renames, merges, and splits. Current-position conversion is deliberately
 # restricted to POKECENTER_2F; these mappings cover persistent map references.
