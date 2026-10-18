@@ -36,6 +36,7 @@ def sram(name):
 
 def saved(name):
     for base, end, destination in (
+        ("wOptions", "wOptionsEnd", "sOptions"),
         ("wPlayerData", "wPlayerDataEnd", "sPlayerData"),
         ("wCurMapData", "wCurMapDataEnd", "sMapData"),
         ("wPokemonData", "wPokemonDataEnd", "sPokemonData"),
@@ -87,7 +88,7 @@ class Version11Tests(unittest.TestCase):
         for name, (bank, address) in old.items():
             if name.startswith("s") and 0xa000 <= address < 0xc000:
                 self.assertEqual(SYM[name], (bank, address), name)
-            for first, last in (("wPlayerData", "wPlayerDataEnd"), ("wCurMapData", "wCurMapDataEnd"),
+            for first, last in (("wOptions3", "wOptionsEnd"), ("wPlayerData", "wPlayerDataEnd"), ("wCurMapData", "wCurMapDataEnd"),
                                 ("wPokemonData", "wPokemonDataEnd")):
                 if bank == old[first][0] and old[first][1] <= address <= old[last][1]:
                     destination = aliases.get(name, name)
@@ -264,6 +265,88 @@ class Version11Tests(unittest.TestCase):
             result = self.patch(data)
             for name, (_, _, a, b) in batch:
                 self.assertEqual(result[saved(name):saved(name) + 2], bytes((a, b)), name)
+
+    def test_all_option_bytes_primary_and_backup(self):
+        # Exercise every byte value, including dirty reserved bits, independently
+        # in the two copies. No reset of initial choices is needed for v11.
+        for value in range(256):
+            data = self.base()
+            expected = []
+            for copy, (block, extra) in enumerate((("sOptions", "sOptions3"),
+                                                  ("sBackupOptions", "sBackupOptions3"))):
+                for offset in range(SYM["wOptionsEnd"][1] - SYM["wOptions"][1]):
+                    address = sram(block) + offset
+                    original = (value + offset * 31 + copy * 113) % 256
+                    data[address] = original
+                    is_textbox_flags = offset == SYM["wTextboxFlags"][1] - SYM["wOptions"][1]
+                    expected.append((address, original & ~0x20 if is_textbox_flags else original))
+                address = sram(extra)
+                data[address] = (value + copy * 113) % 256
+                expected.append((address, data[address] & ~0x06))
+            result = self.patch(data)
+            for address, expected_byte in expected:
+                self.assertEqual(result[address], expected_byte, (value, hex(address)))
+
+    def test_existing_legendary_roamers_gain_plain_form(self):
+        # The entire old form byte was uninitialized, including extspecies.
+        for stale in (0, 1, 0x20, 0xff):
+            data = self.base()
+            for i in range(3):
+                address = saved(f"wRoamMon{i + 1}")
+                data[address] = 243 + i
+                data[address + 9] = stale
+                data[address + 2:address + 4] = bytes((1, 1))  # unchanged map
+            checksum_save(data)
+            result = self.patch(data)
+            for i in range(3):
+                address = saved(f"wRoamMon{i + 1}")
+                self.assertEqual(result[address:address + 9], data[address:address + 9])
+                self.assertEqual(result[address + 9], 1)
+        data = self.base()
+        for i, species in enumerate((0, 255, 25)):
+            address = saved(f"wRoamMon{i + 1}")
+            data[address], data[address + 9] = species, 0xe5
+        checksum_save(data)
+        result = self.patch(data)
+        for i in range(3):
+            self.assertEqual(result[saved(f"wRoamMon{i + 1}") + 9], 0xe5)
+
+    def test_facility_set_ids_all_tiers_and_slots(self):
+        # Independent enumeration of old tables: D=61, C=140, B=143, A=88.
+        # Check all 432 valid IDs in the rental party AND every history slot.
+        # Include empty/random sentinels and out-of-range values unchanged.
+        pairs = [(tier, index) for tier, size in enumerate((61, 140, 143, 88)) for index in range(size)]
+        pairs += [(tier, index) for tier in range(4) for index in (254, 255)]
+        pairs += [(2, 143), (3, 88), (4, 51), (255, 101), (255, 255)]
+        parties = ("sBT_MonParty", "sBT_OTMonParty1", "sBT_OTMonParty2", "sBT_OTMonParty3")
+        for first in range(0, len(pairs), 3):
+            data = self.base()
+            data[sram("sBattleTowerChallengeState")] = 0x0a  # rental, in progress
+            data[sram("sBT_CurTrainerAndSwap")] = 0x2b
+            data[sram("sBTTrainers"):sram("sBTTrainers") + 7] = bytes((0, 3, 51, 101, 131, 132, 133))
+            batch = pairs[first:first + 3]
+            for name in parties:
+                for slot, pair in enumerate(batch):
+                    data[sram(name) + slot * 2:sram(name) + slot * 2 + 2] = bytes(pair)
+            result = self.patch(data)
+            self.assertEqual(result[sram("sBattleTowerChallengeState"):sram("sBT_MonParty")],
+                             data[sram("sBattleTowerChallengeState"):sram("sBT_MonParty")])
+            for name in parties:
+                for slot, (tier, index) in enumerate(batch):
+                    expected = index + int(tier == 2 and 101 <= index < 143 or tier == 3 and 51 <= index < 88)
+                    self.assertEqual(result[sram(name) + slot * 2:sram(name) + slot * 2 + 2],
+                                     bytes((tier, expected)), (name, tier, index))
+            for name in ("wBattleTowerCurStreak", "wBattleTowerTopStreak", "wBattleFactoryCurStreak",
+                         "wBattleFactoryTopStreak", "wBattleFactorySwapCount"):
+                self.assertEqual(result[saved(name):saved(name) + 2], data[saved(name):saved(name) + 2])
+        # Same bytes alias party selection data when rental mode is not set.
+        for state in range(5):
+            data = self.base()
+            data[sram("sBattleTowerChallengeState")] = state
+            address = sram("sBT_PartySelections")
+            data[address:address + 6] = bytes((2, 101, 3, 51, 2, 142))
+            result = self.patch(data)
+            self.assertEqual(result[address:address + 6], data[address:address + 6])
 
     def test_return_warps_including_removed_snowtop_stairs(self):
         # Old Indigo map 16:3 moved to 16:5; Snowtop 36:5 lost its upstairs.

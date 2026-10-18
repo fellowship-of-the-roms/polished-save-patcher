@@ -83,6 +83,20 @@ void patchBoxRegion(SaveBinary& save, uint32_t start, uint32_t end) {
 	}
 }
 
+void patchFacilityParty(SaveBinary& save, uint32_t address) {
+	// PR #1566 inserts Bloodmoon Ursaluna into tiers B and A. Each saved
+	// Pokemon is a (tier, zero-based set index) pair, not a species/form pair.
+	for (unsigned i = 0; i < 3; ++i, address += 2) {
+		const auto tier = save.getByte(address);
+		const auto index = save.getByte(address + 1);
+		if ((tier == 2 && index >= 101 && index < 143)
+			|| (tier == 3 && index >= 51 && index < 88)) {
+			save.setByte(address + 1, index + 1);
+		}
+		// Leave uninitialized (-1) and out-of-range input pairs unchanged.
+	}
+}
+
 } // namespace
 
 bool patchVersion10to11(SaveBinary& save10, SaveBinary& save11) {
@@ -134,6 +148,12 @@ bool patchVersion10to11(SaveBinary& save10, SaveBinary& save11) {
 	}
 	for (const auto name : {"wRoamMon1", "wRoamMon2", "wRoamMon3"}) {
 		patchArbok(save11, pokemon(name), pokemon(name) + 9);
+		const auto species = save10.getByte(pokemon(name));
+		if (species >= 243 && species <= 245) { // Raikou, Entei, Suicune
+			// PR #1301 starts reading this previously uninitialized byte, including
+			// its extended-species bit. All three legendary roamers use PLAIN_FORM.
+			save11.setByte(pokemon(name) + 9, 1);
+		}
 	}
 	for (auto address = player("wHiddenGrottoContents"); address < player("wLastMapYCoord"); address += 3) {
 		if (save11.getByte(address) == 1) patchArbok(save11, address + 1, address + 2); // GROTTO_POKEMON
@@ -204,6 +224,12 @@ bool patchVersion10to11(SaveBinary& save10, SaveBinary& save11) {
 	for (const auto name : {"sOptions3", "sBackupOptions3"}) {
 		save11.setByte(sram(name), save11.getByte(sram(name)) & ~0x06); // default nickname prompt
 	}
+	const auto textboxFlags = sym.getOptionsAddress("wTextboxFlags") - sram("sOptions");
+	for (const auto name : {"sOptions", "sBackupOptions"}) {
+		const auto address = sram(name) + textboxFlags;
+		// PR #1390 uses a formerly unused saved bit for temporary menu text.
+		save11.setByte(address, save11.getByte(address) & ~0x20); // NO_TEXT_PAUSE_F
+	}
 
 	// Continue reloads map headers but keeps saved objects and their script
 	// pointers. Remove the NPC cache until the player exits and re-enters.
@@ -222,10 +248,14 @@ bool patchVersion10to11(SaveBinary& save10, SaveBinary& save11) {
 	for (auto address = player("wVariableSprites"); address < player("wStatusFlags3"); ++address) {
 		if (save11.getByte(address) == 0xef) save11.setByte(address, 0xee); // SPRITE_MON_ICON
 	}
-	// These are ROM table indexes, not stored Pokemon. Teams/classes changed;
-	// keep streaks and rewards, and discard only the repeat-prevention history.
-	clear(save11, sram("sBTTrainers"), sram("sBT_PartySelections"));
-	clear(save11, sram("sBT_OTMonParties"), sram("sBT_OTMonParty3") + 6);
+	// In normal Tower mode this SRAM union contains player party selections,
+	// not rental set IDs. Trainer table indexes, streaks, and rewards are stable.
+	if (save10.getByte(sram("sBattleTowerChallengeState")) & 0x08) { // rental mode
+		patchFacilityParty(save11, sram("sBT_MonParty"));
+	}
+	for (const auto name : {"sBT_OTMonParty1", "sBT_OTMonParty2", "sBT_OTMonParty3"}) {
+		patchFacilityParty(save11, sram(name));
+	}
 
 	// As in earlier migrations, make the backup agree with the migrated primary.
 	const auto start = sram("sGameData");
